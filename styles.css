@@ -128,3 +128,16 @@ body.dark .catalog-item-status{color:#9de3bd;background:#203d30}
 .catalog-evidence-pill{display:inline-flex;gap:7px;align-items:center;padding:10px 14px;border:1px solid var(--line);background:var(--card);border-radius:30px;color:var(--soft-text);font-size:11px;font-weight:800;white-space:nowrap}
 body.dark .catalog-evidence-pill{background:#1b2834;color:#cde8d8;border-color:#425060}
 @media(max-width:630px){.results-head{align-items:flex-start;flex-direction:column;gap:12px}.catalog-evidence-pill{white-space:normal}}
+
+/* Build 12: stronger dark-mode contrast after real-browser visual QA. */
+body.dark .toast,body.dark .toast.show{
+  background:#0b1420!important;color:#fff!important;border:2px solid #7390a9!important;
+  box-shadow:0 14px 44px rgba(0,0,0,.75),0 0 0 3px rgba(91,145,189,.18)!important;
+  max-width:calc(100vw - 24px);text-align:center;line-height:1.5;min-height:44px;
+}
+body.dark .confidence .outline-btn.light{
+  background:#0b1420!important;color:#f8fbff!important;
+  border:1px solid #708ca7!important;box-shadow:0 4px 16px rgba(0,0,0,.2);
+}
+body.dark .confidence .outline-btn.light:hover{background:#263748!important}
+body.dark .confidence h2{color:#f8fbff!important;text-shadow:none}
