@@ -227,3 +227,13 @@ body.dark .source-research-intro p.research-save-status{background:#393221;color
 body.dark .research-warning-badge{background:#493919;border-color:#8f743b;color:#f6d89e}
 body.dark .source-research-card{border-color:#735f39}
 @media(max-width:620px){.source-research-intro{padding:15px}}
+
+/* Strong readable research warning contrast after live Build 19 QA. */
+body.dark .research-warning-badge{
+ background:#ffe8b5!important;color:#39280c!important;border:1px solid #bf9a53!important;
+ font-weight:900;
+}
+body.dark .source-research-intro p.research-save-status{
+ background:#513e20!important;color:#fff1d5!important;border:1px solid #8a7446;
+}
+body.dark .source-research-intro p{color:#f5e5c3}
