@@ -1,7 +1,12 @@
 const API="https://vpic.nhtsa.dot.gov/api/vehicles";
 const CATALOG_DEMO=false;
 const POPULAR_MAKES=["Abarth","Alfa Romeo","Audi","BMW","BYD","Chevrolet","Citroën","Cupra","Dacia","Ferrari","Fiat","Ford","Honda","Hyundai","Jaguar","Jeep","Kia","Lamborghini","Land Rover","Lexus","Maserati","Mazda","Mercedes-Benz","MG","MINI","Mitsubishi","Nissan","Opel","Peugeot","Polestar","Porsche","Renault","Seat","Škoda","Smart","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo"];
-const state={mode:"value",lang:localStorage.getItem("cp-lang")||"en",vehicle:null,garage:JSON.parse(localStorage.getItem("cp-garage")||"[]")};
+const state={mode:"value",lang:localStorage.getItem("cp-lang")||"en",vehicle:null,garage:(()=>{try{return JSON.parse(localStorage.getItem("cp-garage")||"[]")}catch{return []}})()};
+// Never persist VINs: remove any VIN previously saved by older CarParts versions.
+state.garage=Array.isArray(state.garage)?state.garage.filter(v=>v&&v.make&&v.model).map(v=>({
+ make:v.make,model:v.model,year:v.year,engine:v.engine||"",variant:v.variant||""
+})):[];
+try{localStorage.setItem("cp-garage",JSON.stringify(state.garage))}catch(e){}
 const $=id=>document.getElementById(id),toastEl=$("toast");
 function show(m){toastEl.textContent=m;toastEl.classList.add("show");clearTimeout(window.__t);window.__t=setTimeout(()=>toastEl.classList.remove("show"),3000)}
 function api(path){return fetch(API+path,{signal:AbortSignal.timeout(8000)}).then(r=>{if(!r.ok)throw Error("API");return r.json()})}
@@ -128,8 +133,31 @@ function loadEngines(preferred){
 }
 function chosenEngine(){return $("engineCustom")?.value.trim()||$("engine").value}
 function setOptionSelect(id,value,placeholder){const el=$(id);if(!el)return;el.innerHTML='<option value="">'+placeholder+'</option>'+(value?'<option value="'+String(value).replaceAll('"','&quot;')+'">'+value+'</option>':'');if(value)el.value=value}
-function vehicleProfileFromVin(rows){const get=k=>(rows.find(x=>x.Variable===k)||{}).Value||"";return {make:get("Make"),model:get("Model"),year:get("Model Year"),engine:get("Engine Model")||get("Engine Configuration")||get("Displacement (L)"),fuel:get("Fuel Type - Primary"),drive:get("Drive Type"),body:get("Body Class"),doors:get("Doors"),trim:get("Trim")}}
-function applyVehicleProfile(p){if(p.make){const opt=[...$("make").options].find(o=>o.value.toLowerCase()===p.make.toLowerCase());$("make").value=opt?opt.value:p.make}if(p.year){$("year").value=p.year}return loadModels().then(()=>{if(p.model)$("model").value=p.model;loadEngines(p.engine||"");if(p.body)$("variant").value=[p.body,p.trim].filter(Boolean).join(" · ");vehicleChanged()})}
+// NHTSA VIN parsing is handled in the separately tested vin-check.js module.
+async function applyVinVehicleProfile(p,force=false){
+ if(!p?.make)return false;
+ const makes=[...$("make").options];
+ const match=makes.find(o=>o.value&&window.CarPartsVIN.makeKey(o.value)===window.CarPartsVIN.makeKey(p.make));
+ if(!match)return false; // Never inject unsupported models or brands.
+ if(force||!$("make").value){
+  if($("make").value!==match.value){
+   $("make").value=match.value;$("model").value="";await loadModels();
+  }
+ }
+ if($("make").value===match.value&&p.model&&(force||!$("model").value)){
+  const model=[...$("model").options].find(o=>o.value&&window.CarPartsVIN.matchesModel(o.value,p.model)===true);
+  if(model)$("model").value=model.value;
+  else if(force)$("model").value="";
+ }
+ if(p.year&&(force||!$("year").value)){
+  if([...$("year").options].some(o=>o.value===String(p.year)))$("year").value=String(p.year);
+  else if(force)$("year").value="";
+ }
+ if(force){$("engine").value="";$("engineCustom").value=""}
+ loadEngines();
+ vehicleChanged();
+ return true;
+}
 let coverageRequest=0;
 function updatePartsCoverage(){
  const el=$("partsCoverage");if(!el)return;
@@ -145,7 +173,83 @@ function updatePartsCoverage(){
    :"Noch keine belegten Artikel für dieses Modelljahr. Die Teilekategorien sind nur Suchhilfen.";
  }).catch(()=>{if(request===coverageRequest)el.textContent="Teileabdeckung gerade nicht abrufbar."});
 }
-function vehicleChanged(){updatePartsCoverage();++catalogRequest;const make=$("make").value,model=$("model").value,year=$("year").value,engine=$("engine").value,variant=$("variant").value;const score=(make?25:0)+(model?25:0)+(year?15:0)+(engine?20:0)+(variant?5:0)+($("vin").value.trim().length===17?10:0);$("fitmentScore").textContent=score+"/100";$("fitmentScore").className="fitment-score "+(score>=90?"ready":score>=70?"good":"needs");if(make&&model&&year){state.vehicle={make,model,year,engine,variant,vin:$("vin").value.trim()};$("vehicleName").textContent=make+" "+model;$("vehicleSub").textContent=(engine||"Engine not confirmed")+" · "+year;$("vehicleStatus").textContent="UNVERIFIED";$("confirmTitle").textContent=make+" "+model+" · "+year;$("confirmText").textContent="Vehicle details collected. Exact part fitment must be verified by catalog data.";renderResults()}else{$("vehicleStatus").textContent="NOT SELECTED";$("confirmTitle").textContent="No vehicle selected";$("confirmText").textContent="Select make, model and year to build a fitment profile.";$("fitmentScore").textContent="0%"}}
+let vinCheckSequence=0;
+let vinResult={status:"idle",vin:"",decoded:null,local:null,reason:""};
+function vinInput(){return window.CarPartsVIN.check($("vin").value)}
+function vinFields(){return {make:$("make").value,model:$("model").value,year:$("year").value}}
+function updateVinUI(){
+ const el=$("vinStatus"),apply=$("vinApplyBtn"),v=vinResult;
+ if(!el)return;
+ let message=v.reason||"Fahrgestellnummer optional. VIN prüfen für den Abgleich mit Fahrzeugdaten.";
+ if(v.status==="matched")message="✓ VIN-Stammdaten stimmen mit Marke, Modell und Modelljahr überein. Das bestätigt keine Teilepassform. "+(v.local?.checksumText||"");
+ if(v.status==="checking")message="Prüfe die VIN mit der öffentlichen NHTSA-Fahrzeugdatenbank…";
+ if(v.status==="unchecked")message="VIN noch nicht geprüft. Klicke „VIN prüfen“; 17 Zeichen allein bedeuten keine Verifizierung.";
+ if(v.status==="invalid")message="✕ "+v.reason;
+ if(v.status==="mismatch")message="✕ VIN widerspricht der Fahrzeugauswahl: "+v.conflicts.join(", ")+
+  ". Bitte die Auswahl korrigieren oder die VIN-Daten übernehmen. Suche gesperrt.";
+ if(v.status==="partial")message="⚠ VIN-Prüfung nur teilweise möglich: "+(v.reason||"Fahrzeugdaten oder Prüfziffer nicht eindeutig.")+
+  " Herstellerdaten und Fahrzeugunterlagen vor Bestellung abgleichen.";
+ if(v.status==="unavailable")message="⚠ Die VIN-Datenbank ist nicht erreichbar. Fahrzeugangaben sind NICHT VIN-bestätigt.";
+ el.textContent=message;
+ el.className="vin-status vin-"+v.status;
+ if(apply)apply.hidden=!(v.decoded&&v.status==="mismatch");
+}
+function refreshVinComparison(){
+ const raw=vinInput();
+ if(!raw.vin){
+  vinResult={status:"idle",vin:"",decoded:null,local:null,reason:""};updateVinUI();return;
+ }
+ if(raw.vin!==vinResult.vin){
+  vinResult={status:"unchecked",vin:raw.vin,decoded:null,local:raw,reason:""};updateVinUI();return;
+ }
+ if(vinResult.status==="invalid"||vinResult.status==="checking"||
+  vinResult.status==="unchecked"||vinResult.status==="unavailable"){
+  updateVinUI();return;
+ }
+ if(!vinResult.decoded){updateVinUI();return}
+ const comparison=window.CarPartsVIN.compare(vinResult.decoded,vinFields());
+ vinResult.conflicts=comparison.conflicts;
+ if(comparison.conflicts.length)vinResult.status="mismatch";
+ else if(comparison.confirmed.length===3&&vinResult.local?.checkdigitValid&&
+   (!vinResult.decoded.errorCode||/^(0|0,10)$/.test(vinResult.decoded.errorCode.trim()))){
+  vinResult.status="matched";
+ }else{
+  vinResult.status="partial";
+  vinResult.reason=comparison.uncertain.length?
+   "Nicht eindeutig: "+comparison.uncertain.join(", ")+".":vinResult.local?.checksumText||"Fahrzeugdaten nur teilweise bestätigt.";
+ }
+ updateVinUI();
+}
+function vehicleChanged(){
+ updatePartsCoverage();++catalogRequest;refreshVinComparison();
+ const make=$("make").value,model=$("model").value,year=$("year").value,
+  engine=chosenEngine(),variant=$("variant").value;
+ const score=(make?25:0)+(model?25:0)+(year?15:0)+(engine?20:0)+(variant?5:0)+
+  (vinResult.status==="matched"?10:0);
+ $("fitmentScore").textContent=score+"/100";
+ $("fitmentScore").className="fitment-score "+(score>=90?"ready":score>=70?"good":"needs");
+ if(make&&model&&year){
+  // VIN is intentionally NOT sent to Supabase or persisted to the garage.
+  state.vehicle={make,model,year,engine,variant};
+  $("vehicleName").textContent=make+" "+model;
+  $("vehicleSub").textContent=(engine||"Motor nicht bestätigt")+" · "+year;
+  $("vehicleStatus").textContent=vinResult.status==="mismatch"?"VIN-KONFLIKT":"UNVERIFIED";
+  $("confirmTitle").textContent=make+" "+model+" · "+year;
+  $("confirmText").textContent=vinResult.status==="mismatch"?
+   "VIN und Fahrzeugangaben widersprechen sich – Suche gesperrt.":
+   vinResult.status==="matched"?
+   "VIN-Stammdaten abgeglichen. Exakte Teilepassung und Motor-/PR-Code weiter prüfen.":
+   "Fahrzeugangaben erfasst. Eine Ersatzteil-Passgarantie besteht nicht.";
+  renderResults();
+ }else{
+  state.vehicle=null;
+  $("vehicleStatus").textContent="NOT SELECTED";
+  $("confirmTitle").textContent="No vehicle selected";
+  $("confirmText").textContent="Select make, model and year to build a fitment profile.";
+  $("fitmentScore").textContent="0%";
+  renderResults();
+ }
+}
 function icon(s){if(s==="pad")return '<svg viewBox="0 0 120 100"><path d="M25 15h70v70H25z" fill="#252d34"/><path d="M35 25h50v50H35z" fill="#cbd2d7"/><path d="M44 34h32v32H44z" fill="#252d34"/></svg>';if(s==="light")return '<svg viewBox="0 0 120 100"><path d="M15 50c8-27 25-39 50-39h27l13 39-13 39H65c-25 0-42-12-50-39Z" fill="#dbe1e5" stroke="#68747e" stroke-width="3"/><path d="M35 28c18 3 34 10 50 22-16 12-32 19-50 22 7-15 7-29 0-44Z" fill="#fff"/></svg>';return '<svg viewBox="0 0 120 100"><rect x="27" y="17" width="66" height="66" rx="8" fill="#303a43"/><rect x="36" y="27" width="48" height="45" rx="5" fill="#dce1e5"/><path d="M43 38h34M43 47h34M43 56h34M43 65h20" stroke="#8a969f" stroke-width="4"/></svg>'}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
