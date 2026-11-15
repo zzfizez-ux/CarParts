@@ -158,7 +158,10 @@ function setCatalogStatus(status){
  status==="error"?"Teilekatalog nicht erreichbar":
  status==="empty"?"Noch keine belegten Angebote für diese Auswahl":"CarParts Teilekatalog · Suchergebnisse direkt auf dieser Seite";
 }
-function placeholderPartImage(){
+function placeholderPartImage(kind){
+ const category=String(kind||"").toLocaleLowerCase("de-DE");
+ if(category.includes("brems"))return icon("pad");
+ if(category.includes("scheinwerfer")||category.includes("licht"))return icon("light");
  // Self-created illustration, not a photo or representation of any particular SKU.
  return '<svg aria-hidden="true" viewBox="0 0 250 170" xmlns="http://www.w3.org/2000/svg">'+
  '<ellipse cx="125" cy="145" rx="74" ry="11" fill="#000" opacity=".09"/>'+
@@ -200,7 +203,7 @@ function renderSupabaseCards(rows,term){
   const validUrl=x=>typeof x==="string"&&/^https:\/\//i.test(x);
   const img=Array.isArray(p.images)?p.images.find(x=>validUrl(x.image_url)):null;
   const image=img?'<img loading="lazy" decoding="async" src="'+esc(img.image_url)+'" alt="'+esc(img.alt_text||p.part_name)+'">':
-   placeholderPartImage();
+   placeholderPartImage(p.category||p.part_name);
   const imageBadge=img?"Freigegebenes Produktbild":"Symbolillustration · kein Produktfoto";
   const offers=Array.isArray(p.offers)?p.offers.filter(x=>Number.isFinite(Number(x.price_amount))&&
    Number(x.price_amount)>=0&&/^[A-Z]{3}$/.test(x.currency)): [];
