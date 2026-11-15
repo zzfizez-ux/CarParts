@@ -113,5 +113,23 @@ async function getCoverage(make,model,year){
  const rows=await read("part_fitments?select=part_id&engine_id=in.("+ids.join(",")+")&status=eq.verified&limit=1000");
  return {documentedEngines:engines.length,verifiedArticles:new Set(rows.map(x=>x.part_id)).size};
 }
-window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage};
+async function discoverOilRefs(vehicle){
+ const payload={
+  make:String(vehicle.make||""),model:String(vehicle.model||""),
+  year:Number(vehicle.year),category:"oilfilter"
+ };
+ const response=await fetch(base+"/functions/v1/discover-parts",{
+  method:"POST",
+  headers:{"apikey":key,"Content-Type":"application/json"},
+  body:JSON.stringify(payload),signal:AbortSignal.timeout(15000),
+ });
+ if(!response.ok)throw new Error("Open community search "+response.status);
+ const result=await response.json();
+ if(!result||result.license!=="CC0-1.0"||!Array.isArray(result.rows)||
+    result.rows.some(r=>!Array.isArray(r)||r.length!==6)){
+  throw new Error("Unexpected community search response");
+ }
+ return {rows:result.rows,source:result.source,stored:result.stored||0};
+}
+window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage,discoverOilRefs};
 })();
