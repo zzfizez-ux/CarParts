@@ -15,21 +15,21 @@ Those are two individually researched factual entries with direct manufacturer r
 
 1. Open the website and select **Volkswagen → Golf → 2018**.
 2. Wait for additional manufacturer-listed engine variants to appear, then choose **Golf VII 2.0 TDI 150 PS (CRBC) – mit Wassersensor** or the **ohne Wassersensor** variant, as applicable.
-3. Search for **Kraftstofffilter**. CarParts shows the corresponding real manufacturer's article number and the direct evidence link. The ordinary internet search remains below the evidence card.
+3. Search for **Kraftstofffilter**. CarParts shows the corresponding real manufacturer's article number and the direct evidence link. The search results are rendered directly on CarParts as article cards, with source and the exact configuration notes.
 
-All other engine choices are general suggestions, **not confirmed fitment matches**. Where the catalog has no exact verified match (or Supabase cannot be reached), the free external searches remain available; they are not certified fitment results. The database currently has no source-verified OE number, seller price or stock record; no such fields are fabricated.
+All other engine choices are general suggestions, **not confirmed fitment matches**. When the catalog has no verified match, CarParts shows an honest in-page empty state rather than making up listings or redirecting to search engines. The database currently has no licensed article photography, source-verified OE numbers, seller prices or stock records; no such fields are fabricated.
 
 ### Supabase and safety
 
 - Project is hosted in **eu-central-1** on the free plan. The connection uses `supabase-catalog.js` with a browser-safe **publishable API key only**. Never store a Supabase secret/service_role key in frontend files.
-- All six public catalog tables use Row Level Security (RLS). Browser roles have read access only. Parts and fitments become visible through the public Data API only when their verification status is `verified`.
+- All eight public catalog tables use Row Level Security (RLS). Browser roles have read access only. Parts and fitments become visible through the public Data API only when their verification status is `verified`.
 - `car_engines` is for narrowly documented configurations. An unqualified “2.0 TDI” selection does not imply that a particular filter fits.
 - Adding further parts requires reviewable manufacturer's evidence and any needed permission for source reuse. Do not bulk scrape or copy proprietary catalogs.
 - Repository `backend/` contains an optional Cloudflare/D1 architecture, not the currently deployed database.
 
 ## Development / limitations
 
-Free web search links use Google, Bing, DuckDuckGo, eBay, and site-constrained results from automotive parts retailers. Links open external websites; CarParts does not automatically fetch live seller prices or check inventory. The NHTSA vPIC endpoint is used for VIN decoding, *not* to populate the curated make/model catalog.
+The parts search now renders results **inside CarParts**, with an original illustrative SVG if no legally reusable product photo is available. The illustration is explicitly marked and must not be mistaken for a specific manufacturer product photo. The optional `part_images` table accepts photo URLs only with documented permission to reuse them and an explicit display-verification flag. The optional `part_offers` table holds genuine time-stamped merchant price listings (with source URL, currency, seller and product URL), and the site filters out prices older than seven days. Both tables start empty; therefore `Preis nicht verfügbar` is currently shown. Source-backed manufacturer evidence links remain available, but external search-link tiles were removed. No user-visible list of offers or EUR pricing can be responsibly displayed without an authorized current provider feed. The NHTSA vPIC endpoint is used for VIN decoding, *not* to populate the curated make/model catalog.
 
 
 ---
@@ -40,7 +40,7 @@ CarParts is no longer using fake product listings, fabricated prices or sample O
 
 ## Deployment
 
-The frontend is hosted by GitHub Pages. The backend is a Cloudflare Worker with a D1 SQL database.
+The frontend is hosted by GitHub Pages. **The currently deployed database is Supabase**. The Cloudflare Worker/D1 described below is an **uninstalled optional alternative architecture** — these deployment steps are not required for the current running CarParts site.
 
 1. Create a Cloudflare account/project and install Wrangler (Node.js required): `npm install -g wrangler`.
 2. Run `wrangler login`, then `wrangler d1 create carparts-catalog` inside `backend/`.
