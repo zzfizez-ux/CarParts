@@ -1,35 +1,48 @@
-# CarParts — free, source-backed replacement-part search
+# CarParts — belegte Autoteile direkt auf der Website
 
-**Current architecture:** GitHub Pages frontend + Supabase Free (41 curated makes, 495 popular models, a small explicitly reviewed parts catalog). No paid catalog provider, hidden scraping, fabricated OE numbers, invented prices or asserted fitment guarantees.
+**Stand 15.11.2026:** 41 kuratierte Automarken, 495 bekannte Modellreihen, 45 anklickbare Teilekategorien, **12 echte Artikelnummern und 17 durch Herstellerquellen belegte Fahrzeug-/Ausstattungsanwendungen** in Supabase. Die 45 Kategorien sind **Suchmöglichkeiten**, keine Produktlisten und keine bestätigten Passformen.
 
-## Manufacturer-backed catalog — initial limited coverage
+## Was tatsächlich verfügbar ist
 
-CarParts first checks Supabase for **manufacturer-listed parts for the exact selected engine/hardware configuration**. The initial manual pilot has two factual manufacturer part-number entries for the **Volkswagen Golf VII (2012–2020), 2.0 TDI 150 PS (CRBC)**:
+### Belegte Herstellerartikel
 
-- **MANN-FILTER PU 8014** — diesel fuel filter, **only when the filter housing has a water sensor**. Source: https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/pu8014_mann-filter.html
-- **MANN-FILTER PU 8028** — diesel fuel filter, **only when the filter housing has no water sensor**. Source: https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/pu8028_mann-filter.html
+- **MANN-FILTER PU 8014 / PU 8028**, VW Golf VII 2.0 TDI CRBC 150 PS: zwei unterschiedliche Kraftstofffilter für Gehäuse **mit bzw. ohne Wassersensor**.
+- **MANN-FILTER W 712/94**, nach Herstellerkatalog für bestimmte Varianten von Audi A1, VW Polo, Touran und Tiguan.
+- **MANN-FILTER HU 6004 x / HU 6014/1 z**, nach Herstellerdaten für BMW 3er F30/F31 mit konkret dokumentierten N47-/B47-Motoren. HU 6014/1 z ist der vom Hersteller genannte Ersatz für HU 6014 z.
+- **MANN-FILTER HU 612/2 x**, Opel Corsa E 1.4 B14XEL 90 PS, Schaltgetriebe.
+- **MANN-FILTER C 22 028**, Mercedes C-Klasse W205 und GLC X253 mit konkretem OM651.921-Motor.
+- **Brembo P 85 137 / P 85 126 / P 85 125**, Bremsbeläge für Golf VII 1.6 TDI 105 PS, **nur bei passender Vorder-/Hinterachse, Bremssystem und nachgewiesenem PR-Code**. Diese verschiedenen Artikel sind Alternativen für verschiedene Bremsanlagen, nicht gleichzeitig passende Artikel.
+- **Brembo 09.C547.11 / 09.9145.11**, Bremsscheiben für unterschiedliche PR-Codes derselben Golf-VII-Ausführung.
 
-Those are two individually researched factual entries with direct manufacturer references, **not** a copied bulk product catalog. Before buying, a visitor must verify the exact vehicle generation, engine code, housing equipment, year/month and part number against the manufacturer or seller. A verified database link means the manufacturer lists it for the specified conditions, *not* a blanket compatibility guarantee.
+Originalquellen: [MANN-FILTER Katalog](https://www.mann-filter.com/de-de/katalog.html), [Brembo Golf-VII-Teilekatalog](https://www.bremboparts.com/europe/en/catalogue/vw-golf-vii-5g1-bq1-be1-be2-1-6-tdi/000056145-1).
 
-### Test the limited example
+**Wichtig:** Ein Hersteller-Katalogeintrag bestätigt nur die aufgeführten Bedingungen. Das ersetzt keine Prüfung von Motorcode, Bauzeit, PR-Code, Abmessungen und Einbauposition. Bremskomponenten dürfen nicht allein anhand des Modellnamens gewählt werden.
 
-1. Open the website and select **Volkswagen → Golf → 2018**.
-2. Wait for additional manufacturer-listed engine variants to appear, then choose **Golf VII 2.0 TDI 150 PS (CRBC) – mit Wassersensor** or the **ohne Wassersensor** variant, as applicable.
-3. Search for **Kraftstofffilter**. CarParts shows the corresponding real manufacturer's article number and the direct evidence link. The search results are rendered directly on CarParts as article cards, with source and the exact configuration notes.
+### Live-Händlerpreise
 
-All other engine choices are general suggestions, **not confirmed fitment matches**. When the catalog has no verified match, CarParts shows an honest in-page empty state rather than making up listings or redirecting to search engines. The database currently has no licensed article photography, source-verified OE numbers, seller prices or stock records; no such fields are fabricated.
+Die beiden Golf-VII-Kraftstofffilter verfügen über manuell geprüfte Angebote von ATP Autoteile (Preisstand 15.11.2026):
+- PU 8014: **24,34 €** – https://www.atp-autoteile.de/de/product/3695434-mann-filter-kraftstofffilter
+- PU 8028: **26,24 €** – https://www.atp-autoteile.de/de/product/4011750-mann-filter-kraftstofffilter
 
-### Supabase and safety
+Die Website blendet Angebote aus, sobald `observed_at` mehr als **sieben Tage** zurückliegt. Für alle anderen Artikel gilt derzeit **Preis nicht verfügbar**. Es gibt noch **keine freigegebenen Produktfotos**. Stattdessen zeigt CarParts klar gekennzeichnete originale Symbolzeichnungen. Urheberrechtlich geschützte Herstellerbilder werden nicht ohne dokumentiertes Nutzungsrecht übernommen.
 
-- Project is hosted in **eu-central-1** on the free plan. The connection uses `supabase-catalog.js` with a browser-safe **publishable API key only**. Never store a Supabase secret/service_role key in frontend files.
-- All eight public catalog tables use Row Level Security (RLS). Browser roles have read access only. Parts and fitments become visible through the public Data API only when their verification status is `verified`.
-- `car_engines` is for narrowly documented configurations. An unqualified “2.0 TDI” selection does not imply that a particular filter fits.
-- Adding further parts requires reviewable manufacturer's evidence and any needed permission for source reuse. Do not bulk scrape or copy proprietary catalogs.
-- Repository `backend/` contains an optional Cloudflare/D1 architecture, not the currently deployed database.
+### Alle Modelle / alle Teiletypen
 
-## Development / limitations
+Alle 495 Modellreihen können über die 45 Kategorien nach Bremsbelägen, Scheiben, Öl-/Kraftstoff-/Luftfiltern, Fahrwerk, Elektrik, Motor, Auspuff etc. durchsucht werden. Die Website nennt ausdrücklich, wenn kein belegtes Teil verfügbar ist, und zeigt die belegte Artikelanzahl für das gewählte Modelljahr. **495 vollständig abgedeckte Modelle sind das noch nicht.** Dafür ist ein umfangreicher autorisierter Hersteller-/Händlerdatenfeed erforderlich; den gibt es derzeit nicht kostenlos in diesem Projekt.
 
-The parts search now renders results **inside CarParts**, with an original illustrative SVG if no legally reusable product photo is available. The illustration is explicitly marked and must not be mistaken for a specific manufacturer product photo. The optional `part_images` table accepts photo URLs only with documented permission to reuse them and an explicit display-verification flag. The optional `part_offers` table holds genuine time-stamped merchant price listings (with source URL, currency, seller and product URL), and the site filters out prices older than seven days. Both tables start empty; therefore `Preis nicht verfügbar` is currently shown. Source-backed manufacturer evidence links remain available, but external search-link tiles were removed. No user-visible list of offers or EUR pricing can be responsibly displayed without an authorized current provider feed. The NHTSA vPIC endpoint is used for VIN decoding, *not* to populate the curated make/model catalog.
+## Sichere Datenintegration
+
+Backend: **Supabase Free, Frankfurt** (RLS auf allen acht Katalogtabellen, Browser nur lesend). Frontend: **GitHub Pages**. Der Browser verwendet nur den öffentlichen Supabase-Publishable-Key, keinen Service-Role-Schlüssel.
+
+Für spätere lizenzierte oder einzeln belegte Importdatensätze gibt es einen **standardmäßig schreibfreien Validator**:
+
+```sh
+node tools/import-reviewed-parts.cjs approved-records.json
+```
+
+Nur nach unabhängiger Quellenprüfung und Einrichten der geheimen Server-Umgebungsvariablen `SUPABASE_URL` und `SUPABASE_SERVICE_ROLE_KEY` kann mit `--apply` importiert werden. **Den Service-Role-Key niemals in den öffentlichen Repository-Code, die Browserkonsole, Screenshots oder Chats kopieren.** Die Datensätze müssen `reviewed: true`, eine konkrete Hersteller-/Lizenzquellen-URL, individuelle Motor-/Baujahrs- und Ausstattungsbedingungen und `source_type: "manufacturer_application"` oder `"licensed_feed"` enthalten. Der Importer akzeptiert bewusst keine Bilder oder Händlerpreise ohne eigenen Freigabeprozess.
+
+Die optionalen Cloudflare/D1-Dateien unter `backend/` sind **nicht** produktiv. Der öffentliche CarParts-Katalog läuft über Supabase und enthält keine erfundenen OE-Nummern, Preise oder Passgarantien.
 
 
 ---
