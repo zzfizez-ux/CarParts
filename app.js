@@ -455,38 +455,88 @@ function showResearchQueued(result,term){
   ' Du kannst Motorcode, Baujahr und Teilebezeichnung weiter präzisieren.</p></section>';
  setCatalogStatus("empty");
 }
+function renderWebMerchantResults(data,term){
+ const grid=$("resultsGrid");
+ const safeUrl=x=>typeof x==="string"&&/^https:\/\/[a-z0-9.-]+\/\S*$/i.test(x);
+ const hits=(Array.isArray(data.results)?data.results:[]).filter(x=>safeUrl(x.url));
+ const status=data.status==="cached"?"Aus dem Such-Cache – Datum beachten":"Direkt aus der Websuche";
+ if(hits.length){
+  const articles=hits.slice(0,10).map(x=>{
+   const title=esc(String(x.title||"Händlerseite").slice(0,140));
+   const merchant=esc(String(x.merchant||"Online-Händler").slice(0,80));
+   const snippet=esc(String(x.snippet||"").slice(0,170));
+   return '<article class="web-merchant-card">'+
+    '<div class="web-merchant-top"><span>🌐 Händlerseite · nicht verifiziert</span></div>'+
+    '<h4>'+title+'</h4><p class="web-merchant-domain">'+merchant+'</p>'+
+    '<p class="web-merchant-snippet">'+(snippet||"Weitere Informationen auf der Händlerseite.")+'</p>'+
+    '<p class="web-merchant-caveat">Passform, Preis und Verfügbarkeit nicht bestätigt.'+
+    ' Bei Bremsenteilen Bremssystem/PR-Code vor Kauf prüfen.</p>'+
+    '<div class="web-merchant-bottom"><span>Aktuellen Preis beim Händler prüfen</span>'+
+    '<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer sponsored">Händlerseite ansehen ↗</a>'+
+    '</div></article>';
+  }).join("");
+  const count=hits.length;
+  grid.insertAdjacentHTML("beforeend",'<section class="web-merchant-section">'+
+   '<header><span class="web-source-tag">'+esc(status)+'</span>'+
+   '<h3>'+count+' weitere Händlerseiten online gefunden</h3>'+
+   '<p>Suchergebnisse aus dem Web – keine von CarParts geprüften Artikel, Preise oder Produktfotos.'+
+   ' Ein Treffer ist kein Nachweis für die Kompatibilität mit deinem Fahrzeug.</p></header>'+
+   '<div class="web-merchant-grid">'+articles+'</div></section>');
+  return;
+ }
+ const configured=data.status!=="not_configured";
+ const phrase=!configured?
+  "Live-Internetsuche noch nicht aktiviert. Ein Websuchanbieter muss vom Betreiber sicher verbunden werden.":
+  data.status==="quota"?"Tageslimit der Live-Internetsuche erreicht.":
+  data.status==="provider_error"||data.status==="error"?
+  "Der Suchanbieter ist vorübergehend nicht erreichbar.":
+  "Bei dieser Websuche wurden keine eindeutigen Händlerseiten gefunden.";
+ grid.insertAdjacentHTML("beforeend",'<aside class="web-merchant-note">'+
+  '<strong>Online-Händlersuche</strong><p>'+esc(phrase)+'</p></aside>');
+}
 async function renderSupabaseResults(term,requestId){
  setCatalogStatus("loading");
- $("resultsGrid").innerHTML='<div class="empty-results">Prüfe Herstellerkatalog und freie Datenquellen…</div>';
+ $("resultsGrid").innerHTML='<div class="empty-results">Prüfe Herstellerdaten, offene Quellen und Online-Händler…</div>';
  const current={...state.vehicle};
- let unavailable=false;
+ let shown=false,unavailable=false;
  try{
   const rows=await window.CarPartsDB.findVerifiedParts(current,term);
   if(requestId!==catalogRequest)return false;
-  if(rows.length){renderSupabaseCards(rows,term);return true}
+  if(rows.length){renderSupabaseCards(rows,term);shown=true}
  }catch(e){unavailable=true}
  if(requestId!==catalogRequest)return false;
- // Community references have their own warning, never inherit a manufacturer-verified label.
- if(window.CarPartsOpenOil?.isOilFilterQuery(term)){
+ if(!shown&&window.CarPartsOpenOil?.isOilFilterQuery(term)){
   try{
    const refs=await window.CarPartsOpenOil.find(current,term);
    if(requestId!==catalogRequest)return false;
-   if(Array.isArray(refs)&&refs.length){renderOpenOilReferences(refs,term);return true}
-  }catch(e){/* The official database and honest empty-state remain usable. */}
+   if(Array.isArray(refs)&&refs.length){renderOpenOilReferences(refs,term);shown=true}
+  }catch(e){/* Keep usable manufacturer search or honest empty-state. */}
  }
- if(window.CarPartsDB?.researchParts){
+ if(!shown&&window.CarPartsDB?.researchParts){
   try{
    const research=await window.CarPartsDB.researchParts(current,term);
    if(requestId!==catalogRequest)return false;
    if(research){
     if(research.rows.length)showSourceResearch(research,term);
     else showResearchQueued(research,term);
-    return true;
+    shown=true;
    }
-  }catch(e){/* Do not show fabricated results on a source failure. */}
+  }catch(e){/* Do not manufacture parts on a failed source. */}
  }
- inlineCatalogEmpty(term,unavailable);
- return !unavailable;
+ if(!shown)inlineCatalogEmpty(term,unavailable);
+ if(requestId!==catalogRequest)return false;
+ if(window.CarPartsDB?.searchLiveWeb){
+  try{
+   const results=await window.CarPartsDB.searchLiveWeb(current,term);
+   if(requestId!==catalogRequest)return false;
+   renderWebMerchantResults(results,term);
+  }catch(e){
+   if(requestId===catalogRequest){
+    renderWebMerchantResults({status:"error",results:[]},term);
+   }
+  }
+ }
+ return true;
 }
 async function renderLiveResults(term){const requestId=++catalogRequest;if(!state.vehicle)return false;
 if(window.CarPartsDB && (!window.CarPartsCatalog||!window.CARPARTS_CATALOG_CONFIG?.baseUrl)){return renderSupabaseResults(term,requestId)}
