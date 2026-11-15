@@ -342,11 +342,18 @@ function renderSupabaseCards(rows,term){
 function renderOpenOilReferences(rows,term){
  if(!state.vehicle)return;
  const sourceUrl="https://github.com/carbonautorepair/oilspec-commons";
+ const cacheInfo=window.CarPartsOpenOil?.lastInfo||{};
+ const cacheLabel=cacheInfo.source==="newly-saved"
+  ? "Neu recherchiert und in Supabase gespeichert ("+Number(cacheInfo.stored||0)+" Datensätze)"
+  : cacheInfo.source==="database" ? "Bereits aus Supabase geladen – ohne neue externe Abfrage"
+  : cacheInfo.source==="database-stale" ? "Vorhandene Referenzen aus Supabase"
+  : "Lokale CC0-Quelle – Datenbankverbindung nicht verfügbar";
  const grid=$("resultsGrid");
  $("resultsTitle").textContent="Ölfilter-Recherche · "+state.vehicle.make+" "+state.vehicle.model;
  grid.innerHTML='<div class="open-oil-summary">'+
   '<span class="open-oil-label">Öffentliche CC0-Datenbank · Community-Daten, NICHT verifiziert</span>'+
   '<h3>Ölfilter-Referenzen aus OilSpec Commons</h3>'+
+  '<p class="open-oil-cache-source">'+esc(cacheLabel)+'</p>'+
   '<p>Für das gewählte Modell und Jahr wurden '+rows.length+
   ' Datensätze gefunden. Das sind <strong>keine bestätigten passenden Ersatzteile</strong>.'+
   ' Die Daten stammen zum Teil von Fahrzeugen anderer Märkte und können Fehler enthalten.'+
@@ -369,7 +376,7 @@ function renderOpenOilReferences(rows,term){
   if(selector.value===""||!Number.isInteger(idx)||!rows[idx]){
    cards.innerHTML='<div class="open-oil-select-prompt">Zuerst eine Quellvariante auswählen.</div>';return;
   }
-  const line=rows[idx],brands=window.CARPARTS_OPEN_OILFILTERS?.brands||[];
+  const line=rows[idx],brands=window.CarPartsOpenOil?.brands||window.CARPARTS_OPEN_OILFILTERS?.brands||[];
   const unique=new Map();
   (line[5]||[]).forEach(pair=>{
    const brand=brands[pair[0]],sku=pair[1];
