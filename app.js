@@ -156,7 +156,8 @@ function setCatalogStatus(status){
  label.textContent=status==="ready"?"Artikel mit Quellenbeleg · Ausstattung prüfen":
  status==="loading"?"Durchsuche den CarParts-Katalog…":
  status==="error"?"Teilekatalog nicht erreichbar":
- status==="empty"?"Noch keine belegten Angebote für diese Auswahl":"CarParts Teilekatalog · Suchergebnisse direkt auf dieser Seite";
+ status==="empty"?"Noch keine belegten Angebote für diese Auswahl":
+ status==="community"?"Open-Data-Recherche · Teilenummern NICHT fitmentgeprüft":"CarParts Teilekatalog · Suchergebnisse direkt auf dieser Seite";
 }
 function placeholderPartImage(kind){
  const category=String(kind||"").toLocaleLowerCase("de-DE");
@@ -234,20 +235,84 @@ function renderSupabaseCards(rows,term){
  $("resultsGrid").innerHTML=intro+'<div class="catalog-item-grid">'+cards+'</div>';
  setCatalogStatus("ready");
 }
+function renderOpenOilReferences(rows,term){
+ if(!state.vehicle)return;
+ const sourceUrl="https://github.com/carbonautorepair/oilspec-commons";
+ const grid=$("resultsGrid");
+ $("resultsTitle").textContent="Ölfilter-Recherche · "+state.vehicle.make+" "+state.vehicle.model;
+ grid.innerHTML='<div class="open-oil-summary">'+
+  '<span class="open-oil-label">Öffentliche CC0-Datenbank · Community-Daten, NICHT verifiziert</span>'+
+  '<h3>Ölfilter-Referenzen aus OilSpec Commons</h3>'+
+  '<p>Für das gewählte Modell und Jahr wurden '+rows.length+
+  ' Datensätze gefunden. Das sind <strong>keine bestätigten passenden Ersatzteile</strong>.'+
+  ' Die Daten stammen zum Teil von Fahrzeugen anderer Märkte und können Fehler enthalten.'+
+  ' Wähle den <strong>genauen Motor aus dem Quelldatensatz</strong> und vergleiche dessen Angaben'+
+  ' mit deinem Fahrzeug und dem Filterhersteller. Kauf nicht allein anhand dieser Liste.</p>'+
+  '<label class="open-oil-picker-label" for="openOilEngine">Motor aus der Open-Data-Quelle abgleichen</label>'+
+  '<select id="openOilEngine"><option value="">Bitte genaue Quellvariante wählen</option>'+
+  rows.map((r,i)=>'<option value="'+i+'">'+esc(r[3])+' · '+esc(r[4])+
+  (rows.some((other,j)=>j!==i&&other[3]===r[3]&&other[4]===r[4])?' · Datensatz '+(i+1):'')+
+  '</option>').join("")+'</select>'+
+  '<p class="open-oil-source">Quelle: <a target="_blank" rel="noopener noreferrer" href="'+sourceUrl+
+  '">OilSpec Commons (CC0 1.0) ↗</a> · Nicht aus einem Herstellerkatalog überprüft.</p></div>'+
+  '<div id="openOilCards" class="open-oil-products"><div class="open-oil-select-prompt">'+
+  'Wähle oben zuerst die genaue Quellvariante. Ein Modellname allein reicht für eine Filterempfehlung nicht aus.'+
+  '</div></div>';
+ setCatalogStatus("community");
+ const selector=$("openOilEngine"),cards=$("openOilCards");
+ selector.onchange=()=>{
+  const idx=Number(selector.value);
+  if(selector.value===""||!Number.isInteger(idx)||!rows[idx]){
+   cards.innerHTML='<div class="open-oil-select-prompt">Zuerst eine Quellvariante auswählen.</div>';return;
+  }
+  const line=rows[idx],brands=window.CARPARTS_OPEN_OILFILTERS?.brands||[];
+  const unique=new Map();
+  (line[5]||[]).forEach(pair=>{
+   const brand=brands[pair[0]],sku=pair[1];
+   if(typeof brand==="string"&&typeof sku==="string"&&!unique.has(brand+"|"+sku))
+     unique.set(brand+"|"+sku,{brand,sku});
+  });
+  cards.innerHTML=[...unique.values()].slice(0,10).map(p=>
+   '<article class="catalog-item open-oil-card">'+
+   '<div class="catalog-item-visual">'+placeholderPartImage("Ölfilter")+
+   '<span>Symbolillustration · kein Produktfoto</span></div>'+
+   '<div class="catalog-item-body">'+
+   '<span class="open-oil-warning">⚠ Ungeprüfte Teilenummer aus Community-Daten</span>'+
+   '<h3>Ölfilter · '+esc(p.brand)+'</h3>'+
+   '<p class="catalog-item-maker">Referenz: <strong>'+esc(p.sku)+'</strong></p>'+
+   '<p class="catalog-item-engine">Quelldatensatz: '+esc(line[3])+' · '+esc(line[4])+
+   ' · Baujahr '+esc(line[2])+'</p>'+
+   '<p class="catalog-item-warning">Keine bestätigte Passform. Motorcode, Markt, Filtergehäuse'+
+   ' und genaue Teilenummer unbedingt beim Hersteller prüfen.</p>'+
+   '<div class="catalog-item-price unavailable"><strong>Preis nicht verfügbar</strong>'+
+   '<span>Keine geprüfte Händlerquelle oder Produktfotolizenz</span></div>'+
+   '<div class="catalog-item-actions"><a href="'+sourceUrl+
+   '" target="_blank" rel="noopener noreferrer">Offene Datenquelle ansehen ↗</a></div>'+
+   '</div></article>'
+  ).join("")||'<div class="open-oil-select-prompt">Keine auswertbare Filterreferenz für diese Variante.</div>';
+ };
+}
 async function renderSupabaseResults(term,requestId){
  setCatalogStatus("loading");
- $("resultsGrid").innerHTML='<div class="empty-results">Suche geprüfte Teile im CarParts-Katalog…</div>';
+ $("resultsGrid").innerHTML='<div class="empty-results">Prüfe Herstellerkatalog und freie Datenquellen…</div>';
+ const current={...state.vehicle};
+ let unavailable=false;
  try{
-  const rows=await window.CarPartsDB.findVerifiedParts({...state.vehicle},term);
+  const rows=await window.CarPartsDB.findVerifiedParts(current,term);
   if(requestId!==catalogRequest)return false;
-  if(rows.length)renderSupabaseCards(rows,term);
-  else inlineCatalogEmpty(term,false);
-  return true;
- }catch(e){
-  if(requestId!==catalogRequest)return false;
-  inlineCatalogEmpty(term,true);
-  return false;
+  if(rows.length){renderSupabaseCards(rows,term);return true}
+ }catch(e){unavailable=true}
+ if(requestId!==catalogRequest)return false;
+ // Community references have their own warning, never inherit a manufacturer-verified label.
+ if(window.CarPartsOpenOil?.isOilFilterQuery(term)){
+  try{
+   const refs=await window.CarPartsOpenOil.find(current,term);
+   if(requestId!==catalogRequest)return false;
+   if(Array.isArray(refs)&&refs.length){renderOpenOilReferences(refs,term);return true}
+  }catch(e){/* The official database and honest empty-state remain usable. */}
  }
+ inlineCatalogEmpty(term,unavailable);
+ return !unavailable;
 }
 async function renderLiveResults(term){const requestId=++catalogRequest;if(!state.vehicle)return false;
 if(window.CarPartsDB && (!window.CarPartsCatalog||!window.CARPARTS_CATALOG_CONFIG?.baseUrl)){return renderSupabaseResults(term,requestId)}
