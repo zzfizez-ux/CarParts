@@ -209,3 +209,21 @@ body.dark .vin-controls button:first-child{background:#295475;color:#fff}
 /* Build 18: transparent shared community search-cache status. */
 .open-oil-summary .open-oil-cache-source{display:inline-block;margin:0 0 12px;padding:8px 12px;border:1px solid #c0a36d;border-radius:8px;background:#fff0cb;color:#58421d;font-weight:800;font-size:11px;line-height:1.5}
 body.dark .open-oil-summary .open-oil-cache-source{background:#423419;border-color:#8b7645;color:#f7e3ae}
+
+/* Build 19: independent source-reviewed research candidates; never style as verified fitment. */
+.source-research-intro{grid-column:1/-1;background:#fff7e8;color:#4c3b1f;border:1px solid #c8aa6b;border-radius:17px;padding:20px 23px}
+.source-research-intro h3{font:800 21px Manrope,sans-serif;margin:12px 0 9px;color:#42331e}
+.source-research-intro p{font-size:12px;line-height:1.7;color:#665336;max-width:950px}
+.research-warning-badge{display:inline-block;background:#f8e4b8;color:#795116;border:1px solid #d8ba79;padding:7px 10px;font-size:10px;line-height:1.45;font-weight:800;border-radius:8px}
+.source-research-intro p.research-save-status{margin-top:12px;padding:9px 11px;background:#f7ebd1;border-radius:8px;font-weight:750;color:#745124}
+.source-research-card{border-color:#bc9b5d}
+.source-research-card .catalog-item-price strong{font-size:16px}
+.source-research-empty{border-color:#bfa772}
+.source-research-empty .catalog-empty-query{display:block;max-width:580px;margin:0 auto}
+body.dark .source-research-intro{background:#2a271d;color:#f2ddb1;border-color:#80693c}
+body.dark .source-research-intro h3{color:#ffeac2}
+body.dark .source-research-intro p{color:#ddcba5}
+body.dark .source-research-intro p.research-save-status{background:#393221;color:#f6d49a}
+body.dark .research-warning-badge{background:#493919;border-color:#8f743b;color:#f6d89e}
+body.dark .source-research-card{border-color:#735f39}
+@media(max-width:620px){.source-research-intro{padding:15px}}
