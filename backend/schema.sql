@@ -1,0 +1,12 @@
+PRAGMA foreign_keys=ON;
+CREATE TABLE IF NOT EXISTS vehicles(id TEXT PRIMARY KEY,make TEXT NOT NULL,model TEXT NOT NULL,year INTEGER NOT NULL,engine_code TEXT,variant TEXT);
+CREATE INDEX IF NOT EXISTS idx_vehicle_lookup ON vehicles(make,model,year);
+CREATE TABLE IF NOT EXISTS articles(id TEXT PRIMARY KEY,name TEXT NOT NULL,brand TEXT NOT NULL,article_number TEXT NOT NULL,category TEXT,type TEXT,is_oem INTEGER NOT NULL DEFAULT 0,UNIQUE(brand,article_number));
+CREATE TABLE IF NOT EXISTS oe_numbers(article_id TEXT NOT NULL REFERENCES articles(id) ON DELETE CASCADE,number TEXT NOT NULL,manufacturer TEXT NOT NULL DEFAULT '',PRIMARY KEY(article_id,number,manufacturer));
+CREATE TABLE IF NOT EXISTS cross_references(article_id TEXT NOT NULL REFERENCES articles(id) ON DELETE CASCADE,reference_number TEXT NOT NULL,brand TEXT NOT NULL DEFAULT '',PRIMARY KEY(article_id,reference_number,brand));
+CREATE TABLE IF NOT EXISTS fitments(article_id TEXT NOT NULL REFERENCES articles(id) ON DELETE CASCADE,vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,engine_code TEXT NOT NULL DEFAULT '',variant TEXT NOT NULL DEFAULT '',qualification TEXT NOT NULL CHECK(qualification IN ('verified','unverified')),notes TEXT NOT NULL DEFAULT '',PRIMARY KEY(article_id,vehicle_id,engine_code,variant));
+CREATE TABLE IF NOT EXISTS sellers(id TEXT PRIMARY KEY,name TEXT NOT NULL,url TEXT);
+CREATE TABLE IF NOT EXISTS offers(article_id TEXT NOT NULL REFERENCES articles(id) ON DELETE CASCADE,seller_id TEXT NOT NULL REFERENCES sellers(id) ON DELETE CASCADE,price_cents INTEGER NOT NULL CHECK(price_cents>=0),currency TEXT NOT NULL DEFAULT 'EUR',in_stock INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL,PRIMARY KEY(article_id,seller_id));
+CREATE INDEX IF NOT EXISTS idx_oe ON oe_numbers(number);
+CREATE INDEX IF NOT EXISTS idx_cross ON cross_references(reference_number);
+CREATE INDEX IF NOT EXISTS idx_fitment_vehicle ON fitments(vehicle_id);
