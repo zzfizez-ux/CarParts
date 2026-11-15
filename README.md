@@ -31,24 +31,23 @@ Die Website blendet Angebote aus, sobald `observed_at` mehr als **sieben Tage** 
 
 Alle 495 Modellreihen können über die 45 Kategorien nach Bremsbelägen, Scheiben, Öl-/Kraftstoff-/Luftfiltern, Fahrwerk, Elektrik, Motor, Auspuff etc. durchsucht werden. Die Website nennt ausdrücklich, wenn kein belegtes Teil verfügbar ist, und zeigt die belegte Artikelanzahl für das gewählte Modelljahr. **495 vollständig abgedeckte Modelle sind das noch nicht.** Dafür ist ein umfangreicher autorisierter Hersteller-/Händlerdatenfeed erforderlich; den gibt es derzeit nicht kostenlos in diesem Projekt.
 
-## Build 20: optionale Live-Händlerwebsuche für beliebige Ersatzteile
+## Build 21: Kostenlose Live-Websuche via Mwmbl – aktiviert
 
-Die neue **Supabase Edge Function** `supabase/functions/live-web-search/index.ts` ist deployed. Sie unterstützt eine fahrzeugbezogene Websuche nach beliebigen Ersatzteilbezeichnungen, zum Beispiel Dacia Logan 2017 Bremsbeläge. Anders als OilSpec (nur Ölfilter) und unsere Brembo-Recherchekandidaten kann die neue Erweiterung nach aktuellen Händler-Webseiten suchen, **wenn ein seriöser Websuchanbieter autorisiert angeschlossen wurde**.
+**Status:** Die [Mwmbl Web Search API](https://developer.mwmbl.org/) ist auf dem Supabase-Backend `live-web-search` **ohne API-Schlüssel, Registrierung oder Kreditkarte angeschlossen**. Der Anbieter hat einen eigenen, unabhängigen Webindex und erlaubt in seinem anonymen Modus 1.000 Suchanfragen pro Monat bei maximal einer pro Sekunde, vorbehaltlich des geteilten Server-IP-Limits.
 
-**Status:** Die Funktion ist technisch eingerichtet, aber **ohne hinterlegten Websuchanbieter-Schlüssel ist die Live-Websuche noch NICHT aktiv**. CarParts zeigt daher ausdrücklich „Live-Internetsuche noch nicht aktiviert“, anstatt vorgetäuschte Händlerangebote zu liefern. Bisherige belegte Herstellerteile, Community-Hinweise und die Kategorie-Suchhistorie funktionieren weiterhin.
+Wenn ein Besucher ein Fahrzeug und ein Teil sucht, fragt CarParts zuerst belegte Herstellerteile und bestehende Quellen ab und startet **zusätzlich eine kostenlose, öffentliche Websuche**. Es werden nur Ergebnisse von festgelegten Autoteile-Domains dargestellt, wenn Modell, Marke und Teilebezeichnung nachprüfbar zum Suchthema passen. Zu wenig relevante Ergebnisse werden **nicht** als Ersatzteilangebote dargestellt.
 
-### Datenschutz, Rechte, Nutzungskosten
+### Rechts- und Qualitätsgrenzen
 
-- Anbieteradapter: [Tavily Search](https://docs.tavily.com/documentation/api-reference/endpoint/search) über einen **serverseitig geheim gehaltenen** `TAVILY_API_KEY`. Die Anbieterbedingungen gelten; **ein berechtigter volljähriger Betreiber** muss diesen Zugang und seine Nutzungsbedingungen freigeben.
-- Tavily erlaubt die Anzeige von Suchtreffern (Titel, URL, kurzer Auszug) in öffentlichen Anwendungen; Urheberrechte und Bedingungen der jeweiligen Shopseiten gelten weiterhin. Es werden keine ungeklärten Produktfotos übernommen.
-- Betreiberseitige Konfiguration (nur nach Berechtigung): Supabase Edge Function Secret `TAVILY_API_KEY`. **Niemals** in HTML, JavaScript des Browsers oder GitHub-Commits speichern.
-- `WEB_SEARCH_CACHE_ALLOWED=true` **erst nach Klärung der Rechte zur Wiederverwendung gemeinsamer Suchresultate** bei Tavily setzen. Ohne diese explizite Freigabe werden keine fremden Treffer in die geteilte CarParts-Datenbank übernommen.
-- Der Server akzeptiert nur vordefinierte Automarken/Modelle und plausible Jahre, begrenzt Suchbegriffe und sperrt offensichtliche VINs. Er durchsucht eine feste Menge deutschsprachiger Autoteile-Händlerseiten. Es werden keine IP-Adressen, VINs oder Benutzerprofile protokolliert.
-- Im kostenlosen Betrieb ist der Adapter auf **höchstens 25 unterschiedliche Websuchen pro Tag** begrenzt. Die Fremdanbieter-Kostenkontrolle bleibt erforderlich. Bei abgeschaltetem Schlüssel werden keine externen Such-API-Anfragen ausgelöst.
-- Kein allgemeiner Websuchtreffer gilt als bestätigte Passform. Live-Suchkarten zeigen derzeit **keine behaupteten Produktfotos oder verbindlichen Händlerpreise**. Für diese sind gesondert autorisierte strukturierte Shop-Daten/Produktfeeds notwendig. Ein Titel, ein Auszug und ein Quellenlink können direkt auf CarParts angezeigt werden, solange die Nutzungsrechte eingehalten werden.
-- Zusätzliche RLS-geschützte Tabellen `live_web_search_cache` und `live_web_search_budget`; der Browser kann dort nichts unmittelbar lesen oder schreiben.
+- Mwmbl-Ergebnisse sind unter [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) veröffentlicht. **Diese Integration ist ausschließlich für das derzeit nicht monetarisierte, nichtkommerzielle CarParts-Rechercheprojekt gedacht.** Die Quellenangabe und Lizenz werden bei den Treffern auf der Seite gezeigt. Vor Werbung, Affiliate-Links, Händlerprovisionen oder gewerblicher Nutzung muss die Lizenzfrage mit dem Anbieter geklärt oder eine kommerziell erlaubte Quelle verwendet werden.
+- [API-Nutzungsbedingungen](https://developer.mwmbl.org/terms/). Der eigene Mwmbl-Index ist deutlich kleiner als große Suchmaschinen; Dacia-Logan-Bremsbeläge ergaben beim Praxistest nur allgemeine Fahrzeugseiten, **keine geeigneten Händlerangebote**. Die Webseite erklärt dann ehrlich, dass die Suche lief, aber keine geeigneten Händlerseiten gefunden wurden.
+- Das Backend erfragt nur freigegebene **Marke, Modell und Teilebezeichnung**; für die Mwmbl-Suchanfrage wird das Baujahr nicht automatisch genutzt, um zu geringe Abdeckung nicht weiter einzuschränken. Keine VIN, Kunden-IP, Kontodaten oder fremden Webseiten-Scrapes werden übermittelt.
+- Pro Tag höchstens **25 voneinander verschiedene Abfragen**, deutlich unterhalb der kostenlosen 1.000 Abfragen pro Monat; der Provider kann zusätzlich jederzeit drosseln.
+- Nach dem Abruf wird die begrenzte Quellmetadaten-Liste **22 Stunden in einer privaten Supabase-Tabelle zwischengespeichert**, einschließlich leerer Trefferlisten. Der Cache enthält nur markierte Mwmbl-Quellenhinweise, keine Hersteller-Fitment-Bestätigungen.
+- Nie erfundene Fotos oder Preise, keine automatische Passformgarantie. Ein Suchergebnis ist **kein geprüftes Produktangebot**. Für flächendeckende deutsche Händlerpreise, Lagerbestände und Produktbilder braucht CarParts eine autorisierte strukturierte Shop-/Produkt-API.
+- Sourcecode: `supabase/functions/live-web-search/index.ts`; RLS-geschützte Tabellen `live_web_search_cache` und `live_web_search_budget`. Browser haben dort keinerlei direkten Schreib- oder Lesezugriff.
 
-Das Feature bedeutet also **„Live-Händlerwebsuche nach Anbindung eines berechtigten Providers“** – nicht „kostenlos und ohne Zugang automatisch das gesamte Internet vollständig mit Livepreisen und Bildern durchsuchen“. Diese Unterscheidung ist für eine verlässliche Teilewebsite entscheidend.
+**Konkreter Unterschied:** Die kostenlose Websuche ist **aktiv**; ihre begrenzte Markt-Abdeckung wird bei jedem Ergebnis klar gekennzeichnet. Es wird nicht mehr auf einen fehlenden Tavily-Schlüssel verwiesen.
 
 ## Hersteller-Recherche und Suchanfragen (Build 19)
 
