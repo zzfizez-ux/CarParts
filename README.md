@@ -37,13 +37,28 @@ CarParts verwendet zusätzlich einen **öffentlich verfügbaren CC0-Datensatz**:
 
 - Quelldateien: `data/vehicles.csv` und `data/filter_sets.csv`, Lizenz: **CC0 1.0 Universal** ([LICENSE](https://github.com/carbonautorepair/oilspec-commons/blob/main/LICENSE)).
 - 4.202 Modell-/Jahr-/Motor-Referenzen für **156 unserer Modelle aus 24 Marken** sind als Open-Data-Snapshot hinterlegt. Das sind **nicht** 4.202 belegte Fahrzeug-Teile-Passgenauigkeiten.
-- Nur bei einer Suche nach **Ölfilter / Oil filter** und fehlendem Herstellerkatalogtreffer wird dieser Datensatz bei Bedarf im Browser geladen.
+- Nur bei einer Suche nach **Ölfilter / Oil filter** und fehlendem Herstellerkatalogtreffer läuft die automatische Nachschlagefunktion: zuerst Supabase-Cache prüfen, bei fehlendem Eintrag serverseitig die freigegebene, auf eine feste GitHub-Version begrenzte CC0-Quelle abrufen, dann ausschließlich diese Quellenreferenzen als **unverified** in Supabase speichern. Bei Ausfall der Edge Function dient die lokale Quelle als Ausweichlösung.
 - Besucher müssen zunächst eine **genaue Fahrzeug-/Motor-Zeile aus der Quelle** auswählen; erst dann erscheinen die veröffentlichten **WIX, MicroGard, Mobil 1 oder K&N**-Referenzen als **ungeprüfte Community-Hinweise**.
 - **Qualitätsgrenze:** Der Quelldatensatz ist keine offizielle europäische Hersteller-Fitment-Datenbank und enthält teilweise US-Markt- und möglicherweise fehlerhafte Fahrzeugangaben. Die Quellreferenzen sind auf CarParts ausdrücklich als **NICHT FITMENTGEPRÜFT** gekennzeichnet. Ein Community-Filterhinweis darf nicht als passende Teilenummer oder Kaufempfehlung verstanden werden. Vor jedem Kauf die genaue Variante und aktuelle Herstellernummer abgleichen.
 - Es werden keine Händlerpreise, Artikelfotos, OE-Nummern oder weiteren Teilekategorien erfunden. Herstellerbelegte Supabase-Artikel bleiben getrennt und haben Vorrang.
-- Die Quelle ist frei kopierbar; die Integration nutzt **keine geschützten Händler-Scraper, keine API-Schlüssel und keine kostenpflichtigen Dienste**. Das Client-Skript lädt die lokale Momentaufnahme nach Bedarf; es führt nicht automatisch ein Internet-Crawling aus.
+- Die Quelle ist frei kopierbar; die Integration nutzt **keine geschützten Händler-Scraper und keine kostenpflichtigen externen Provider**. Die Supabase Edge Function `discover-parts` verwendet ausschließlich serverseitig verwaltete Datenbank-Zugangsdaten; im Browser steht nur der öffentliche Publishable Key. Bei Erfolg sagt die Website, ob die Daten neu gespeichert oder aus der Datenbank geladen wurden.
+- Die Suche speichert nur **Marke, Modell, Baujahr und frei lizenzierte Referenzzeilen**. Keine VIN, keine IP-Adressen, keine Nutzeridentität, keine freien Suchbegriffe. Für den kostenlosen Supabase-Tarif begrenzt der Server neue externe Quellenabrufe auf ein Tagesbudget, nutzt Zwischenspeicherung und erlaubt nur Marken/Modelle aus dem kuratierten Katalog.
+- **Aktuelle Grenze:** Das ist eine echte automatische Suche und Datenbankanreicherung für **Ölfilterreferenzen aus genau einer lizenzierten CC0-Quelle**. Es ist kein beliebiger Internet-Crawler, keine vollständige OE-/Bremsenteile-Datenbank und keine Garantie der Teilepassform. Weitere Quellen brauchen einen gesonderten Lizenz- und Qualitätscheck.
 
 **Warum keine fremden Shop-APIs ungefragt übernehmen?** Öffentlich aufrufbare Angebote sind nicht automatisch zur systematischen Einbindung in fremde Websites lizenziert. Zum Beispiel erlaubt Hubshops öffentliche API nur die gelegentliche Beratung und verbietet die automatisierte Befüllung fremder Websites ausdrücklich; APIs von Google Custom Search, TecDoc oder großen Marktplätzen verlangen oft Zugangsschlüssel oder Lizenzen. CarParts übernimmt darum nur Daten mit geeigneten Nutzungsrechten und zeigt ungesicherte Treffer klar getrennt.
+
+## Automatischer Such- und Speichervorgang (Build 18)
+
+```text
+CarParts-Suche → Supabase Herstellerkatalog (belegt)
+                 ↘ falls kein belegter Treffer bei "Ölfilter"
+                   Edge Function discover-parts
+                     → offene, geprüfte CC0-Quelldatei (nur bei Cache-Miss)
+                     → Supabase open_oilfilter_cache (unverified)
+                     → Ergebnis direkt auf CarParts anzeigen
+```
+
+Das Servermodul liegt unter `supabase/functions/discover-parts/index.ts` und ist bereits auf dem Supabase-Projekt bereitgestellt. Die Datenbankmigration legt `open_oilfilter_cache` und `open_oilfilter_search_cache` mit RLS an. Der Browser darf neue Referenzen nur über die eingeschränkte Suchfunktion anfordern und sie **nicht direkt in die Datenbank schreiben**.
 
 ## Sichere Datenintegration
 
