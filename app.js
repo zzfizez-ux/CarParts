@@ -1,13 +1,22 @@
 const API="https://vpic.nhtsa.dot.gov/api/vehicles";
 const CATALOG_DEMO=false;
-const FALLBACK_MAKES=["Abarth","Acura","Alfa Romeo","Alpina","Aston Martin","Audi","Bentley","BMW","BMW Motorrad","Buick","BYD","Cadillac","Chevrolet","Chrysler","Citroën","Cupra","Dacia","Daewoo","Daihatsu","Dodge","DS","Ferrari","Fiat","Ford","Genesis","GMC","Honda","Hyundai","Infiniti","Isuzu","Iveco","Jaguar","Jeep","Kia","Lamborghini","Lancia","Land Rover","Lexus","Lincoln","Lotus","Maserati","Mazda","McLaren","Mercedes-Benz","MINI","Mitsubishi","Nissan","Opel","Peugeot","Polestar","Porsche","RAM","Renault","Rolls-Royce","Rover","Saab","Seat","Škoda","Smart","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo","Yamaha","Kawasaki","Ducati","KTM","Harley-Davidson"];
+const POPULAR_MAKES=["Abarth","Alfa Romeo","Audi","BMW","BYD","Chevrolet","Citroën","Cupra","Dacia","Ferrari","Fiat","Ford","Honda","Hyundai","Jaguar","Jeep","Kia","Lamborghini","Land Rover","Lexus","Maserati","Mazda","Mercedes-Benz","MG","MINI","Mitsubishi","Nissan","Opel","Peugeot","Polestar","Porsche","Renault","Seat","Škoda","Smart","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo"];
 const state={mode:"value",lang:localStorage.getItem("cp-lang")||"en",vehicle:null,garage:JSON.parse(localStorage.getItem("cp-garage")||"[]")};
 const $=id=>document.getElementById(id),toastEl=$("toast");
 function show(m){toastEl.textContent=m;toastEl.classList.add("show");clearTimeout(window.__t);window.__t=setTimeout(()=>toastEl.classList.remove("show"),3000)}
 function api(path){return fetch(API+path,{signal:AbortSignal.timeout(8000)}).then(r=>{if(!r.ok)throw Error("API");return r.json()})}
 function years(){const y=new Date().getFullYear();$("year").innerHTML='<option value="">Select year</option>'+Array.from({length:80},(_,i)=>y-i).map(x=>'<option>'+x+'</option>').join("")}
-function makeOptions(rows){const names=[...new Set([...FALLBACK_MAKES,...rows.map(x=>x.Make_Name).filter(Boolean)])].sort((a,b)=>a.localeCompare(b));return '<option value="">Select brand</option>'+names.map(x=>'<option value="'+String(x).replaceAll('"','&quot;')+'">'+x+"</option>").join("")}
-async function loadMakes(){const makeEl=$("make");makeEl.innerHTML=makeOptions([]);try{const d=await api("/GetAllMakes?format=json");{const selected=makeEl.value;makeEl.innerHTML=makeOptions(d.Results||[]);if(selected)makeEl.value=selected}}catch(e){show("Vehicle database could not be reached. Showing the built-in brand list.")}}
+function makeOptions(){
+ return '<option value="">Marke auswählen / Select brand</option>'+POPULAR_MAKES.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+}
+// Curated list only. Never append every manufacturer from an external vehicle API.
+function loadMakes(){
+ const el=$("make");
+ if(!el)return;
+ const selected=el.value;
+ el.innerHTML=makeOptions();
+ if(POPULAR_MAKES.includes(selected))el.value=selected;
+}
 async function loadModels(){
  const make=$("make").value,modelSelect=$("model");
  if(!make){modelSelect.disabled=true;modelSelect.innerHTML='<option value="">Zuerst Marke wählen / Select brand first</option>';return []}
