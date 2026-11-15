@@ -205,3 +205,7 @@ body.dark .vin-results-disclaimer{background:#38301f;border-color:#a48a4d;color:
 body.dark .vin-controls button{background:#233445;border-color:#4e6276;color:#eef5fc}
 body.dark .vin-controls button:first-child{background:#295475;color:#fff}
 @media(max-width:610px){.vin-validation-panel{padding:12px}.vin-controls button{width:100%;min-height:42px}}
+
+/* Build 18: transparent shared community search-cache status. */
+.open-oil-summary .open-oil-cache-source{display:inline-block;margin:0 0 12px;padding:8px 12px;border:1px solid #c0a36d;border-radius:8px;background:#fff0cb;color:#58421d;font-weight:800;font-size:11px;line-height:1.5}
+body.dark .open-oil-summary .open-oil-cache-source{background:#423419;border-color:#8b7645;color:#f7e3ae}
