@@ -459,14 +459,14 @@ function renderWebMerchantResults(data,term){
  const grid=$("resultsGrid");
  const safeUrl=x=>typeof x==="string"&&/^https:\/\/[a-z0-9.-]+\/\S*$/i.test(x);
  const hits=(Array.isArray(data.results)?data.results:[]).filter(x=>safeUrl(x.url));
- const status=data.status==="cached"?"Aus dem Such-Cache – Datum beachten":"Direkt aus der Websuche";
+ const status=data.status==="cached"?"Gespeichert · 22-Stunden-Cache":"Frische Suche mit Mwmbl (kostenlos)";
  if(hits.length){
   const articles=hits.slice(0,10).map(x=>{
    const title=esc(String(x.title||"Händlerseite").slice(0,140));
    const merchant=esc(String(x.merchant||"Online-Händler").slice(0,80));
    const snippet=esc(String(x.snippet||"").slice(0,170));
    return '<article class="web-merchant-card">'+
-    '<div class="web-merchant-top"><span>🌐 Händlerseite · nicht verifiziert</span></div>'+
+    '<div class="web-merchant-top"><span>🌐 Gefundene Händlerseite · nicht fitmentgeprüft</span></div>'+
     '<h4>'+title+'</h4><p class="web-merchant-domain">'+merchant+'</p>'+
     '<p class="web-merchant-snippet">'+(snippet||"Weitere Informationen auf der Händlerseite.")+'</p>'+
     '<p class="web-merchant-caveat">Passform, Preis und Verfügbarkeit nicht bestätigt.'+
@@ -478,21 +478,23 @@ function renderWebMerchantResults(data,term){
   const count=hits.length;
   grid.insertAdjacentHTML("beforeend",'<section class="web-merchant-section">'+
    '<header><span class="web-source-tag">'+esc(status)+'</span>'+
-   '<h3>'+count+' weitere Händlerseiten online gefunden</h3>'+
+   '<h3>'+count+' Händler-Webseiten über Mwmbl gefunden</h3>'+
    '<p>Suchergebnisse aus dem Web – keine von CarParts geprüften Artikel, Preise oder Produktfotos.'+
-   ' Ein Treffer ist kein Nachweis für die Kompatibilität mit deinem Fahrzeug.</p></header>'+
+   ' Ein Treffer ist kein Nachweis für die Kompatibilität mit deinem Fahrzeug.'+
+   ' <a href="https://developer.mwmbl.org/terms/" target="_blank" rel="noopener noreferrer">Suchquelle: Mwmbl · CC BY-NC-SA 4.0 ↗</a></p></header>'+
    '<div class="web-merchant-grid">'+articles+'</div></section>');
   return;
  }
- const configured=data.status!=="not_configured";
- const phrase=!configured?
-  "Live-Internetsuche noch nicht aktiviert. Ein Websuchanbieter muss vom Betreiber sicher verbunden werden.":
-  data.status==="quota"?"Tageslimit der Live-Internetsuche erreicht.":
-  data.status==="provider_error"||data.status==="error"?
-  "Der Suchanbieter ist vorübergehend nicht erreichbar.":
-  "Bei dieser Websuche wurden keine eindeutigen Händlerseiten gefunden.";
+ const phrase=data.status==="quota"
+  ? "Das kostenlose Suchlimit von Mwmbl ist erreicht. Später erneut versuchen."
+  : data.status==="provider_error"||data.status==="error"
+  ? "Die kostenlose Mwmbl-Websuche ist gerade nicht erreichbar."
+  : data.status==="not_configured"
+  ? "Websuchanbieter nicht verbunden."
+  : "Mwmbl wurde online abgefragt. Für diese Kombination wurden keine ausreichend relevanten Händlerangebote gefunden. Der kostenlose Index ist kleiner als Google und enthält keine Live-Produktpreise.";
  grid.insertAdjacentHTML("beforeend",'<aside class="web-merchant-note">'+
-  '<strong>Online-Händlersuche</strong><p>'+esc(phrase)+'</p></aside>');
+  '<strong>Öffentliche Webrecherche mit Mwmbl</strong><p>'+esc(phrase)+
+  ' <a target="_blank" rel="noopener noreferrer" href="https://developer.mwmbl.org/terms/">Quelle &amp; CC BY-NC-SA 4.0 ↗</a></p></aside>');
 }
 async function renderSupabaseResults(term,requestId){
  setCatalogStatus("loading");
