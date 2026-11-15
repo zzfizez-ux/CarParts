@@ -179,3 +179,29 @@ body.dark .open-oil-summary p.open-oil-source{color:#e7cea0}
 body.dark .open-oil-card{border-color:#65583a}
 body.dark .open-oil-warning{background:#453818;color:#f6dea2}
 @media(max-width:780px){.open-oil-products{grid-template-columns:1fr}.open-oil-summary{padding:17px}}
+
+/* Build 17 — VIN validation status. No false green "parts fit" indicator. */
+.vin-validation-panel{margin:10px 0 17px;border:1px solid var(--line);background:var(--card);padding:15px 17px;border-radius:13px}
+.vin-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:11px}
+.vin-controls button{cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:10px 13px;font-weight:850;font-size:11px;color:var(--ink);background:var(--surface)}
+.vin-controls button:first-child{color:#fff;background:#263d4d;border-color:#425b6c}
+.vin-controls button:hover{border-color:var(--accent)}
+.vin-controls button[hidden]{display:none!important}
+.vin-status{font-size:12px;line-height:1.65;white-space:normal;overflow-wrap:anywhere;border:1px solid var(--line);border-radius:9px;padding:12px 14px;background:var(--surface);color:var(--soft-text)}
+.vin-idle,.vin-unchecked{background:var(--surface)}
+.vin-checking{border-color:#6486a5;background:#eaf4fc;color:#22516e}
+.vin-matched{border-color:#66aa87;background:#e9f7ef;color:#23593b}
+.vin-invalid,.vin-mismatch{border-color:#ca746e;background:#fff0ed;color:#852f29}
+.vin-partial,.vin-unavailable{border-color:#c9a264;background:#fff5dc;color:#6f4919}
+.vin-privacy{display:block;margin-top:10px;line-height:1.5;color:var(--muted);font-size:10px}
+.vin-results-disclaimer{grid-column:1/-1;background:#fff5df;border:1px solid #c9a264;padding:14px 18px;border-radius:12px;color:#60441d;font-size:12px;line-height:1.65}
+body.dark .vin-validation-panel{background:#15202b;border-color:#405263}
+body.dark .vin-status{background:#1c2a37;border-color:#415265;color:#e2ebf1}
+body.dark .vin-matched{background:#19372b;border-color:#518f70;color:#baebca}
+body.dark .vin-invalid,body.dark .vin-mismatch{background:#3b2528;border-color:#bd6b73;color:#ffcfcc}
+body.dark .vin-partial,body.dark .vin-unavailable{background:#38301f;border-color:#a48a4d;color:#ffdea3}
+body.dark .vin-checking{background:#203850;border-color:#6688a2;color:#d5ebfa}
+body.dark .vin-results-disclaimer{background:#38301f;border-color:#a48a4d;color:#ffe4ac}
+body.dark .vin-controls button{background:#233445;border-color:#4e6276;color:#eef5fc}
+body.dark .vin-controls button:first-child{background:#295475;color:#fff}
+@media(max-width:610px){.vin-validation-panel{padding:12px}.vin-controls button{width:100%;min-height:42px}}
