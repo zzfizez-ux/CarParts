@@ -6,28 +6,69 @@ const $=id=>document.getElementById(id),toastEl=$("toast");
 function show(m){toastEl.textContent=m;toastEl.classList.add("show");clearTimeout(window.__t);window.__t=setTimeout(()=>toastEl.classList.remove("show"),3000)}
 function api(path){return fetch(API+path,{signal:AbortSignal.timeout(8000)}).then(r=>{if(!r.ok)throw Error("API");return r.json()})}
 function years(){const y=new Date().getFullYear();$("year").innerHTML='<option value="">Select year</option>'+Array.from({length:80},(_,i)=>y-i).map(x=>'<option>'+x+'</option>').join("")}
-function makeOptions(){
- return '<option value="">Marke auswählen / Select brand</option>'+POPULAR_MAKES.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+function makeOptions(names=POPULAR_MAKES){
+ return '<option value="">Marke auswählen / Select brand</option>'+names.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
 }
-// Curated list only. Never append every manufacturer from an external vehicle API.
+function sourceStatus(message){
+ const el=$("catalogSourceStatus");
+ if(el)el.textContent=message;
+}
+// The curated browser list appears immediately even without network access.
 function loadMakes(){
  const el=$("make");
  if(!el)return;
- const selected=el.value;
+ const previous=el.value;
  el.innerHTML=makeOptions();
- if(POPULAR_MAKES.includes(selected))el.value=selected;
+ if(POPULAR_MAKES.includes(previous))el.value=previous;
+ if(!window.CarPartsDB){sourceStatus("Fahrzeugkatalog: lokale Liste");return}
+ window.CarPartsDB.getBrands().then(rows=>{
+  const valid=new Set(rows.map(r=>r.name));
+  const names=POPULAR_MAKES.filter(name=>valid.has(name));
+  if(names.length!==POPULAR_MAKES.length){
+   sourceStatus("Fahrzeugkatalog: lokale Liste (Datenbank unvollständig)");
+   return;
+  }
+  const active=el.value;
+  el.innerHTML=makeOptions(names);
+  if(names.includes(active))el.value=active;
+  sourceStatus("Fahrzeugkatalog: Supabase ("+names.length+" Marken)");
+ }).catch(()=>sourceStatus("Fahrzeugkatalog: lokale Liste (offline)"));
 }
+let modelRequest=0;
 async function loadModels(){
  const make=$("make").value,modelSelect=$("model");
- if(!make){modelSelect.disabled=true;modelSelect.innerHTML='<option value="">Zuerst Marke wählen / Select brand first</option>';return []}
+ const request=++modelRequest;
+ if(!make){
+  modelSelect.disabled=true;
+  modelSelect.innerHTML='<option value="">Zuerst Marke wählen / Select brand first</option>';
+  return [];
+ }
  const catalog=window.CARPARTS_POPULAR_MODELS||{};
  const key=Object.keys(catalog).find(k=>k.toLocaleLowerCase()===make.toLocaleLowerCase());
- const models=key?catalog[key].split(",").map(x=>x.trim()).filter(Boolean):[];
- const previous=modelSelect.value;
- modelSelect.innerHTML='<option value="">Modell auswählen / Select model</option>'+models.map(x=>'<option value="'+x.replaceAll("&","&amp;").replaceAll('"',"&quot;")+'">'+x.replaceAll("&","&amp;").replaceAll("<","&lt;")+'</option>').join("");
- if(previous&&models.includes(previous))modelSelect.value=previous;
- modelSelect.disabled=false;
- return models;
+ const fallback=key?catalog[key].split(",").map(x=>x.trim()).filter(Boolean):[];
+ function renderOptions(options){
+  const selected=modelSelect.value;
+  modelSelect.innerHTML='<option value="">Modell auswählen / Select model</option>'+options.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+  if(selected&&options.includes(selected))modelSelect.value=selected;
+  modelSelect.disabled=false;
+ }
+ renderOptions(fallback);
+ if(!window.CarPartsDB)return fallback;
+ try{
+  const names=await window.CarPartsDB.getModels(make);
+  // Keep the curated list authoritative; prevent accidental introduction of obscure models.
+  if(request!==modelRequest||$("make").value!==make)return fallback;
+  const remote=new Set(names);
+  if(fallback.length&&fallback.every(x=>remote.has(x))){
+   renderOptions(fallback);
+   sourceStatus("Fahrzeugkatalog: Supabase (Modelle geladen)");
+  }else{
+   sourceStatus("Fahrzeugkatalog: lokale Modelle (Datenbank unvollständig)");
+  }
+ }catch(e){
+  if(request===modelRequest)sourceStatus("Fahrzeugkatalog: lokale Modelle (offline)");
+ }
+ return fallback;
 }
 const COMMON_ENGINES=["1.0 Benzin","1.2 Benzin","1.4 Benzin","1.5 Benzin","1.6 Benzin","1.8 Benzin","2.0 Benzin","2.5 Benzin","3.0 Benzin","4.0 Benzin","1.4 Diesel","1.5 Diesel","1.6 Diesel","1.9 Diesel","2.0 Diesel","2.2 Diesel","3.0 Diesel","Mild-Hybrid","Vollhybrid","Plug-in-Hybrid","Elektro","Andere Motorisierung (selbst eingeben)"];
 const ENGINE_BY_BRAND={
