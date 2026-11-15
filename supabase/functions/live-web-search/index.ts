@@ -90,7 +90,7 @@ Deno.serve(async(req:Request)=>{
   const engine=typeof p.engine==="string"?p.engine:"";
   if(!safeName(make)||!safeName(model)||!safePart(part)||
     !Number.isInteger(year)||year<1980||year>2027||
-    (engine&&!safePart(engine)))return json({error:"Invalid vehicle/part"},422);
+    (engine&&!(engine.length<=100&&/^[\p{L}\p{N}\p{M} .,+()/-]+$/u.test(engine))))return json({error:"Invalid vehicle/part"},422);
   const makes=await db("car_brands","GET",{select:"id",name:"eq."+make,limit:"1"});
   if(!makes.length)return json({error:"Unknown make"},422);
   const models=await db("car_models","GET",{
