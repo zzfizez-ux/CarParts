@@ -46,13 +46,27 @@ async function getEngines(make,model,year){
 }
 function matchesQuery(part,term){
  const q=String(term||"").trim().toLocaleLowerCase("de-DE");
- const corpus=[part.part_name,part.manufacturer,part.manufacturer_part_number,part.category].join(" ").toLocaleLowerCase("de-DE");
  if(!q)return true;
+ const corpus=[part.part_name,part.manufacturer,part.manufacturer_part_number,part.category]
+  .join(" ").toLocaleLowerCase("de-DE");
  if(corpus.includes(q))return true;
- // Common everyday synonyms for this type of component.
- if(/dieselfilter|kraftstofffilter|spritfilter|fuel.?filter/.test(q)&&
-    /kraftstofffilter/.test(corpus))return true;
- return false;
+ // Match German and English search names without claiming compatibility.
+ const aliases={
+  "oil filter":"ölfilter","oilfilter":"ölfilter","oelfilter":"ölfilter",
+  "motorölfilter":"ölfilter","fuel filter":"kraftstofffilter",
+  "fuel filters":"kraftstofffilter","dieselfilter":"kraftstofffilter",
+  "spritfilter":"kraftstofffilter","air filter":"luftfilter",
+  "airfilter":"luftfilter","engine air filter":"luftfilter",
+  "motorluftfilter":"luftfilter","cabin filter":"innenraumfilter",
+  "pollenfilter":"innenraumfilter","brake pads":"bremsbeläge",
+  "brake discs":"bremsscheiben","spark plugs":"zündkerzen",
+  "headlight":"scheinwerfer","windshield wipers":"scheibenwischer"
+ };
+ const normalized=aliases[q]||q;
+ if(corpus.includes(normalized))return true;
+ // Product IDs may be written with or without spaces and punctuation.
+ const compact=x=>x.replace(/[\\s\\/._-]/g,"");
+ return compact(q).length>=5&&compact(corpus).includes(compact(q));
 }
 async function findVerifiedParts(vehicle,term){
  const engines=await getEngines(vehicle.make,vehicle.model,vehicle.year);
