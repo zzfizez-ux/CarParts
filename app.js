@@ -133,78 +133,107 @@ function applyVehicleProfile(p){if(p.make){const opt=[...$("make").options].find
 function vehicleChanged(){++catalogRequest;const make=$("make").value,model=$("model").value,year=$("year").value,engine=$("engine").value,variant=$("variant").value;const score=(make?25:0)+(model?25:0)+(year?15:0)+(engine?20:0)+(variant?5:0)+($("vin").value.trim().length===17?10:0);$("fitmentScore").textContent=score+"/100";$("fitmentScore").className="fitment-score "+(score>=90?"ready":score>=70?"good":"needs");if(make&&model&&year){state.vehicle={make,model,year,engine,variant,vin:$("vin").value.trim()};$("vehicleName").textContent=make+" "+model;$("vehicleSub").textContent=(engine||"Engine not confirmed")+" · "+year;$("vehicleStatus").textContent="UNVERIFIED";$("confirmTitle").textContent=make+" "+model+" · "+year;$("confirmText").textContent="Vehicle details collected. Exact part fitment must be verified by catalog data.";renderResults()}else{$("vehicleStatus").textContent="NOT SELECTED";$("confirmTitle").textContent="No vehicle selected";$("confirmText").textContent="Select make, model and year to build a fitment profile.";$("fitmentScore").textContent="0%"}}
 function icon(s){if(s==="pad")return '<svg viewBox="0 0 120 100"><path d="M25 15h70v70H25z" fill="#252d34"/><path d="M35 25h50v50H35z" fill="#cbd2d7"/><path d="M44 34h32v32H44z" fill="#252d34"/></svg>';if(s==="light")return '<svg viewBox="0 0 120 100"><path d="M15 50c8-27 25-39 50-39h27l13 39-13 39H65c-25 0-42-12-50-39Z" fill="#dbe1e5" stroke="#68747e" stroke-width="3"/><path d="M35 28c18 3 34 10 50 22-16 12-32 19-50 22 7-15 7-29 0-44Z" fill="#fff"/></svg>';return '<svg viewBox="0 0 120 100"><rect x="27" y="17" width="66" height="66" rx="8" fill="#303a43"/><rect x="36" y="27" width="48" height="45" rx="5" fill="#dce1e5"/><path d="M43 38h34M43 47h34M43 56h34M43 65h20" stroke="#8a969f" stroke-width="4"/></svg>'}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function setCatalogStatus(status){const el=$("catalogStatus");if(!el)return;el.classList.toggle("live",status==="ready");el.querySelector("span:last-child").textContent=status==="ready"?"Herstellerkatalog: belegte Artikel · Ausstattung prüfen":status==="loading"?"Searching real catalog…":status==="error"?"Catalog unavailable. Try again later." :status==="web"?"Free web search · external results, not fitment-verified":"Real catalog not connected."}
-function webSearchLinks(term){
- const v=state.vehicle||{},q=[v.make,v.model,v.year,v.engine,v.variant,term].filter(Boolean).join(" ");
- const encoded=encodeURIComponent(q);
- const engines=[
- {name:"Google",note:"Search across parts shops",url:"https://www.google.com/search?q="+encoded},
- {name:"Bing",note:"Alternative web results",url:"https://www.bing.com/search?q="+encoded},
- {name:"DuckDuckGo",note:"Independent search",url:"https://duckduckgo.com/?q="+encoded},
- {name:"eBay",note:"Marketplace offers",url:"https://www.ebay.de/sch/i.html?_nkw="+encoded},
- {name:"AUTODOC via web search",note:"Search AUTODOC pages",url:"https://www.google.com/search?q="+encodeURIComponent("site:autodoc.de "+q)},
- {name:"Daparto via web search",note:"Search Daparto pages",url:"https://www.google.com/search?q="+encodeURIComponent("site:daparto.de "+q)}
- ];
- return '<div class="web-search-header"><h3>Search the web for real offers</h3><p>These links search external websites with your vehicle and part details. Results, prices and compatibility are provided by those sites, not verified by CarParts.</p><div class="web-search-query"><strong>Search:</strong> '+esc(q)+'</div></div>'+engines.map(x=>'<a class="web-search-card" href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer"><span><strong>'+esc(x.name)+'</strong><small>'+esc(x.note)+'</small></span><span aria-hidden="true">↗</span></a>').join("")+'<p class="web-search-disclaimer">Before buying, compare the seller’s OE number, engine variant and fitment information. Search results alone do not prove compatibility.</p>';
+
+function setCatalogStatus(status){
+ const el=$("catalogStatus");if(!el)return;
+ el.classList.toggle("live",status==="ready");
+ const label=el.querySelector("span:last-child");if(!label)return;
+ label.textContent=status==="ready"?"Artikel mit Quellenbeleg · Ausstattung prüfen":
+ status==="loading"?"Durchsuche den CarParts-Katalog…":
+ status==="error"?"Teilekatalog nicht erreichbar":
+ status==="empty"?"Noch keine belegten Angebote für diese Auswahl":"CarParts Teilekatalog · Suchergebnisse direkt auf dieser Seite";
 }
-function showWebSearch(term){
- if(!state.vehicle)return;
- $("resultsTitle").textContent="Web search · "+state.vehicle.make+" "+state.vehicle.model;
- $("resultsGrid").innerHTML=webSearchLinks(term);
- setCatalogStatus("web");
+function placeholderPartImage(){
+ // Self-created illustration, not a photo or representation of any particular SKU.
+ return '<svg aria-hidden="true" viewBox="0 0 250 170" xmlns="http://www.w3.org/2000/svg">'+
+ '<ellipse cx="125" cy="145" rx="74" ry="11" fill="#000" opacity=".09"/>'+
+ '<g transform="translate(62 16)">'+
+ '<rect x="18" y="24" width="106" height="94" rx="14" fill="#c9d1d9" stroke="#718494" stroke-width="3"/>'+
+ '<rect x="28" y="34" width="86" height="73" rx="8" fill="#e9edf1" stroke="#8795a3" stroke-width="2"/>'+
+ '<path d="M40 34v73M53 34v73M66 34v73M79 34v73M92 34v73M105 34v73" stroke="#9aabb7" stroke-width="4"/>'+
+ '<ellipse cx="71" cy="25" rx="53" ry="13" fill="#edf1f5" stroke="#728391" stroke-width="3"/>'+
+ '<ellipse cx="71" cy="25" rx="22" ry="7" fill="#607381"/>'+
+ '<ellipse cx="71" cy="115" rx="53" ry="11" fill="#b4c0ca" stroke="#728391" stroke-width="3"/>'+
+ '</g></svg>';
+}
+function inlineCatalogEmpty(term,unavailable=false){
+ const title=unavailable?"Teilekatalog aktuell nicht erreichbar":
+  "Für diese Fahrzeugauswahl noch keine belegten Artikel";
+ const details=unavailable?
+  "Die Datenbankanfrage hat nicht funktioniert. Es werden keine geschätzten Angebote angezeigt.":
+  "CarParts hat für diesen Suchbegriff und diese genaue Motorvariante noch keinen überprüften Teile-Datensatz. Wir zeigen bewusst keine erfundenen Preise oder unbestätigte Passformen.";
+ $("resultsTitle").textContent="Teilesuche · "+(state.vehicle?state.vehicle.make+" "+state.vehicle.model:"CarParts");
+ $("resultsGrid").innerHTML='<div class="catalog-empty"><div class="catalog-empty-icon">⌕</div><h3>'+title+
+  '</h3><p>'+details+'</p><div class="catalog-empty-query">Suchbegriff: <strong>'+esc(term)+
+  '</strong></div><p class="catalog-empty-tip">Tipp: Motorcode, Baujahr und genaue Teilebezeichnung helfen, den Artikel einzugrenzen.</p></div>';
+ setCatalogStatus(unavailable?"error":"empty");
 }
 function renderResultsInternal(term){
- $("resultsTitle").textContent=state.vehicle?"Search real parts for "+state.vehicle.make+" "+state.vehicle.model:"Select a vehicle to search parts";
- $("resultsGrid").innerHTML='<div class="empty-results">'+(state.vehicle?"Enter a part name and click Search to search the web.":"Select a vehicle to start searching.")+'</div>';
- setCatalogStatus("web");
+ $("resultsTitle").textContent=state.vehicle?"Teile im CarParts-Katalog für "+state.vehicle.make+" "+state.vehicle.model:
+  "Wähle zuerst ein Fahrzeug";
+ $("resultsGrid").innerHTML='<div class="empty-results">'+(state.vehicle?
+  "Suche nach einem Ersatzteil. Gefundene geprüfte Artikel erscheinen hier direkt mit Foto, Preis und Quelle, soweit diese Daten vorliegen.":
+  "Wähle Marke, Modell und Baujahr, um Ersatzteile auf dieser Seite zu suchen.")+'</div>';
+ setCatalogStatus("initial");
 }
 let catalogRequest=0;
 function renderSupabaseCards(rows,term){
- const links=webSearchLinks(term);
- $("resultsTitle").textContent="Herstellerkatalog · "+esc(state.vehicle.make)+" "+esc(state.vehicle.model);
- const top='<div class="verified-results-header"><h3>Artikel mit Herstellerbeleg</h3>'+
-  '<p>Für die ausgewählte Motor-/Gehäusevariante im Herstellerkatalog gelistet. '+
-  'Ausstattung, Motorcode und Quelle vor der Bestellung vergleichen. Keine Händlerpreise verfügbar.</p></div>';
- const cards='<div class="verified-results-list">'+rows.map(p=>{
-  const url=/^https:\/\//i.test(p.source_url||"")?p.source_url:p.fitment?.source_url;
-  const source=/^https:\/\//i.test(url||"")?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">Herstellerquelle ansehen ↗</a>':"";
-  return '<article class="verified-part-card"><span class="verified-part-tag">✓ Herstelleranwendung belegt – Bedingungen beachten</span>'+
-   '<h3>'+esc(p.manufacturer)+' '+esc(p.manufacturer_part_number)+'</h3>'+
-   '<p class="verified-part-kind">'+esc(p.part_name)+' · '+esc(p.category||"Ersatzteil")+'</p>'+
-   '<p class="verified-part-engine"><strong>Ausführung:</strong> '+esc(p.engine)+'</p>'+
-   '<p class="verified-part-note">'+esc(p.fitment?.notes||"Ausstattung vor dem Kauf prüfen.")+'</p>'+
-   '<p class="verified-part-footer">'+source+'<span>Kein Preis angegeben · keine OE-Nummer erfunden</span></p></article>';
- }).join("")+'</div>';
- $("resultsGrid").innerHTML=top+cards+links;
+ $("resultsTitle").textContent="Ersatzteile für "+state.vehicle.make+" "+state.vehicle.model;
+ const intro='<div class="catalog-grid-heading"><h3>'+rows.length+' belegte'+(rows.length===1?"r Artikel":" Artikel")+
+  ' im CarParts-Katalog</h3><p>Nur für die gewählte genaue Ausführung mit Herstellerbeleg. Ausstattung und Teilenummer vor dem Kauf vergleichen.</p></div>';
+ const cards=rows.map(p=>{
+  const validUrl=x=>typeof x==="string"&&/^https:\/\//i.test(x);
+  const img=Array.isArray(p.images)?p.images.find(x=>validUrl(x.image_url)):null;
+  const image=img?'<img loading="lazy" decoding="async" src="'+esc(img.image_url)+'" alt="'+esc(img.alt_text||p.part_name)+'">':
+   placeholderPartImage();
+  const imageBadge=img?"Freigegebenes Produktbild":"Symbolillustration · kein Produktfoto";
+  const offers=Array.isArray(p.offers)?p.offers.filter(x=>Number.isFinite(Number(x.price_amount))&&
+   Number(x.price_amount)>=0&&/^[A-Z]{3}$/.test(x.currency)): [];
+  const best=offers.length?offers.slice().sort((a,b)=>Number(a.price_amount)-Number(b.price_amount))[0]:null;
+  let priceMarkup='<div class="catalog-item-price unavailable"><strong>Preis nicht verfügbar</strong>'+
+   '<span>Noch kein geprüfter Händlerpreis</span></div>';
+  if(best){
+   let price;try{price=new Intl.NumberFormat("de-DE",{style:"currency",currency:best.currency}).format(Number(best.price_amount))}
+   catch(e){price=Number(best.price_amount).toFixed(2)+" "+best.currency}
+   const when=Number.isFinite(Date.parse(best.observed_at))?
+    new Date(best.observed_at).toLocaleDateString("de-DE"):"";
+   priceMarkup='<div class="catalog-item-price"><strong>'+esc(price)+'</strong>'+
+    '<span>von '+esc(best.merchant_name)+(when?' · Stand '+esc(when):'')+'</span></div>';
+  }
+  const source=validUrl(p.source_url)?'<a class="catalog-evidence" href="'+esc(p.source_url)+
+   '" target="_blank" rel="noopener noreferrer">Herstellerbeleg ↗</a>':"";
+  const shop=best&&validUrl(best.product_url)?'<a class="catalog-buy" href="'+esc(best.product_url)+
+   '" target="_blank" rel="noopener noreferrer">Händlerangebot ansehen ↗</a>':"";
+  return '<article class="catalog-item">'+
+   '<div class="catalog-item-visual">'+image+'<span>'+imageBadge+'</span></div>'+
+   '<div class="catalog-item-body"><span class="catalog-item-status">✓ Herstelleranwendung belegt · Bedingungen prüfen</span>'+
+   '<h3>'+esc(p.part_name)+'</h3><p class="catalog-item-maker">'+esc(p.manufacturer)+
+   ' · Art.-Nr. '+esc(p.manufacturer_part_number)+'</p>'+
+   '<p class="catalog-item-engine">Ausführung: '+esc(p.engine)+'</p>'+
+   '<p class="catalog-item-warning">'+esc(p.fitment?.notes||"Vor Kauf am Fahrzeug überprüfen.")+'</p>'+
+   priceMarkup+'<div class="catalog-item-actions">'+source+shop+'</div></div></article>';
+ }).join("");
+ $("resultsGrid").innerHTML=intro+'<div class="catalog-item-grid">'+cards+'</div>';
  setCatalogStatus("ready");
 }
 async function renderSupabaseResults(term,requestId){
  setCatalogStatus("loading");
- $("resultsGrid").innerHTML='<div class="empty-results">Prüfe Herstellerbelege im CarParts-Katalog…</div>';
+ $("resultsGrid").innerHTML='<div class="empty-results">Suche geprüfte Teile im CarParts-Katalog…</div>';
  try{
   const rows=await window.CarPartsDB.findVerifiedParts({...state.vehicle},term);
   if(requestId!==catalogRequest)return false;
   if(rows.length)renderSupabaseCards(rows,term);
-  else{
-   showWebSearch(term);
-   $("resultsGrid").insertAdjacentHTML("afterbegin",
-    '<div class="catalog-search-note">Noch kein belegter Artikel für diese exakte Auswahl im CarParts-Katalog. '+
-    'Bei allgemeinen Motorbezeichnungen ist keine genaue Passform bestätigt. Unten findest du die freie Websuche.</div>');
-  }
+  else inlineCatalogEmpty(term,false);
   return true;
  }catch(e){
   if(requestId!==catalogRequest)return false;
-  showWebSearch(term);
-  $("resultsGrid").insertAdjacentHTML("afterbegin",
-   '<div class="catalog-search-note">Der CarParts-Katalog ist momentan nicht erreichbar. '+
-   'Die externe Websuche funktioniert weiterhin; deren Treffer sind nicht verifiziert.</div>');
-  return true;
+  inlineCatalogEmpty(term,true);
+  return false;
  }
 }
-
 async function renderLiveResults(term){const requestId=++catalogRequest;if(!state.vehicle)return false;
 if(window.CarPartsDB && (!window.CarPartsCatalog||!window.CARPARTS_CATALOG_CONFIG?.baseUrl)){return renderSupabaseResults(term,requestId)}
-if(!window.CarPartsCatalog||!window.CARPARTS_CATALOG_CONFIG?.baseUrl){showWebSearch(term);return true}
+if(!window.CarPartsCatalog||!window.CARPARTS_CATALOG_CONFIG?.baseUrl){inlineCatalogEmpty(term,true);return false}
 setCatalogStatus("loading");
 $("resultsGrid").innerHTML='<div class="empty-results">Searching verified catalog data…</div>';
 try{
