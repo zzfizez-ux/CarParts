@@ -1,7 +1,7 @@
 window.CARPARTS_CATALOG_CONFIG = {
   // Set this to your own secure backend endpoint, e.g. "https://api.example.com/catalog".
   // Do NOT put TecDoc/API keys in this file or in frontend JavaScript.
-  baseUrl: "",
+  baseUrl: "", // Set after deploying backend/ (Cloudflare Worker URL)
   provider: "TecDoc",
   timeoutMs: 12000
 };
