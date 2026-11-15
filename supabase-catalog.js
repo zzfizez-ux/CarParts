@@ -131,5 +131,44 @@ async function discoverOilRefs(vehicle){
  }
  return {rows:result.rows,source:result.source,stored:result.stored||0};
 }
-window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage,discoverOilRefs};
+// Research entries are never part of the verified fitment table.
+const researchCategories=[
+ "Bremsbeläge","Bremsscheiben","Ölfilter","Kraftstofffilter","Luftfilter","Innenraumfilter",
+ "Bremssättel","Bremsleitungen","Bremsflüssigkeit","Zündkerzen","Glühkerzen","Zahnriemen",
+ "Keilrippenriemen","Wasserpumpe","Thermostat","Kühler","Kühlmittelschlauch","Lichtmaschine",
+ "Anlasser","Batterie","Stoßdämpfer","Fahrwerksfedern","Querlenker","Spurstangenkopf",
+ "Radlager","Kupplung","Schwungrad","Getriebeöl","Motoröl","Dichtungen",
+ "Scheibenwischer","Scheinwerfer","Rückleuchten","Außenspiegel","Klimakompressor",
+ "Lambdasonde","Luftmassenmesser","Turbolader","AGR-Ventil","Katalysator",
+ "Partikelfilter","Auspuff","Einspritzdüsen","Zündspulen","Riemenspanner"
+];
+function researchCategory(term){
+ const t=String(term||"").trim().toLocaleLowerCase("de-DE");
+ const aliases={
+  "brake pads":"Bremsbeläge","brake pad":"Bremsbeläge","bremsklötze":"Bremsbeläge",
+  "bremsbelag":"Bremsbeläge","bremsbeläge vorne":"Bremsbeläge",
+  "bremsbeläge hinten":"Bremsbeläge","brake discs":"Bremsscheiben",
+  "brake rotors":"Bremsscheiben","oil filter":"Ölfilter","oilfilter":"Ölfilter",
+  "oelfilter":"Ölfilter","dieselfilter":"Kraftstofffilter","fuel filter":"Kraftstofffilter",
+  "air filter":"Luftfilter","cabin filter":"Innenraumfilter","spark plugs":"Zündkerzen",
+  "headlight":"Scheinwerfer","windshield wipers":"Scheibenwischer"
+ };
+ if(aliases[t])return aliases[t];
+ return researchCategories.find(c=>c.toLocaleLowerCase("de-DE")===t)||
+  researchCategories.find(c=>t.startsWith(c.toLocaleLowerCase("de-DE")+" "))||null;
+}
+async function researchParts(vehicle,term){
+ const category=researchCategory(term);
+ if(!category)return null;
+ const body={make:vehicle.make,model:vehicle.model,year:Number(vehicle.year),category};
+ const res=await fetch(base+"/functions/v1/research-parts",{
+  method:"POST",headers:{"apikey":key,"Content-Type":"application/json"},
+  body:JSON.stringify(body),signal:AbortSignal.timeout(12000)
+ });
+ if(!res.ok)throw new Error("Research service "+res.status);
+ const result=await res.json();
+ if(!result||!Array.isArray(result.rows))throw new Error("Research response invalid");
+ return result;
+}
+window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage,discoverOilRefs,researchParts,researchCategory};
 })();
