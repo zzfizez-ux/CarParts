@@ -45,3 +45,8 @@ body.dark .floating-chip{background:#121920;color:#f2f5f7}
 .web-search-disclaimer{grid-column:1/-1;margin-top:6px}
 @media(max-width:800px){.results-grid:has(.web-search-header){grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){.results-grid:has(.web-search-header){grid-template-columns:1fr}}
+
+/* Engine selector remains usable without network-loaded data. */
+.engine-hint{display:block;margin-top:8px;color:var(--muted);font-size:11px;line-height:1.45}
+.site-version{display:block;margin-top:10px;color:var(--muted);font-size:10px;letter-spacing:.04em}
+#engineCustom{width:100%;min-width:0}
