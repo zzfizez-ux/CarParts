@@ -1,12 +1,36 @@
-# CarParts — free web search (default)
+# CarParts — free, source-backed replacement-part search
 
-**The public website now works without a paid parts API.** Users select a vehicle, type the needed part, and CarParts creates targeted searches for Google, Bing, DuckDuckGo, eBay and domain-restricted searches of automotive parts websites. Each result opens an external website. CarParts does **not** scrape listings, copy third-party catalogues, invent OE numbers, or claim that external search results have verified fitment.
+**Current architecture:** GitHub Pages frontend + Supabase Free (41 curated makes, 495 popular models, a small explicitly reviewed parts catalog). No paid catalog provider, hidden scraping, fabricated OE numbers, invented prices or asserted fitment guarantees.
 
-The NHTSA vPIC API supplies freely accessible make/model/year and VIN decoding data. Its coverage is not a complete European engine or fitment catalog. Brand lists include a local fallback, while model suggestions come from vPIC when available.
+## Manufacturer-backed catalog — initial limited coverage
 
-**Current limitation:** The free default displays *search destinations*, not embedded live product cards, dealer prices or verified OEM fitment. For embedded live offers and confirmed compatibility, an authorized catalog/marketplace API is still required.
+CarParts first checks Supabase for **manufacturer-listed parts for the exact selected engine/hardware configuration**. The initial manual pilot has two factual manufacturer part-number entries for the **Volkswagen Golf VII (2012–2020), 2.0 TDI 150 PS (CRBC)**:
 
-The optional Cloudflare Worker/D1 backend in `backend/` is retained for a future authorized data integration. It is not needed for free web search.
+- **MANN-FILTER PU 8014** — diesel fuel filter, **only when the filter housing has a water sensor**. Source: https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/pu8014_mann-filter.html
+- **MANN-FILTER PU 8028** — diesel fuel filter, **only when the filter housing has no water sensor**. Source: https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/pu8028_mann-filter.html
+
+Those are two individually researched factual entries with direct manufacturer references, **not** a copied bulk product catalog. Before buying, a visitor must verify the exact vehicle generation, engine code, housing equipment, year/month and part number against the manufacturer or seller. A verified database link means the manufacturer lists it for the specified conditions, *not* a blanket compatibility guarantee.
+
+### Test the limited example
+
+1. Open the website and select **Volkswagen → Golf → 2018**.
+2. Wait for additional manufacturer-listed engine variants to appear, then choose **Golf VII 2.0 TDI 150 PS (CRBC) – mit Wassersensor** or the **ohne Wassersensor** variant, as applicable.
+3. Search for **Kraftstofffilter**. CarParts shows the corresponding real manufacturer's article number and the direct evidence link. The ordinary internet search remains below the evidence card.
+
+All other engine choices are general suggestions, **not confirmed fitment matches**. Where the catalog has no exact verified match (or Supabase cannot be reached), the free external searches remain available; they are not certified fitment results. The database currently has no source-verified OE number, seller price or stock record; no such fields are fabricated.
+
+### Supabase and safety
+
+- Project is hosted in **eu-central-1** on the free plan. The connection uses `supabase-catalog.js` with a browser-safe **publishable API key only**. Never store a Supabase secret/service_role key in frontend files.
+- All six public catalog tables use Row Level Security (RLS). Browser roles have read access only. Parts and fitments become visible through the public Data API only when their verification status is `verified`.
+- `car_engines` is for narrowly documented configurations. An unqualified “2.0 TDI” selection does not imply that a particular filter fits.
+- Adding further parts requires reviewable manufacturer's evidence and any needed permission for source reuse. Do not bulk scrape or copy proprietary catalogs.
+- Repository `backend/` contains an optional Cloudflare/D1 architecture, not the currently deployed database.
+
+## Development / limitations
+
+Free web search links use Google, Bing, DuckDuckGo, eBay, and site-constrained results from automotive parts retailers. Links open external websites; CarParts does not automatically fetch live seller prices or check inventory. The NHTSA vPIC endpoint is used for VIN decoding, *not* to populate the curated make/model catalog.
+
 
 ---
 
