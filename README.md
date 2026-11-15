@@ -31,6 +31,25 @@ Die Website blendet Angebote aus, sobald `observed_at` mehr als **sieben Tage** 
 
 Alle 495 Modellreihen können über die 45 Kategorien nach Bremsbelägen, Scheiben, Öl-/Kraftstoff-/Luftfiltern, Fahrwerk, Elektrik, Motor, Auspuff etc. durchsucht werden. Die Website nennt ausdrücklich, wenn kein belegtes Teil verfügbar ist, und zeigt die belegte Artikelanzahl für das gewählte Modelljahr. **495 vollständig abgedeckte Modelle sind das noch nicht.** Dafür ist ein umfangreicher autorisierter Hersteller-/Händlerdatenfeed erforderlich; den gibt es derzeit nicht kostenlos in diesem Projekt.
 
+## Build 20: optionale Live-Händlerwebsuche für beliebige Ersatzteile
+
+Die neue **Supabase Edge Function** `supabase/functions/live-web-search/index.ts` ist deployed. Sie unterstützt eine fahrzeugbezogene Websuche nach beliebigen Ersatzteilbezeichnungen, zum Beispiel Dacia Logan 2017 Bremsbeläge. Anders als OilSpec (nur Ölfilter) und unsere Brembo-Recherchekandidaten kann die neue Erweiterung nach aktuellen Händler-Webseiten suchen, **wenn ein seriöser Websuchanbieter autorisiert angeschlossen wurde**.
+
+**Status:** Die Funktion ist technisch eingerichtet, aber **ohne hinterlegten Websuchanbieter-Schlüssel ist die Live-Websuche noch NICHT aktiv**. CarParts zeigt daher ausdrücklich „Live-Internetsuche noch nicht aktiviert“, anstatt vorgetäuschte Händlerangebote zu liefern. Bisherige belegte Herstellerteile, Community-Hinweise und die Kategorie-Suchhistorie funktionieren weiterhin.
+
+### Datenschutz, Rechte, Nutzungskosten
+
+- Anbieteradapter: [Tavily Search](https://docs.tavily.com/documentation/api-reference/endpoint/search) über einen **serverseitig geheim gehaltenen** `TAVILY_API_KEY`. Die Anbieterbedingungen gelten; **ein berechtigter volljähriger Betreiber** muss diesen Zugang und seine Nutzungsbedingungen freigeben.
+- Tavily erlaubt die Anzeige von Suchtreffern (Titel, URL, kurzer Auszug) in öffentlichen Anwendungen; Urheberrechte und Bedingungen der jeweiligen Shopseiten gelten weiterhin. Es werden keine ungeklärten Produktfotos übernommen.
+- Betreiberseitige Konfiguration (nur nach Berechtigung): Supabase Edge Function Secret `TAVILY_API_KEY`. **Niemals** in HTML, JavaScript des Browsers oder GitHub-Commits speichern.
+- `WEB_SEARCH_CACHE_ALLOWED=true` **erst nach Klärung der Rechte zur Wiederverwendung gemeinsamer Suchresultate** bei Tavily setzen. Ohne diese explizite Freigabe werden keine fremden Treffer in die geteilte CarParts-Datenbank übernommen.
+- Der Server akzeptiert nur vordefinierte Automarken/Modelle und plausible Jahre, begrenzt Suchbegriffe und sperrt offensichtliche VINs. Er durchsucht eine feste Menge deutschsprachiger Autoteile-Händlerseiten. Es werden keine IP-Adressen, VINs oder Benutzerprofile protokolliert.
+- Im kostenlosen Betrieb ist der Adapter auf **höchstens 25 unterschiedliche Websuchen pro Tag** begrenzt. Die Fremdanbieter-Kostenkontrolle bleibt erforderlich. Bei abgeschaltetem Schlüssel werden keine externen Such-API-Anfragen ausgelöst.
+- Kein allgemeiner Websuchtreffer gilt als bestätigte Passform. Live-Suchkarten zeigen derzeit **keine behaupteten Produktfotos oder verbindlichen Händlerpreise**. Für diese sind gesondert autorisierte strukturierte Shop-Daten/Produktfeeds notwendig. Ein Titel, ein Auszug und ein Quellenlink können direkt auf CarParts angezeigt werden, solange die Nutzungsrechte eingehalten werden.
+- Zusätzliche RLS-geschützte Tabellen `live_web_search_cache` und `live_web_search_budget`; der Browser kann dort nichts unmittelbar lesen oder schreiben.
+
+Das Feature bedeutet also **„Live-Händlerwebsuche nach Anbindung eines berechtigten Providers“** – nicht „kostenlos und ohne Zugang automatisch das gesamte Internet vollständig mit Livepreisen und Bildern durchsuchen“. Diese Unterscheidung ist für eine verlässliche Teilewebsite entscheidend.
+
 ## Hersteller-Recherche und Suchanfragen (Build 19)
 
 Das **Suchergebnis muss zwischen bestätigter Passform und bloßen Recherchekandidaten unterscheiden**. Der neue Ablauf:
