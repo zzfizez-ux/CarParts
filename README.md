@@ -31,6 +31,20 @@ Die Website blendet Angebote aus, sobald `observed_at` mehr als **sieben Tage** 
 
 Alle 495 Modellreihen können über die 45 Kategorien nach Bremsbelägen, Scheiben, Öl-/Kraftstoff-/Luftfiltern, Fahrwerk, Elektrik, Motor, Auspuff etc. durchsucht werden. Die Website nennt ausdrücklich, wenn kein belegtes Teil verfügbar ist, und zeigt die belegte Artikelanzahl für das gewählte Modelljahr. **495 vollständig abgedeckte Modelle sind das noch nicht.** Dafür ist ein umfangreicher autorisierter Hersteller-/Händlerdatenfeed erforderlich; den gibt es derzeit nicht kostenlos in diesem Projekt.
 
+## Neue frei nutzbare Datenquelle: OilSpec Commons (CC0)
+
+CarParts verwendet zusätzlich einen **öffentlich verfügbaren CC0-Datensatz**: [OilSpec Commons](https://github.com/carbonautorepair/oilspec-commons) von carbonautorepair. Die Daten wurden für unsere 41 bekannten Marken und kuratierten Modelle gefiltert und als `open-oilfilters-data.js` eingebunden.
+
+- Quelldateien: `data/vehicles.csv` und `data/filter_sets.csv`, Lizenz: **CC0 1.0 Universal** ([LICENSE](https://github.com/carbonautorepair/oilspec-commons/blob/main/LICENSE)).
+- 4.202 Modell-/Jahr-/Motor-Referenzen für **156 unserer Modelle aus 24 Marken** sind als Open-Data-Snapshot hinterlegt. Das sind **nicht** 4.202 belegte Fahrzeug-Teile-Passgenauigkeiten.
+- Nur bei einer Suche nach **Ölfilter / Oil filter** und fehlendem Herstellerkatalogtreffer wird dieser Datensatz bei Bedarf im Browser geladen.
+- Besucher müssen zunächst eine **genaue Fahrzeug-/Motor-Zeile aus der Quelle** auswählen; erst dann erscheinen die veröffentlichten **WIX, MicroGard, Mobil 1 oder K&N**-Referenzen als **ungeprüfte Community-Hinweise**.
+- **Qualitätsgrenze:** Der Quelldatensatz ist keine offizielle europäische Hersteller-Fitment-Datenbank und enthält teilweise US-Markt- und möglicherweise fehlerhafte Fahrzeugangaben. Die Quellreferenzen sind auf CarParts ausdrücklich als **NICHT FITMENTGEPRÜFT** gekennzeichnet. Ein Community-Filterhinweis darf nicht als passende Teilenummer oder Kaufempfehlung verstanden werden. Vor jedem Kauf die genaue Variante und aktuelle Herstellernummer abgleichen.
+- Es werden keine Händlerpreise, Artikelfotos, OE-Nummern oder weiteren Teilekategorien erfunden. Herstellerbelegte Supabase-Artikel bleiben getrennt und haben Vorrang.
+- Die Quelle ist frei kopierbar; die Integration nutzt **keine geschützten Händler-Scraper, keine API-Schlüssel und keine kostenpflichtigen Dienste**. Das Client-Skript lädt die lokale Momentaufnahme nach Bedarf; es führt nicht automatisch ein Internet-Crawling aus.
+
+**Warum keine fremden Shop-APIs ungefragt übernehmen?** Öffentlich aufrufbare Angebote sind nicht automatisch zur systematischen Einbindung in fremde Websites lizenziert. Zum Beispiel erlaubt Hubshops öffentliche API nur die gelegentliche Beratung und verbietet die automatisierte Befüllung fremder Websites ausdrücklich; APIs von Google Custom Search, TecDoc oder großen Marktplätzen verlangen oft Zugangsschlüssel oder Lizenzen. CarParts übernimmt darum nur Daten mit geeigneten Nutzungsrechten und zeigt ungesicherte Treffer klar getrennt.
+
 ## Sichere Datenintegration
 
 Backend: **Supabase Free, Frankfurt** (RLS auf allen acht Katalogtabellen, Browser nur lesend). Frontend: **GitHub Pages**. Der Browser verwendet nur den öffentlichen Supabase-Publishable-Key, keinen Service-Role-Schlüssel.
