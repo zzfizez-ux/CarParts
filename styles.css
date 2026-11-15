@@ -9,3 +9,23 @@ body.dark .match{background:#173a2a;color:#8fe0b1}
 body.dark .match.warn{background:#3b2f18;color:#f0c66b}
 
 .fitment-score{margin-left:auto;min-width:48px;text-align:center;font-size:12px;padding:7px 8px;border-radius:999px;background:#3a2f18;color:#d9b45b}.fitment-score.good{background:#203a2a;color:#9bdbb0}.fitment-score.ready{background:#1e4530;color:#a9e7bd}.fitment-score.needs{background:#3a2f18;color:#e4bd6d}body.dark .fitment-score.needs{background:#3a2f18;color:#e4bd6d}body.dark .fitment-score.good,body.dark .fitment-score.ready{background:#193b29;color:#9ee1b6}
+
+.catalog-status{display:flex;align-items:center;gap:8px;margin:-8px 0 20px;padding:10px 13px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--muted);font-size:11px}
+.catalog-dot{width:7px;height:7px;border-radius:50%;background:#d99b2b;box-shadow:0 0 0 4px rgba(217,155,43,.12)}
+.catalog-status.live .catalog-dot{background:var(--green);box-shadow:0 0 0 4px rgba(25,135,84,.12)}
+.catalog-status.live{color:var(--soft-text)}
+.catalog-live-note{margin-top:10px;font-size:11px;color:var(--muted)}
+.live-data-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.live-data-grid div{padding:9px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.live-data-grid strong{display:block;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#8b949c;margin-bottom:4px}
+.live-data-grid span{font-size:12px}
+.part-card .supplier{font-size:10px;color:var(--muted);margin-top:8px}
+.part-card .oe-line{font-size:10px;color:var(--soft-text);margin-top:8px;line-height:1.45}
+body.dark .primary-btn,body.dark .search-input button,body.dark .quality-toggle button.active{background:#080d12;color:#fff}
+body.dark .brand-mark{background:#080d12;color:#fff}
+body.dark .vehicle-info button,body.dark .view-btn{background:#1c252d;color:#f2f5f7}
+body.dark .ghost-btn span{background:#27313a;color:#f2f5f7}
+body.dark .outline-btn{background:#121920;color:#f2f5f7;border-color:#3b4650}
+body.dark .quick-tags button{background:#171f27;color:#c4ccd3}
+body.dark .floating-chip{background:#121920;color:#f2f5f7}
+@media(max-width:700px){.live-data-grid{grid-template-columns:1fr}}
