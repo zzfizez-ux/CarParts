@@ -170,5 +170,20 @@ async function researchParts(vehicle,term){
  if(!result||!Array.isArray(result.rows))throw new Error("Research response invalid");
  return result;
 }
-window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage,discoverOilRefs,researchParts,researchCategory};
+async function searchLiveWeb(vehicle,term){
+ const request={
+  make:String(vehicle.make||""),model:String(vehicle.model||""),
+  year:Number(vehicle.year),part:String(term||"").trim().slice(0,80),
+  engine:String(vehicle.engine||"").trim().slice(0,100),
+ };
+ const res=await fetch(base+"/functions/v1/live-web-search",{
+  method:"POST",headers:{"apikey":key,"Content-Type":"application/json"},
+  body:JSON.stringify(request),signal:AbortSignal.timeout(26000)
+ });
+ if(!res.ok)throw new Error("Live web search "+res.status);
+ const data=await res.json();
+ if(!data||!Array.isArray(data.results))throw new Error("Unexpected web search result");
+ return data;
+}
+window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage,discoverOilRefs,researchParts,researchCategory,searchLiveWeb};
 })();
