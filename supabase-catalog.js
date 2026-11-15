@@ -66,9 +66,30 @@ async function findVerifiedParts(vehicle,term){
  if(!ids.length)return [];
  const rows=await read("parts?select=id,manufacturer,part_name,manufacturer_part_number,category,source_url,verification_status"+
   "&verification_status=eq.verified&id=in.("+ids.join(",")+")&limit=100");
- return rows.filter(p=>matchesQuery(p,term)).map(p=>({
-  ...p,fitment:fits.find(f=>f.part_id===p.id),engine:exact.designation
+ const selected=rows.filter(p=>matchesQuery(p,term));
+ if(!selected.length)return [];
+ const selectedIds=selected.map(p=>p.id);
+ const filter="part_id=in.("+selectedIds.join(",")+")";
+ // Media only has public read access when separately reviewed for reuse.
+ // Offers are sourced merchant listings, not automatic fitment confirmations.
+ const results=await Promise.allSettled([
+  read("part_images?select=part_id,image_url,alt_text,source_url&"+
+    filter+"&verified_for_display=eq.true&limit=100"),
+  read("part_offers?select=part_id,merchant_name,price_amount,currency,availability,observed_at,product_url,source_url&"+
+    filter+"&verification_status=eq.verified&order=price_amount.asc&limit=100")
+ ]);
+ const images=results[0].status==="fulfilled"?results[0].value:[];
+ const offers=results[1].status==="fulfilled"?results[1].value:[];
+ const freshThreshold=Date.now()-7*24*60*60*1000;
+ return selected.map(p=>({
+  ...p,
+  fitment:fits.find(f=>f.part_id===p.id),
+  engine:exact.designation,
+  images:images.filter(x=>x.part_id===p.id),
+  offers:offers.filter(x=>x.part_id===p.id&&
+    Number.isFinite(Date.parse(x.observed_at))&&Date.parse(x.observed_at)>=freshThreshold)
  }));
+
 }
 window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts};
 })();
