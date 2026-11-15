@@ -24,12 +24,28 @@ function load(){
  }).catch(e=>{pending=null;throw e});
  return pending;
 }
+const BRANDS=["MicroGard","MicroGard Select","WIX","WIX XP","Mobil 1","K&N"];
+const api={lastInfo:null,brands:BRANDS};
 async function find(vehicle,query){
  if(!isOilFilterQuery(query))return null;
- const d=await load();
  if(!vehicle?.make||!vehicle?.model||!vehicle?.year)return [];
+ api.lastInfo=null;
+ if(window.CarPartsDB?.discoverOilRefs){
+  try{
+   const result=await window.CarPartsDB.discoverOilRefs(vehicle);
+   api.lastInfo={source:result.source,stored:result.stored};
+   return result.rows;
+  }catch(error){
+   // If Edge Functions / database are temporarily unreachable, use the local CC0 snapshot.
+   api.lastInfo={source:"local-fallback",stored:0};
+  }
+ }
+ const d=await load();
+ if(api.lastInfo===null)api.lastInfo={source:"local-fallback",stored:0};
  return d.rows.filter(r=>r[0]===vehicle.make&&r[1]===vehicle.model&&
-  r[2]===Number(vehicle.year)).slice(0,60);
+  r[2]===Number(vehicle.year)).slice(0,40);
 }
-window.CarPartsOpenOil={find,isOilFilterQuery};
+api.find=find;
+api.isOilFilterQuery=isOilFilterQuery;
+window.CarPartsOpenOil=api;
 })();
