@@ -72,3 +72,20 @@ body.dark .floating-chip{background:#121920;color:#f2f5f7}
 .profile-readout{margin-left:auto;flex-shrink:0;max-width:126px;text-align:right}
 .vehicle-confirm .profile-readout small{line-height:1.35;margin:0 0 5px;color:var(--muted);font-size:9px}
 .profile-readout .fitment-score{display:inline-block;margin-left:0}
+
+/* Build 11: explicit dark surfaces; --ink is LIGHT in dark mode, never use as a background. */
+body.dark .confidence{background:#17212b;color:#f3f7fb;border:1px solid #35424e}
+body.dark .confidence h2,body.dark .confidence .confidence-icon{color:#f3f7fb}
+body.dark .confidence .confidence-icon{background:#214d39;color:#b8f5d1}
+body.dark .confidence p{color:#c5d0d9}
+body.dark .confidence .eyebrow{color:#8deabb}
+body.dark .confidence .outline-btn.light{color:#f3f7fb;border-color:#718292;background:#24313e}
+body.dark .confidence .outline-btn.light:hover{background:#304153}
+body.dark .toast{background:#263341;color:#f4f8fb;border:1px solid #566477;box-shadow:0 14px 44px rgba(0,0,0,.45)}
+body.dark .modal{background:#161f29;color:#f4f8fb;border-color:#3d4a59}
+body.dark .modal p,body.dark .modal small{color:#c3cdd6}
+body.dark .modal-close{background:#2b3a48;color:#f4f8fb}
+body.dark .garage-item{border-color:#3d4a59;background:#1b2833}
+body.dark .garage-item button{background:#273949;color:#f4f8fb;border-color:#546373}
+/* Mirror in the light theme: a dark toast always has readable white text. */
+body:not(.dark) .toast{background:#16202a;color:#fff}
