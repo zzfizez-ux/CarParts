@@ -472,7 +472,7 @@ function renderWebMerchantResults(data,term){
     '<p class="web-merchant-caveat">Passform, Preis und Verfügbarkeit nicht bestätigt.'+
     ' Bei Bremsenteilen Bremssystem/PR-Code vor Kauf prüfen.</p>'+
     '<div class="web-merchant-bottom"><span>Aktuellen Preis beim Händler prüfen</span>'+
-    '<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer sponsored">Händlerseite ansehen ↗</a>'+
+    '<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">Händlerseite ansehen ↗</a>'+
     '</div></article>';
   }).join("");
   const count=hits.length;
