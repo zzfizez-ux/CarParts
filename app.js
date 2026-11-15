@@ -261,6 +261,7 @@ function setCatalogStatus(status){
  status==="loading"?"Durchsuche den CarParts-Katalog…":
  status==="error"?"Teilekatalog nicht erreichbar":
  status==="empty"?"Noch keine belegten Angebote für diese Auswahl":
+ status==="research"?"Hersteller-Recherchehinweise · individuelle Passform NICHT geprüft":
  status==="community"?"Open-Data-Recherche · Teilenummern NICHT fitmentgeprüft":"CarParts Teilekatalog · Suchergebnisse direkt auf dieser Seite";
 }
 function placeholderPartImage(kind){
@@ -403,6 +404,57 @@ function renderOpenOilReferences(rows,term){
   ).join("")||'<div class="open-oil-select-prompt">Keine auswertbare Filterreferenz für diese Variante.</div>';
  };
 }
+function showSourceResearch(result,term){
+ const rows=result.rows||[],vehicle=state.vehicle;
+ if(!vehicle)return;
+ $("resultsTitle").textContent="Ersatzteil-Recherche · "+vehicle.make+" "+vehicle.model;
+ const intro='<div class="source-research-intro">'+
+  '<span class="research-warning-badge">Hersteller-Katalogreferenzen · keine individuelle Passformbestätigung</span>'+
+  '<h3>'+rows.length+' mögliche Artikel aus Herstellerquellen</h3>'+
+  '<p>Diese Artikel sind für <strong>bestimmte Varianten</strong> der Modellreihe in Herstellerkatalogen aufgeführt.'+
+  ' Sie wurden <strong>nicht</strong> für deinen konkreten Motor, die VIN oder die Bremsanlage geprüft.'+
+  ' Kontrolliere Generation, Motor, Baujahr/Monat und Bremssystem anhand der Herstellerquelle.'+
+  ' Bei abweichender Ausstattung dürfen die Artikel nicht als passend angenommen werden.</p>'+
+  '<p class="research-save-status">'+(result.search_saved?
+   'Deine Kategorien-Suche wurde anonym in der CarParts-Datenbank erfasst.':'Bekannte Hersteller-Referenzen aus der CarParts-Datenbank.')+
+  '</p></div>';
+ const cards='<div class="catalog-item-grid">'+rows.map(p=>{
+  const source=typeof p.source_url==="string"&&/^https:\/\/www\.bremboparts\.com\//.test(p.source_url)?
+   '<a target="_blank" rel="noopener noreferrer" href="'+esc(p.source_url)+'">Original-Herstellerkatalog ↗</a>':"";
+  return '<article class="catalog-item source-research-card">'+
+   '<div class="catalog-item-visual">'+placeholderPartImage(p.part_name||p.category)+
+    '<span>Symbolbild, keine Produktfotografie</span></div>'+
+   '<div class="catalog-item-body">'+
+    '<span class="research-warning-badge">⚠ Möglicher Artikel – Passform UNBESTÄTIGT</span>'+
+    '<h3>'+esc(p.manufacturer)+' '+esc(p.manufacturer_part_number)+'</h3>'+
+    '<p class="catalog-item-maker">'+esc(p.part_name)+'</p>'+
+    '<p class="catalog-item-engine"><strong>Quell-Fahrzeug:</strong> '+esc(p.source_vehicle_variant)+'</p>'+
+    '<p class="catalog-item-warning">'+esc(p.fitment_conditions)+'</p>'+
+    '<div class="catalog-item-price unavailable"><strong>Preis nicht verfügbar</strong>'+
+    '<span>Kein Händlerangebot mit bestätigtem Preis</span></div>'+
+    '<div class="catalog-item-actions">'+source+'</div>'+
+   '</div></article>';
+ }).join("")+'</div>';
+ $("resultsGrid").innerHTML=intro+cards;
+ setCatalogStatus("research");
+}
+function showResearchQueued(result,term){
+ const vehicle=state.vehicle;
+ $("resultsTitle").textContent="Recherche · "+vehicle.make+" "+vehicle.model;
+ $("resultsGrid").innerHTML='<section class="catalog-empty source-research-empty">'+
+  '<div class="catalog-empty-icon">⌕</div>'+
+  '<h3>Noch keine zuverlässige Teilequelle für diese Suche</h3>'+
+  '<p>CarParts hat nach vorhandenen Hersteller- und frei nutzbaren Referenzen für <strong>'+
+   esc(vehicle.make)+' '+esc(vehicle.model)+'</strong> gesucht. Für <strong>'+esc(term)+
+   '</strong> gibt es noch keine ausreichend verlässlichen Artikelangaben.</p>'+
+  '<p class="catalog-empty-query">'+(result.search_saved?
+  'Suchkategorie in Supabase erfasst – noch keine neuen Produktdaten vorhanden.':
+  'Die Suche ist noch nicht vollständig abgedeckt.')+'</p>'+
+  '<p class="catalog-empty-tip">Eine gespeicherte Suchanfrage ist keine automatische Produktrecherche.'+
+  ' Für Live-Preis-/Bildangebote fehlt weiterhin eine zugelassene Händler-Such-API.'+
+  ' Du kannst Motorcode, Baujahr und Teilebezeichnung weiter präzisieren.</p></section>';
+ setCatalogStatus("empty");
+}
 async function renderSupabaseResults(term,requestId){
  setCatalogStatus("loading");
  $("resultsGrid").innerHTML='<div class="empty-results">Prüfe Herstellerkatalog und freie Datenquellen…</div>';
@@ -421,6 +473,17 @@ async function renderSupabaseResults(term,requestId){
    if(requestId!==catalogRequest)return false;
    if(Array.isArray(refs)&&refs.length){renderOpenOilReferences(refs,term);return true}
   }catch(e){/* The official database and honest empty-state remain usable. */}
+ }
+ if(window.CarPartsDB?.researchParts){
+  try{
+   const research=await window.CarPartsDB.researchParts(current,term);
+   if(requestId!==catalogRequest)return false;
+   if(research){
+    if(research.rows.length)showSourceResearch(research,term);
+    else showResearchQueued(research,term);
+    return true;
+   }
+  }catch(e){/* Do not show fabricated results on a source failure. */}
  }
  inlineCatalogEmpty(term,unavailable);
  return !unavailable;
