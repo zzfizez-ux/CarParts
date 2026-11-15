@@ -67,3 +67,8 @@ body.dark .floating-chip{background:#121920;color:#f2f5f7}
 .verified-part-footer span{font-size:10px;color:var(--muted)}
 .catalog-search-note{grid-column:1/-1;border:1px solid var(--line);border-radius:13px;padding:14px 18px;font-size:12px;line-height:1.65;color:var(--soft-text);background:var(--surface)}
 @media(max-width:640px){.verified-results-list{grid-template-columns:1fr}}
+
+/* The displayed percentage measures entered vehicle information, not physical part compatibility. */
+.profile-readout{margin-left:auto;flex-shrink:0;max-width:126px;text-align:right}
+.vehicle-confirm .profile-readout small{line-height:1.35;margin:0 0 5px;color:var(--muted);font-size:9px}
+.profile-readout .fitment-score{display:inline-block;margin-left:0}
