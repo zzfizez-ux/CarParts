@@ -1,3 +1,15 @@
+# CarParts — free web search (default)
+
+**The public website now works without a paid parts API.** Users select a vehicle, type the needed part, and CarParts creates targeted searches for Google, Bing, DuckDuckGo, eBay and domain-restricted searches of automotive parts websites. Each result opens an external website. CarParts does **not** scrape listings, copy third-party catalogues, invent OE numbers, or claim that external search results have verified fitment.
+
+The NHTSA vPIC API supplies freely accessible make/model/year and VIN decoding data. Its coverage is not a complete European engine or fitment catalog. Brand lists include a local fallback, while model suggestions come from vPIC when available.
+
+**Current limitation:** The free default displays *search destinations*, not embedded live product cards, dealer prices or verified OEM fitment. For embedded live offers and confirmed compatibility, an authorized catalog/marketplace API is still required.
+
+The optional Cloudflare Worker/D1 backend in `backend/` is retained for a future authorized data integration. It is not needed for free web search.
+
+---
+
 # CarParts — production catalog architecture
 
 CarParts is no longer using fake product listings, fabricated prices or sample OE numbers. The website only displays actual catalog results from its API.
