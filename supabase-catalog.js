@@ -105,5 +105,13 @@ async function findVerifiedParts(vehicle,term){
  }));
 
 }
-window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts};
+async function getCoverage(make,model,year){
+ const engines=await getEngines(make,model,year);
+ if(!engines.length)return {documentedEngines:0,verifiedArticles:0};
+ const ids=engines.map(e=>e.id).filter(Number.isInteger);
+ if(!ids.length)return {documentedEngines:0,verifiedArticles:0};
+ const rows=await read("part_fitments?select=part_id&engine_id=in.("+ids.join(",")+")&status=eq.verified&limit=1000");
+ return {documentedEngines:engines.length,verifiedArticles:new Set(rows.map(x=>x.part_id)).size};
+}
+window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage};
 })();
