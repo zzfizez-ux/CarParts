@@ -1,6 +1,6 @@
 # CarParts — belegte Autoteile direkt auf der Website
 
-**Stand 15.11.2026:** 41 kuratierte Automarken, 495 bekannte Modellreihen, 45 anklickbare Teilekategorien, **12 echte Artikelnummern und 17 durch Herstellerquellen belegte Fahrzeug-/Ausstattungsanwendungen** in Supabase. Die 45 Kategorien sind **Suchmöglichkeiten**, keine Produktlisten und keine bestätigten Passformen.
+**Stand 15.11.2026:** 41 kuratierte Automarken, 495 bekannte Modellreihen, 45 anklickbare Teilekategorien, **18 echte Artikelnummern und 23 durch Herstellerquellen belegte Fahrzeug-/Ausstattungsanwendungen** in Supabase. Die 45 Kategorien sind **Suchmöglichkeiten**, keine Produktlisten und keine bestätigten Passformen.
 
 ## Was tatsächlich verfügbar ist
 
@@ -11,6 +11,7 @@
 - **MANN-FILTER HU 6004 x / HU 6014/1 z**, nach Herstellerdaten für BMW 3er F30/F31 mit konkret dokumentierten N47-/B47-Motoren. HU 6014/1 z ist der vom Hersteller genannte Ersatz für HU 6014 z.
 - **MANN-FILTER HU 612/2 x**, Opel Corsa E 1.4 B14XEL 90 PS, Schaltgetriebe.
 - **MANN-FILTER C 22 028**, Mercedes C-Klasse W205 und GLC X253 mit konkretem OM651.921-Motor.
+- Weitere einzelne Herstelleranwendungen: **Renault Clio IV** (HU 10 002 z), **Hyundai i30** (HU 7001 x), **Nissan Qashqai II** (C 18 037), **Toyota Yaris III** (W 68/3), **Ford Focus III** (W 7015), **Mazda 3 BL** (W 712/73). Alle ausschließlich für die dokumentierten Motorcodes und Baujahre.
 - **Brembo P 85 137 / P 85 126 / P 85 125**, Bremsbeläge für Golf VII 1.6 TDI 105 PS, **nur bei passender Vorder-/Hinterachse, Bremssystem und nachgewiesenem PR-Code**. Diese verschiedenen Artikel sind Alternativen für verschiedene Bremsanlagen, nicht gleichzeitig passende Artikel.
 - **Brembo 09.C547.11 / 09.9145.11**, Bremsscheiben für unterschiedliche PR-Codes derselben Golf-VII-Ausführung.
 
