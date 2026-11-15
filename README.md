@@ -1,97 +1,51 @@
-# CarParts
+# CarParts — production catalog architecture
 
-AI-assisted vehicle parts finder.
+CarParts is no longer using fake product listings, fabricated prices or sample OE numbers. The website only displays actual catalog results from its API.
 
-## What is live now
+## Deployment
 
-- Dark/light mode with dark-mode-safe button surfaces.
-- Searchable vehicle **Brand + Model** selection.
-- Brand list is pre-populated immediately and then enriched from NHTSA vPIC.
-- Models are loaded dynamically for the selected brand and, when available, model year.
-- VIN decoding uses NHTSA vPIC.
-- Fitment readiness is shown instead of pretending an uncertain match is exact.
-- The frontend has a normalized **live parts catalog adapter** for OE numbers, aftermarket references, vehicle fitment, price, supplier and availability.
+The frontend is hosted by GitHub Pages. The backend is a Cloudflare Worker with a D1 SQL database.
 
-NHTSA's public vPIC service is a vehicle-information source, not a complete aftermarket parts catalogue. Its API documents make/model/model-year workflows and VIN decoding.
+1. Create a Cloudflare account/project and install Wrangler (Node.js required): `npm install -g wrangler`.
+2. Run `wrangler login`, then `wrangler d1 create carparts-catalog` inside `backend/`.
+3. Copy the generated D1 database ID into `backend/wrangler.toml`.
+4. Run `wrangler d1 execute carparts-catalog --remote --file=./schema.sql` inside `backend/`.
+5. Create a strong import secret: `wrangler secret put IMPORT_TOKEN`.
+6. Deploy from `backend/` with `wrangler deploy`.
+7. In root `catalog-config.js`, set `baseUrl` to your Worker URL. Example: `https://carparts-api.<your-subdomain>.workers.dev/catalog`.
+8. Set `ALLOWED_ORIGIN` to the public site origin in `backend/wrangler.toml` and redeploy.
 
-## Real parts data
+**No product or vehicle rows are bundled.** The database starts empty and will show no results until you import legitimately sourced data.
 
-For a production European parts catalogue, the intended provider is **TecAlliance / TecDoc**. TecDoc currently advertises 1,200+ brands, 12.8M article records and 724M vehicle linkages, with search by VIN, part number and OE number, vehicle-to-part matching, OE data and cross-reference data.
+## Real catalog ingestion
 
-Supplier pricing/availability is a separate layer: TecAlliance documents supplier comparison, real-time pricing/stock through connected ERP/TecCom integrations, and structured supplier article/price/availability data.
+Obtain licensed product, OE, cross-reference and fitment records from a provider such as TecAlliance TecDoc Web Service, and current offers from suppliers. TecDoc's product and linkage feeds and supplier price/stock feeds are distinct integrations. The import endpoint accepts *normalized records from authorized data sources*; it does not claim to implement an unlicensed TecDoc connector.
 
-**Important:** TecDoc data is licensed. Do not scrape or copy its catalogue into this repository without the appropriate agreement. Cross-reference usage is also governed by the applicable TecAlliance contract.
+`POST https://<worker>/admin/import`
 
-## Connect the live catalog
+Headers: `Authorization: Bearer <IMPORT_TOKEN>`, `Content-Type: application/json`.
 
-GitHub Pages is static hosting and does not run server-side PHP/Ruby/Python. Keep provider credentials on a backend, never in `app.js` or `catalog-config.js`.
+Body fields are arrays: `vehicles`, `articles`, `oeNumbers`, `crossReferences`, `fitments`, `sellers`, `offers` (max 500 records per array per request).
 
-Set:
+Record shapes:
 
-```js
-window.CARPARTS_CATALOG_CONFIG = {
-  baseUrl: "https://YOUR-SECURE-BACKEND.example.com/catalog",
-  provider: "TecDoc",
-  timeoutMs: 12000
-};
-```
+- `vehicles`: `{id,make,model,year,engineCode?,variant?}`
+- `articles`: `{id,name,brand,articleNumber,category?,type?,isOem?}`
+- `oeNumbers`: `{articleId,number,manufacturer?}`
+- `crossReferences`: `{articleId,number,brand?}`
+- `fitments`: `{articleId,vehicleId,engineCode?,variant?,qualification:"verified"|"unverified",notes?}`
+- `sellers`: `{id,name,url?}`
+- `offers`: `{articleId,sellerId,priceCents,currency?,inStock?}`
 
-Your backend should expose:
+Import parent records (vehicles, articles, sellers) before child records (OE, cross refs, fitments, offers), or supply them together. IDs should come from a consistent, stable provider namespace. Mark fitment `verified` **only** when the source provides an explicit vehicle-to-article linkage for the exact variant; otherwise mark it `unverified`. A vehicle-profile completeness score is **not** proof that a part fits.
 
-`POST /search`
+Search endpoint: `POST /catalog/search` with `{vehicle:{make,model,year,engine,variant,vin},query,mode}`. Returns `{results:[...]}`.
 
-Request:
+The frontend intentionally displays no parts when the backend is unconfigured, unavailable or empty. Prices are displayed only when imported from actual supplier offers.
 
-```json
-{
-  "vehicle": {
-    "make": "Audi",
-    "model": "A4",
-    "year": "2020",
-    "engine": "…",
-    "variant": "…",
-    "vin": "…"
-  },
-  "query": "front brake pads",
-  "mode": "value"
-}
-```
+## Next integration requirement
 
-Return normalized results:
+A licensed TecDoc Web Service subscription, or another legitimate automotive parts data source, plus actual supplier pricing feeds is still required for a populated catalog. Provider API keys must remain on the server; do not commit them to GitHub.
 
-```json
-{
-  "results": [
-    {
-      "name": "…",
-      "brand": "…",
-      "articleNumber": "…",
-      "oeNumbers": ["…"],
-      "crossReferences": ["…"],
-      "fitment": {
-        "status": "confirmed",
-        "score": 100,
-        "reason": "Explicit vehicle-to-part linkage from provider"
-      },
-      "price": 0,
-      "currency": "EUR",
-      "priceIncludesVat": true,
-      "seller": "…",
-      "availability": "in stock",
-      "url": "…"
-    }
-  ]
-}
-```
+TecAlliance: https://www.tecalliance.net/products?solution=catalogue-ecommerce
 
-The UI only labels a result as an exact fit when the connected provider explicitly returns confirmed/exact fitment or a score of at least 90. Otherwise it shows a warning.
-
-## Why there is no fake "real database" in the repo
-
-A real OE/aftermarket/fitment/price/dealer database is not something that can be truthfully generated from scratch inside a static website. It requires licensed catalogue data and live supplier feeds. TecDoc is a suitable production source for the catalogue/fitment layer; supplier/ERP feeds are needed for current price and stock.
-
-
-
-## Current limitation
-
-The repository intentionally does **not** pretend that its bundled demo parts are a live commercial catalogue. The live adapter is ready, but a real OE/aftermarket/fitment/price/dealer feed must be connected through a licensed provider and a secure backend. GitHub Pages itself only hosts static files, so provider secrets must stay server-side.
