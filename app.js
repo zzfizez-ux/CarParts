@@ -445,9 +445,34 @@ try{
 }catch(e){if(requestId!==catalogRequest)return false;setCatalogStatus("error");$("resultsGrid").innerHTML='<div class="empty-results">The catalog could not be reached. No substitute or demo results are shown.</div>';return false}
 }
 function renderResults(){renderResultsInternal($("partSearch").value.trim())}
-async function search(){const q=$("partSearch").value.trim();if(!state.vehicle){show("Select brand, model and year first.");$("finder").scrollIntoView({behavior:"smooth"});return}if(!q){show("Enter a part name or OE number.");return}await renderLiveResults(q);$("parts").scrollIntoView({behavior:"smooth"})}
+async function search(){
+ const q=$("partSearch").value.trim();
+ if(!state.vehicle){show("Bitte zuerst Marke, Modell und Baujahr wählen.");$("finder").scrollIntoView({behavior:"smooth"});return}
+ if(!q){show("Bitte Teilebezeichnung oder Artikelnummer eingeben.");return}
+ const typed=window.CarPartsVIN.check($("vin").value);
+ if(typed.vin&&vinResult.status==="unchecked")await decodeVin(typed.vin);
+ if(typed.vin&&["invalid","mismatch","checking"].includes(vinResult.status)){
+  show("VIN-Prüfung enthält einen Fehler. Bitte die VIN/Fahrzeugauswahl korrigieren.");
+  $("vinStatus").scrollIntoView({behavior:"smooth",block:"center"});return;
+ }
+ await renderLiveResults(q);
+ if(typed.vin&&state.vehicle){
+  const panel=$("resultsGrid");
+  const confirmed=vinResult.status==="matched";
+  const message=confirmed?
+   "VIN-Stammdaten abgeglichen – die angezeigten Teile sind NICHT individuell per VIN auf Passform bestätigt. Motorcode, Bauzeit und Ausstattung prüfen.":
+   "VIN nicht vollständig bestätigt. Die angezeigten Teile sind nur Katalog- oder Community-Hinweise; bitte Fahrzeugdaten und Ausstattung selbst prüfen.";
+  panel.insertAdjacentHTML("afterbegin",'<div class="vin-results-disclaimer">'+esc(message)+'</div>');
+ }
+ $("parts").scrollIntoView({behavior:"smooth"});
+}
 $("make").onchange=async()=>{$("model").value="";$("engine").value="";$("engineCustom").value="";await loadModels();loadEngines();vehicleChanged()};$("year").onchange=async()=>{await loadModels();loadEngines();vehicleChanged()};$("model").oninput=()=>{loadEngines();vehicleChanged()};$("model").onchange=()=>{loadEngines();vehicleChanged()};$("engine").onchange=()=>{$("engineCustom").value="";vehicleChanged()};$("engineCustom").oninput=vehicleChanged;$("variant").oninput=vehicleChanged;
-$("vin").addEventListener("change",()=>{const v=$("vin").value.trim();if(v)decodeVin(v)});$("searchBtn").onclick=search;$("partSearch").addEventListener("keydown",e=>{if(e.key==="Enter")search()});document.querySelectorAll(".quick-tags button").forEach(b=>b.onclick=()=>{$("partSearch").value=b.dataset.part;search()});
+$("vin").addEventListener("input",()=>{
+ vinCheckSequence++;vinResult={status:"unchecked",vin:window.CarPartsVIN.check($("vin").value).vin,decoded:null,local:null,reason:""};
+ vehicleChanged();
+});
+$("vin").addEventListener("change",()=>{const v=$("vin").value.trim();if(v)decodeVin(v)});
+$("searchBtn").onclick=search;$("partSearch").addEventListener("keydown",e=>{if(e.key==="Enter")search()});document.querySelectorAll(".quick-tags button").forEach(b=>b.onclick=()=>{$("partSearch").value=b.dataset.part;search()});
 document.querySelectorAll(".quality-toggle button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".quality-toggle button").forEach(x=>x.classList.remove("active"));b.classList.add("active");state.mode=b.dataset.mode;const q=$("partSearch").value.trim();if(q&&state.vehicle)renderLiveResults(q);else renderResults()});
 $("themeBtn").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("cp-dark",document.body.classList.contains("dark"));$("themeBtn").firstChild.textContent=document.body.classList.contains("dark")?"☀ ":"☾ ";$("themeBtn").lastChild.textContent=state.lang==="de"?(document.body.classList.contains("dark")?"Hell":"Dunkel"):(document.body.classList.contains("dark")?"Light":"Dark")};
 if(localStorage.getItem("cp-dark")==="true"){document.body.classList.add("dark");$("themeBtn").firstChild.textContent="☀ "}
@@ -458,12 +483,60 @@ $("langBtn").onclick=()=>{state.lang=state.lang==="en"?"de":"en";applyLang()};ap
 
 $("uploadBtn").onclick=()=>$("photoInput").click();document.querySelector(".upload-card").onclick=e=>{if(e.target.closest("button"))return;$("photoInput").click()};
 $("photoInput").onchange=async()=>{const f=$("photoInput").files[0];if(!f)return;const url=URL.createObjectURL(f);$("preview").style.display="block";$("preview").innerHTML=f.type.startsWith("image/")?'<img src="'+url+'" alt="Uploaded vehicle document/photo">':'<div style="padding:12px;font-size:11px">PDF selected</div>';$("scanProgress").textContent="Reading vehicle identifiers…";try{if(window.Tesseract&&f.type.startsWith("image/")){const r=await Tesseract.recognize(f,"eng");const text=r.data.text||"";const vin=(text.toUpperCase().match(/[A-HJ-NPR-Z0-9]{17}/)||[])[0];if(vin){$("vin").value=vin;$("scanProgress").textContent="VIN found. Decoding vehicle…";await decodeVin(vin)}else{$("scanProgress").textContent="No reliable 17-character VIN found. Please enter the VIN or choose vehicle details manually.";show("We could not reach a 100% identification from this image. Please verify the vehicle details.")}}else{$("scanProgress").textContent="PDF selected. Browser OCR is image-based; use a clear screenshot/photo of the vehicle data for automatic extraction."}}catch(e){$("scanProgress").textContent="Identification could not be confirmed. Please verify manually.";show("No 100% match found. Please verify the vehicle.")}};
-async function decodeVin(vin){vin=String(vin||"").trim().toUpperCase();if(!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)){show("Please enter a valid 17-character VIN.");return}try{const d=await api("/DecodeVinValues/"+encodeURIComponent(vin)+"?format=json");const rows=d.Results||[];const p=vehicleProfileFromVin(rows);if(!p.make||!p.model||!p.year)throw Error("Incomplete VIN profile");await applyVehicleProfile(p);$("vin").value=vin;$("scanProgress").textContent="VIN decoded. Review the detected vehicle before searching parts.";show("VIN decoded — review the vehicle profile before searching parts.")}catch(e){show("VIN could not be fully decoded. Please verify the VIN and vehicle details manually.")}}
+async function decodeVin(input){
+ const local=window.CarPartsVIN.check(input);
+ const token=++vinCheckSequence;
+ $("vin").value=local.vin;
+ if(!local.valid){
+  vinResult={status:local.vin?"invalid":"idle",vin:local.vin,decoded:null,local,reason:local.reason};
+  updateVinUI();vehicleChanged();return false;
+ }
+ vinResult={status:"checking",vin:local.vin,decoded:null,local,reason:""};
+ updateVinUI();
+ try{
+  // This call sends the VIN ONLY to NHTSA's public API; it is never saved in Supabase or the garage.
+  const d=await api("/DecodeVinValuesExtended/"+encodeURIComponent(local.vin)+"?format=json");
+  if(token!==vinCheckSequence||window.CarPartsVIN.check($("vin").value).vin!==local.vin)return false;
+  const row=Array.isArray(d.Results)?d.Results[0]:null;
+  if(!row||typeof row!=="object")throw Error("No VIN decoder results");
+  const p=window.CarPartsVIN.profile(row);
+  vinResult={status:"partial",vin:local.vin,decoded:p,local,reason:""};
+  // Never overwrite a manually selected car without explicit permission.
+  if(p.make&&p.model&&p.year&&(!$("make").value||!$("model").value||!$("year").value)){
+   await applyVinVehicleProfile(p,false);
+  }
+  if(token!==vinCheckSequence)return false;
+  refreshVinComparison();
+  $("scanProgress").textContent=vinResult.status==="matched"?
+   "VIN-Stammdaten abgeglichen. Ersatzteile zusätzlich anhand Motor-/PR-Code prüfen.":
+   "VIN nicht vollständig bestätigt. Marke, Modell und Baujahr mit Fahrzeugunterlagen abgleichen.";
+  return vinResult.status==="matched";
+ }catch(e){
+  if(token!==vinCheckSequence)return false;
+  vinResult={status:"unavailable",vin:local.vin,decoded:null,local,reason:""};
+  $("scanProgress").textContent="VIN-Abfrage nicht möglich. Die Fahrzeugauswahl bleibt manuell nutzbar.";
+  updateVinUI();
+  return false;
+ }
+}
+$("vinCheckBtn").onclick=()=>decodeVin($("vin").value);
+$("vinApplyBtn").onclick=async()=>{
+ if(!vinResult.decoded)return;
+ await applyVinVehicleProfile(vinResult.decoded,true);
+ refreshVinComparison();
+ if(vinResult.status==="mismatch")show("Nicht alle VIN-Fahrzeugdaten sind in unserer Modellauswahl verfügbar.");
+};
 
-$("learnBtn").onclick=()=>show("For a 100% fit, use the VIN or OEM part number. If still uncertain, check the engine code and compare the old part's dimensions/connectors.");
+
+$("learnBtn").onclick=()=>show("Die VIN hilft beim Fahrzeugabgleich, bestätigt aber keine 100%ige Teilepassung. Motorcode, PR-Codes, OE-Nummer und Herstellervorgaben zusätzlich vergleichen.");
 $("changeVehicle").onclick=()=>$("finder").scrollIntoView({behavior:"smooth"});function openModal(content){$("modalContent").innerHTML=content;$("modalBackdrop").classList.add("open")}function closeModal(){$("modalBackdrop").classList.remove("open")}$("modalClose").onclick=closeModal;$("modalBackdrop").onclick=e=>{if(e.target.id==="modalBackdrop")closeModal()};
-function saveGarage(){if(!state.vehicle){show(state.lang==="de"?"Bitte zuerst ein Fahrzeug auswählen.":"Select a vehicle first.");return}const key=JSON.stringify(state.vehicle);if(!state.garage.some(x=>JSON.stringify(x)===key)){state.garage.push(state.vehicle);localStorage.setItem("cp-garage",JSON.stringify(state.garage))}updateGarageCount();show(state.lang==="de"?"Fahrzeug zur Garage hinzugefügt.":"Vehicle added to your garage.")}
+function saveGarage(){if(!state.vehicle){show(state.lang==="de"?"Bitte zuerst ein Fahrzeug auswählen.":"Select a vehicle first.");return}const safe={make:state.vehicle.make,model:state.vehicle.model,
+ year:state.vehicle.year,engine:state.vehicle.engine||"",variant:state.vehicle.variant||""};
+ const key=JSON.stringify(safe);
+ if(!state.garage.some(x=>JSON.stringify(x)===key)){
+  state.garage.push(safe);localStorage.setItem("cp-garage",JSON.stringify(state.garage))
+ }updateGarageCount();show(state.lang==="de"?"Fahrzeug zur Garage hinzugefügt.":"Vehicle added to your garage.")}
 function updateGarageCount(){const el=document.querySelector("#garageBtn span");if(el)el.textContent=state.garage.length}
-function openGarage(){const title=state.lang==="de"?"Meine Garage":"My garage";const empty=state.lang==="de"?"Noch keine Fahrzeuge gespeichert.":"No vehicles saved yet.";let content="<h2>"+title+"</h2>";if(!state.garage.length)content+="<p>"+empty+"</p>";else{content+="<div class='garage-list'>"+state.garage.map((v,i)=>"<div class='garage-item'><div><strong>"+v.make+" "+v.model+"</strong><br><small>"+v.year+(v.engine?" · "+v.engine:"")+"</small></div><button data-garage='"+i+"'>"+(state.lang==="de"?"Auswählen":"Select")+"</button></div>").join("")+"</div>"}openModal(content);document.querySelectorAll("[data-garage]").forEach(b=>b.onclick=()=>{const v=state.garage[Number(b.dataset.garage)];$("make").value=[...$("make").options].find(o=>o.value===v.make)?.value||v.make;$("year").value=v.year;loadModels().then(()=>{$("model").value=v.model;loadEngines(v.engine||"");vehicleChanged();closeModal();$("finder").scrollIntoView({behavior:"smooth"})})})}
+function openGarage(){const title=state.lang==="de"?"Meine Garage":"My garage";const empty=state.lang==="de"?"Noch keine Fahrzeuge gespeichert.":"No vehicles saved yet.";let content="<h2>"+title+"</h2>";if(!state.garage.length)content+="<p>"+empty+"</p>";else{content+="<div class='garage-list'>"+state.garage.map((v,i)=>"<div class='garage-item'><div><strong>"+v.make+" "+v.model+"</strong><br><small>"+v.year+(v.engine?" · "+v.engine:"")+"</small></div><button data-garage='"+i+"'>"+(state.lang==="de"?"Auswählen":"Select")+"</button></div>").join("")+"</div>"}openModal(content);document.querySelectorAll("[data-garage]").forEach(b=>b.onclick=()=>{const v=state.garage[Number(b.dataset.garage)];$("vin").value="";vinCheckSequence++;vinResult={status:"idle",vin:"",decoded:null,local:null,reason:""};$("make").value=[...$("make").options].find(o=>o.value===v.make)?.value||v.make;$("year").value=v.year;loadModels().then(()=>{$("model").value=v.model;loadEngines(v.engine||"");vehicleChanged();closeModal();$("finder").scrollIntoView({behavior:"smooth"})})})}
 $("garageBtn").onclick=()=>openGarage();updateGarageCount();
-years();loadMakes();loadEngines();renderResults();
+years();loadMakes();loadEngines();updateVinUI();renderResults();
