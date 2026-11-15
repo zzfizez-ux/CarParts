@@ -9,15 +9,15 @@ function years(){const y=new Date().getFullYear();$("year").innerHTML='<option v
 function makeOptions(rows){const names=[...new Set([...FALLBACK_MAKES,...rows.map(x=>x.Make_Name).filter(Boolean)])].sort((a,b)=>a.localeCompare(b));return '<option value="">Select brand</option>'+names.map(x=>'<option value="'+String(x).replaceAll('"','&quot;')+'">'+x+"</option>").join("")}
 async function loadMakes(){const makeEl=$("make");makeEl.innerHTML=makeOptions([]);try{const d=await api("/GetAllMakes?format=json");{const selected=makeEl.value;makeEl.innerHTML=makeOptions(d.Results||[]);if(selected)makeEl.value=selected}}catch(e){show("Vehicle database could not be reached. Showing the built-in brand list.")}}
 async function loadModels(){
- const make=$("make").value,modelInput=$("model"),list=$("modelList");
- if(!make){modelInput.disabled=true;modelInput.value="";modelInput.placeholder="Select brand first";list.innerHTML="";return}
- const saved=modelInput.value;
+ const make=$("make").value,modelSelect=$("model");
+ if(!make){modelSelect.disabled=true;modelSelect.innerHTML='<option value="">Zuerst Marke wählen / Select brand first</option>';return []}
  const catalog=window.CARPARTS_POPULAR_MODELS||{};
- const knownKey=Object.keys(catalog).find(k=>k.toLocaleLowerCase()===make.toLocaleLowerCase());
- const models=knownKey?catalog[knownKey].split(",").map(x=>x.trim()).filter(Boolean):[];
- list.innerHTML=models.map(x=>'<option value="'+x.replaceAll("&","&amp;").replaceAll('"',"&quot;")+'"></option>').join("");
- modelInput.disabled=false;modelInput.value=saved;
- modelInput.placeholder=models.length?"Search popular models…":"Enter model (no curated list yet)…";
+ const key=Object.keys(catalog).find(k=>k.toLocaleLowerCase()===make.toLocaleLowerCase());
+ const models=key?catalog[key].split(",").map(x=>x.trim()).filter(Boolean):[];
+ const previous=modelSelect.value;
+ modelSelect.innerHTML='<option value="">Modell auswählen / Select model</option>'+models.map(x=>'<option value="'+x.replaceAll("&","&amp;").replaceAll('"',"&quot;")+'">'+x.replaceAll("&","&amp;").replaceAll("<","&lt;")+'</option>').join("");
+ if(previous&&models.includes(previous))modelSelect.value=previous;
+ modelSelect.disabled=false;
  return models;
 }
 function setOptionSelect(id,value,placeholder){const el=$(id);if(!el)return;el.innerHTML='<option value="">'+placeholder+'</option>'+(value?'<option value="'+String(value).replaceAll('"','&quot;')+'">'+value+'</option>':'');if(value)el.value=value}
