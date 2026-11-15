@@ -31,6 +31,29 @@ Die Website blendet Angebote aus, sobald `observed_at` mehr als **sieben Tage** 
 
 Alle 495 Modellreihen können über die 45 Kategorien nach Bremsbelägen, Scheiben, Öl-/Kraftstoff-/Luftfiltern, Fahrwerk, Elektrik, Motor, Auspuff etc. durchsucht werden. Die Website nennt ausdrücklich, wenn kein belegtes Teil verfügbar ist, und zeigt die belegte Artikelanzahl für das gewählte Modelljahr. **495 vollständig abgedeckte Modelle sind das noch nicht.** Dafür ist ein umfangreicher autorisierter Hersteller-/Händlerdatenfeed erforderlich; den gibt es derzeit nicht kostenlos in diesem Projekt.
 
+## Hersteller-Recherche und Suchanfragen (Build 19)
+
+Das **Suchergebnis muss zwischen bestätigter Passform und bloßen Recherchekandidaten unterscheiden**. Der neue Ablauf:
+
+1. CarParts fragt zuerst die bestehenden, genau auf Motor/Ausstattung bezogenen Hersteller-Teilezuordnungen in Supabase ab.
+2. Bei einer Ölfiltersuche, für die keine Herstellerzuordnung vorliegt, fragt CarParts den CC0-OilSpec-Datensatz über die bestehende `discover-parts`-Funktion ab und speichert die ausdrücklich ungeprüften Referenzen.
+3. Für weitere Teilekategorien ruft der Browser `supabase/functions/research-parts/index.ts` auf. Das Modul liest **bereits anhand offizieller Quellen recherchierte** Kandidaten aus `research_part_candidates` und zeigt sie direkt auf CarParts. Es speichert die angeforderte Kombination aus Marke, Modell, Baujahr und Teilekategorie in `research_part_requests`, wenn sie noch nicht vorhanden ist.
+4. Wenn bislang keine erlaubte Quelle vorliegt, sagt die Website das ausdrücklich. **Die automatische Speicherung der Suchkategorie ist keine automatische Internetsuche und erzeugt keine neuen Produktdaten.** Ein universeller Websuche- oder Shop-Datenfeed ist noch nicht angeschlossen.
+
+### Dacia Logan – dokumentierte Herstellerreferenzen
+
+Der erste neue Recherchefall umfasst mehrere **Brembo-Bremsbeläge für verschiedene Logan-I-, Logan-II- und MCV-II-Bremsanlagen**. Die Einträge enthalten Hersteller-Artikelnummern, konkrete Modell-/Bauzeit-/Bremsscheibenvarianten und Direktlinks zu Original-Herstellerkatalogseiten.
+
+- Logan I / LS: P 68 008 bei bestimmten **259-mm-Bremsscheiben**, P 68 038 bei bestimmten **238-mm-Bremsscheiben**, nicht austauschbar ohne Bremsanlagenprüfung.
+- Logan II / MCV II: unter anderem P 68 059, P 68 060, P 68 065 und P 68 069, je nach Bauzeit, Motor, Bremssattel und Modellcode. Für einzelne Teile ist ein Wechsel im April 2015 dokumentiert.
+- Quellen: [Brembo Logan I 1.4 LPG](https://www.bremboparts.com/europe/de/catalogue/dacia-logan-ls-1-4-mpi-lpg-ls0c/000004351-1), [Brembo Logan II 1.2](https://www.bremboparts.com/europe/de/catalogue/dacia-logan-ii-1-2/000114211-1), [Brembo Logan MCV II 1.5 dCi](https://www.bremboparts.com/europe/de/catalogue/dacia-logan-mcv-ii-1-5-dci/000057168-1).
+
+**Es wird nicht behauptet, dass ein gelisteter Artikel zum ausgewählten Einzelwagen passt.** Auch die angenäherte Baujahreinschränkung ist keine exakte Fahrzeugfreigabe. Vor dem Kauf sind VIN, HSN/TSN, Bremsscheibendurchmesser, Motor und Herstellerhinweise zu überprüfen. Für Research-Kandidaten gibt es keine erfundenen Fotos oder Preise.
+
+**API-/Lizenzgrenze:** Die kostenlos erreichbare Speero-API liefert für Dacia Logan unpassende Treffer, Saudi-Riyal-Preise und keine belastbaren Fahrzeug-Fitment-Angaben; die dokumentierte gemeinsame Cache-Dauer beträgt nur 300 Sekunden. Ihr Inhalt wird daher nicht dauerhaft kopiert oder als deutsche Ersatzteilsuche präsentiert. eBay Browse erfordert OAuth und Produktionsfreigabe; das ist hier noch nicht eingerichtet. Es gibt noch keine verlässliche, allgemein freigegebene kostenlose Live-Produktsuche für beliebige Fahrzeuge und Teilearten.
+
+**Sicherheit:** Das Backend akzeptiert nur die 41 bekannten Marken, die 495 hinterlegten Modelle, vorgegebene Teilekategorien und ein plausibles Baujahr. Keine VIN, keine frei eingegebene Nachricht, keine IP und keine personenbezogenen Daten werden in der Suchanfragetabelle gespeichert. Die öffentlich erreichbare Funktion ist auf unseren Website-Ursprung und den Supabase-Publishable-Key beschränkt. Beide neuen Tabellen nutzen RLS; Browser dürfen Herstellerkandidaten nur lesen, die aggregierten Suchanfragen sind privat.
+
 ## Neue frei nutzbare Datenquelle: OilSpec Commons (CC0)
 
 CarParts verwendet zusätzlich einen **öffentlich verfügbaren CC0-Datensatz**: [OilSpec Commons](https://github.com/carbonautorepair/oilspec-commons) von carbonautorepair. Die Daten wurden für unsere 41 bekannten Marken und kuratierten Modelle gefiltert und als `open-oilfilters-data.js` eingebunden.
