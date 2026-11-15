@@ -12,19 +12,19 @@ AI-assisted vehicle parts finder.
 - Fitment readiness is shown instead of pretending an uncertain match is exact.
 - The frontend has a normalized **live parts catalog adapter** for OE numbers, aftermarket references, vehicle fitment, price, supplier and availability.
 
-NHTSA's public vPIC service is a vehicle-information source, not a complete aftermarket parts catalogue. Its API documents make/model/model-year workflows and VIN decoding. citeturn608366search0turn608366search1
+NHTSA's public vPIC service is a vehicle-information source, not a complete aftermarket parts catalogue. Its API documents make/model/model-year workflows and VIN decoding.
 
 ## Real parts data
 
-For a production European parts catalogue, the intended provider is **TecAlliance / TecDoc**. TecDoc currently advertises 1,200+ brands, 12.8M article records and 724M vehicle linkages, with search by VIN, part number and OE number, vehicle-to-part matching, OE data and cross-reference data. citeturn990007search1turn990007search3
+For a production European parts catalogue, the intended provider is **TecAlliance / TecDoc**. TecDoc currently advertises 1,200+ brands, 12.8M article records and 724M vehicle linkages, with search by VIN, part number and OE number, vehicle-to-part matching, OE data and cross-reference data.
 
-Supplier pricing/availability is a separate layer: TecAlliance documents supplier comparison, real-time pricing/stock through connected ERP/TecCom integrations, and structured supplier article/price/availability data. citeturn990007search0turn990007search7
+Supplier pricing/availability is a separate layer: TecAlliance documents supplier comparison, real-time pricing/stock through connected ERP/TecCom integrations, and structured supplier article/price/availability data.
 
-**Important:** TecDoc data is licensed. Do not scrape or copy its catalogue into this repository without the appropriate agreement. Cross-reference usage is also governed by the applicable TecAlliance contract. citeturn990007search5
+**Important:** TecDoc data is licensed. Do not scrape or copy its catalogue into this repository without the appropriate agreement. Cross-reference usage is also governed by the applicable TecAlliance contract.
 
 ## Connect the live catalog
 
-GitHub Pages is static hosting and does not run server-side PHP/Ruby/Python. Keep provider credentials on a backend, never in `app.js` or `catalog-config.js`. citeturn201080search0
+GitHub Pages is static hosting and does not run server-side PHP/Ruby/Python. Keep provider credentials on a backend, never in `app.js` or `catalog-config.js`.
 
 Set:
 
@@ -88,5 +88,10 @@ The UI only labels a result as an exact fit when the connected provider explicit
 
 ## Why there is no fake "real database" in the repo
 
-A real OE/aftermarket/fitment/price/dealer database is not something that can be truthfully generated from scratch inside a static website. It requires licensed catalogue data and live supplier feeds. TecDoc is a suitable production source for the catalogue/fitment layer; supplier/ERP feeds are needed for current price and stock. citeturn990007search0turn990007search1
+A real OE/aftermarket/fitment/price/dealer database is not something that can be truthfully generated from scratch inside a static website. It requires licensed catalogue data and live supplier feeds. TecDoc is a suitable production source for the catalogue/fitment layer; supplier/ERP feeds are needed for current price and stock.
 
+
+
+## Current limitation
+
+The repository intentionally does **not** pretend that its bundled demo parts are a live commercial catalogue. The live adapter is ready, but a real OE/aftermarket/fitment/price/dealer feed must be connected through a licensed provider and a secure backend. GitHub Pages itself only hosts static files, so provider secrets must stay server-side.
