@@ -156,3 +156,26 @@ body.dark .confidence h2{color:#f8fbff!important;text-shadow:none}
 .parts-more-grid{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
 .parts-more-grid button{white-space:normal;text-align:center;line-height:1.35;max-width:100%}
 body.dark .parts-more summary{background:#1f2b38;color:#dde7ed;border-color:#425060}
+
+/* Open CC0 oil filter hints: visually distinct from manufacturer-confirmed articles. */
+.open-oil-summary{grid-column:1/-1;border:1px solid #c9ad68;background:#fff9e9;color:#4b3e23;border-radius:17px;padding:23px;min-width:0}
+.open-oil-summary h3{font:800 21px Manrope,sans-serif;margin:13px 0 10px;color:#43371e}
+.open-oil-summary p{line-height:1.7;color:#564a34;font-size:12px;margin:0 0 15px}
+.open-oil-label{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;color:#835c17}
+.open-oil-picker-label{font-size:12px;font-weight:800;color:#453a24;display:block;margin:19px 0 9px}
+.open-oil-summary #openOilEngine{display:block;width:100%;border:1px solid #bdac87;background:#fff;color:#372e21;padding:12px 15px;border-radius:10px;font-size:12px;min-height:43px}
+.open-oil-summary p.open-oil-source{margin:13px 0 0;color:#786746;font-size:11px}
+.open-oil-source a{color:inherit;font-weight:800;text-decoration:underline;text-underline-offset:2px}
+.open-oil-products{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.open-oil-select-prompt{grid-column:1/-1;padding:23px;text-align:center;border:1px dashed var(--line);border-radius:13px;background:var(--card);color:var(--muted);font-size:12px;line-height:1.65}
+.open-oil-card{border-color:#a8935c}
+.open-oil-warning{display:inline-block;background:#f7e8bc;color:#694e11;padding:8px 11px;border-radius:9px;font-size:10px;font-weight:850;line-height:1.5}
+body.dark .open-oil-summary{background:#25241c;border-color:#6c5a36;color:#f5e6c5}
+body.dark .open-oil-summary h3,body.dark .open-oil-picker-label{color:#f4e6c5}
+body.dark .open-oil-summary p{color:#d7c9a9}
+body.dark .open-oil-label{color:#f0ce7c}
+body.dark .open-oil-summary #openOilEngine{background:#101820;color:#f6f0e3;border-color:#6b5b40}
+body.dark .open-oil-summary p.open-oil-source{color:#e7cea0}
+body.dark .open-oil-card{border-color:#65583a}
+body.dark .open-oil-warning{background:#453818;color:#f6dea2}
+@media(max-width:780px){.open-oil-products{grid-template-columns:1fr}.open-oil-summary{padding:17px}}
