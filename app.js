@@ -40,17 +40,24 @@ const ENGINE_BY_BRAND={
  "Tesla":["Elektro Standard Range","Elektro Long Range","Elektro Performance"],
  "Porsche":["2.0 Turbo","2.5 Turbo","3.0 V6","4.0 V8","Hybrid","Plug-in-Hybrid","Elektro"]
 };
-function loadEngines(preferred=""){
- const el=$("engine"),custom=$("engineCustom"),make=$("make").value,model=$("model").value;
+function loadEngines(preferred){
+ const el=$("engine"),custom=$("engineCustom"),make=$("make").value;
+ if(!el)return [];
  const options=[...new Set([...(ENGINE_BY_BRAND[make]||[]),...COMMON_ENGINES])];
- const last=preferred||"";
+ const selected=typeof preferred==="string"?preferred:el.value;
+ const manual=custom?.value||"";
  el.innerHTML='<option value="">Motor auswählen / Select engine</option>'+options.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
- if(last&&options.includes(last)){el.value=last;custom.style.display="none";custom.value=""}
- else if(last){el.value="Andere Motorisierung (selbst eingeben)";custom.style.display="block";custom.value=last}
- else {el.value="";custom.style.display="none";custom.value=""}
- el.disabled=!make||!model;
+ if(selected&&options.includes(selected))el.value=selected;
+ else if(selected&&selected!=="Andere Motorisierung (selbst eingeben)"){
+  el.value="Andere Motorisierung (selbst eingeben)";
+  if(custom)custom.value=selected;
+ } else el.value=selected||"";
+ if(custom&&manual&&!custom.value)custom.value=manual;
+ // Keep native dropdown available even when an external script or vehicle API fails.
+ el.disabled=false;
+ return options;
 }
-function chosenEngine(){return $("engine").value==="Andere Motorisierung (selbst eingeben)"?$("engineCustom").value.trim():$("engine").value}
+function chosenEngine(){return $("engineCustom")?.value.trim()||$("engine").value}
 function setOptionSelect(id,value,placeholder){const el=$(id);if(!el)return;el.innerHTML='<option value="">'+placeholder+'</option>'+(value?'<option value="'+String(value).replaceAll('"','&quot;')+'">'+value+'</option>':'');if(value)el.value=value}
 function vehicleProfileFromVin(rows){const get=k=>(rows.find(x=>x.Variable===k)||{}).Value||"";return {make:get("Make"),model:get("Model"),year:get("Model Year"),engine:get("Engine Model")||get("Engine Configuration")||get("Displacement (L)"),fuel:get("Fuel Type - Primary"),drive:get("Drive Type"),body:get("Body Class"),doors:get("Doors"),trim:get("Trim")}}
 function applyVehicleProfile(p){if(p.make){const opt=[...$("make").options].find(o=>o.value.toLowerCase()===p.make.toLowerCase());$("make").value=opt?opt.value:p.make}if(p.year){$("year").value=p.year}return loadModels().then(()=>{if(p.model)$("model").value=p.model;loadEngines(p.engine||"");if(p.body)$("variant").value=[p.body,p.trim].filter(Boolean).join(" · ");vehicleChanged()})}
@@ -110,7 +117,7 @@ try{
 }
 function renderResults(){renderResultsInternal($("partSearch").value.trim())}
 async function search(){const q=$("partSearch").value.trim();if(!state.vehicle){show("Select brand, model and year first.");$("finder").scrollIntoView({behavior:"smooth"});return}if(!q){show("Enter a part name or OE number.");return}await renderLiveResults(q);$("parts").scrollIntoView({behavior:"smooth"})}
-$("make").onchange=async()=>{$("model").value="";await loadModels();loadEngines();vehicleChanged()};$("year").onchange=async()=>{await loadModels();loadEngines();vehicleChanged()};$("model").oninput=()=>{loadEngines();vehicleChanged()};$("model").onchange=()=>{loadEngines();vehicleChanged()};$("engine").onchange=()=>{const custom=$("engineCustom");custom.style.display=$("engine").value==="Andere Motorisierung (selbst eingeben)"?"block":"none";if(custom.style.display==="none")custom.value="";vehicleChanged()};$("engineCustom").oninput=vehicleChanged;$("variant").oninput=vehicleChanged;
+$("make").onchange=async()=>{$("model").value="";$("engine").value="";$("engineCustom").value="";await loadModels();loadEngines();vehicleChanged()};$("year").onchange=async()=>{await loadModels();loadEngines();vehicleChanged()};$("model").oninput=()=>{loadEngines();vehicleChanged()};$("model").onchange=()=>{loadEngines();vehicleChanged()};$("engine").onchange=()=>{$("engineCustom").value="";vehicleChanged()};$("engineCustom").oninput=vehicleChanged;$("variant").oninput=vehicleChanged;
 $("vin").addEventListener("change",()=>{const v=$("vin").value.trim();if(v)decodeVin(v)});$("searchBtn").onclick=search;$("partSearch").addEventListener("keydown",e=>{if(e.key==="Enter")search()});document.querySelectorAll(".quick-tags button").forEach(b=>b.onclick=()=>{$("partSearch").value=b.dataset.part;search()});
 document.querySelectorAll(".quality-toggle button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".quality-toggle button").forEach(x=>x.classList.remove("active"));b.classList.add("active");state.mode=b.dataset.mode;const q=$("partSearch").value.trim();if(q&&state.vehicle)renderLiveResults(q);else renderResults()});
 $("themeBtn").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("cp-dark",document.body.classList.contains("dark"));$("themeBtn").firstChild.textContent=document.body.classList.contains("dark")?"☀ ":"☾ ";$("themeBtn").lastChild.textContent=state.lang==="de"?(document.body.classList.contains("dark")?"Hell":"Dunkel"):(document.body.classList.contains("dark")?"Light":"Dark")};
