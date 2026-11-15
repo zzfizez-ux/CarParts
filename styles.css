@@ -7,3 +7,5 @@ body.dark .upload-icon{background:#202830;color:#f2f5f7}
 body.dark .vehicle-confirm>span{background:#193627}
 body.dark .match{background:#173a2a;color:#8fe0b1}
 body.dark .match.warn{background:#3b2f18;color:#f0c66b}
+
+.fitment-score{margin-left:auto;min-width:48px;text-align:center;font-size:12px;padding:7px 8px;border-radius:999px;background:#3a2f18;color:#d9b45b}.fitment-score.good{background:#203a2a;color:#9bdbb0}.fitment-score.ready{background:#1e4530;color:#a9e7bd}.fitment-score.needs{background:#3a2f18;color:#e4bd6d}body.dark .fitment-score.needs{background:#3a2f18;color:#e4bd6d}body.dark .fitment-score.good,body.dark .fitment-score.ready{background:#193b29;color:#9ee1b6}
