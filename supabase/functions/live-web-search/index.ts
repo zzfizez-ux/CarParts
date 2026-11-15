@@ -1,6 +1,6 @@
-// CarParts optional live web search: server-side Tavily adapter.
-// Only when an authorized operator sets TAVILY_API_KEY in Supabase Edge Function secrets.
-// Store/display web-result metadata only after verifying third-party reuse rights.
+// CarParts keyless web discovery: public Mwmbl JSON API, respecting its noncommercial CC BY-NC-SA license.
+// 1,000 free anonymous queries/month at 1 req/s per provider IP; our daily limit is stricter.
+// Show only directly relevant short references with source attribution; never mislabel as fitted parts.
 // No VIN, IP, free-form user text or personal identifiers are saved.
 const ORIGIN="https://zzfizez-ux.github.io";
 const BASE="https://umhzxsryqhwzxrmkbmwp.supabase.co/rest/v1/";
@@ -53,19 +53,32 @@ function hostAllowed(s:string){
   return u.protocol==="https:"&&DOMAINS.some(d=>u.hostname===d||u.hostname.endsWith("."+d));
  }catch{return false}
 }
-function formatted(results:unknown){
+function formatted(results:unknown, make:string, model:string, part:string){
  if(!Array.isArray(results))return [];
  const out:any[]=[],seen=new Set<string>();
+ const lc=(x:string)=>x.toLocaleLowerCase("de-DE");
+ const partLc=lc(part);
+ const concepts=partLc.includes("brems")
+  ? ["brems","brake","pad","brembo"]
+  : partLc.includes("filter")?["filter","öl","oil","mann","wix"]:
+    [partLc,partLc.slice(0,Math.min(5,partLc.length))];
  for(const item of results){
   if(!item||typeof item!=="object")continue;
   const x=item as Record<string,unknown>;
   if(typeof x.url!=="string"||!hostAllowed(x.url)||seen.has(x.url))continue;
   if(typeof x.title!=="string"||x.title.length<6)continue;
-  const u=new URL(x.url);seen.add(x.url);
-  out.push({title:clean(x.title,140),url:u.href,
-   snippet:typeof x.content==="string"?clean(x.content,170):"",
+  const u=new URL(x.url);
+  const text=lc([x.title,typeof x.content==="string"?x.content:"",u.pathname].join(" "));
+  // A model name alone is not a product hit. Match the part and at least the vehicle make.
+  if(!text.includes(lc(make))||!concepts.some(c=>text.includes(c)))continue;
+  // Don't present mismatched models as evidence for the selected model.
+  const modelLc=lc(model);
+  const modelMatches=text.includes(modelLc)||(modelLc==="3er"&&/3er|3.series|320d|318d/.test(text));
+  if(!modelMatches)continue;
+  seen.add(x.url);
+  out.push({title:clean(x.title,125),url:u.href,
+   snippet:typeof x.content==="string"?clean(x.content,125):"",
    merchant:u.hostname.replace(/^www\./,""),
-   // Prices/images can't be reliably verified from generic web search snippets.
    price:null,image:null,fitment_verified:false});
   if(out.length>=10)break;
  }
@@ -97,56 +110,49 @@ Deno.serve(async(req:Request)=>{
    select:"id",brand_id:"eq."+makes[0].id,name:"eq."+model,limit:"1"});
   if(!models.length)return json({error:"Unknown model"},422);
 
-  const providerKey=Deno.env.get("TAVILY_API_KEY");
-  if(!providerKey)return json({status:"not_configured",results:[],
-   message:"Es ist noch kein autorisierter Websuchanbieter für CarParts verbunden.",
-   fitment_verified:false,prices_verified:false});
-  const cacheEnabled=Deno.env.get("WEB_SEARCH_CACHE_ALLOWED")==="true";
+  // Free anonymous Mwmbl API: no account, key or payment method.
   const queryHash=await hash([make,model,year,clean(part,80),clean(engine,70)].join("|").toLowerCase());
   const now=Date.now();
-  if(cacheEnabled){
-   const rows=await db("live_web_search_cache","GET",{select:"results,checked_at,expiry",
-    query_hash:"eq."+queryHash,limit:"1"});
-   if(rows.length&&Date.parse(rows[0].expiry)>now){
-    return json({status:"cached",results:rows[0].results||[],
-     fetched_at:rows[0].checked_at,fitment_verified:false,prices_verified:false});
-   }
+  const cache=await db("live_web_search_cache","GET",{
+   select:"results,checked_at,expiry,provider",query_hash:"eq."+queryHash,limit:"1"
+  });
+  if(cache.length&&cache[0].provider==="mwmbl"&&Date.parse(cache[0].expiry)>now){
+   return json({status:"cached",provider:"mwmbl",license:"CC BY-NC-SA 4.0",
+    results:cache[0].results||[],fetched_at:cache[0].checked_at,
+    fitment_verified:false,prices_verified:false});
   }
   const today=new Date().toISOString().slice(0,10);
   const counts=await db("live_web_search_budget","GET",{
    select:"query_hash",lookup_day:"eq."+today,limit:String(MAX_LOOKUPS_PER_DAY+1)});
-  if(counts.length>=MAX_LOOKUPS_PER_DAY)return json({status:"quota",results:[],
-   message:"Tageslimit für kostenlose Websuchen erreicht.",fitment_verified:false},200);
-  if(counts.some((v:any)=>v.query_hash===queryHash))return json({status:"quota",results:[],
-   message:"Diese Suche wurde heute bereits abgefragt. Für erneute Live-Abfragen gilt ein Tageslimit.",fitment_verified:false});
-  // Only ONE basic search per distinct vehicle/part query to stay within free credits.
-  const q=clean(make+" "+model+" "+year+" "+(engine?engine+" ":"")+
-    part+" kaufen Preis Ersatzteile Deutschland",220);
-  const r=await fetch("https://api.tavily.com/search",{
-   method:"POST",headers:{"Authorization":"Bearer "+providerKey,"Content-Type":"application/json"},
-   body:JSON.stringify({query:q,topic:"general",search_depth:"basic",max_results:10,
-    include_answer:false,include_raw_content:false,include_images:false,
-    include_domains:DOMAINS,auto_parameters:false,safe_search:true}),
-   signal:AbortSignal.timeout(18000),
+  if(counts.length>=MAX_LOOKUPS_PER_DAY||counts.some((v:any)=>v.query_hash===queryHash)){
+   return json({status:"quota",provider:"mwmbl",results:[],
+    message:"Kostenloses Tageslimit erreicht. Bereits gespeicherte Suchtreffer bleiben verfügbar.",
+    fitment_verified:false,prices_verified:false});
+  }
+  const q=clean(make+" "+model+" "+part,150);
+  const url="https://api.mwmbl.org/api/v2/search/?q="+encodeURIComponent(q);
+  const external=await fetch(url,{
+   headers:{Accept:"application/json"},
+   signal:AbortSignal.timeout(13000)
   });
-  if(!r.ok){
-   const status=r.status===429?"quota":"provider_error";
-   return json({status,results:[],message:"Websuchanbieter nicht verfügbar ("+r.status+").",fitment_verified:false});
-  }
-  const data=await r.json();
-  const results=formatted(data.results);
-  // Record aggregate usage only; no VIN, IP or user identity.
+  if(external.status===429)return json({status:"quota",provider:"mwmbl",results:[],
+   message:"Der kostenlose Suchanbieter hat sein Rate-Limit erreicht.",fitment_verified:false});
+  if(!external.ok)return json({status:"provider_error",provider:"mwmbl",results:[],
+   message:"Mwmbl-Websuche nicht verfügbar ("+external.status+").",fitment_verified:false});
+  const payload=await external.json();
+  const results=formatted(payload.results,make,model,part);
+  // Store only bounded source-attributed references and aggregate query budgets.
+  const fetched=new Date(),expiry=new Date(fetched.getTime()+22*3600_000);
   await db("live_web_search_budget","POST",{on_conflict:"query_hash,lookup_day"},[{
-   query_hash:queryHash,lookup_day:today}]);
-  if(cacheEnabled){
-   const checkedAt=new Date(),expiry=new Date(checkedAt.getTime()+24*3600_000);
-   await db("live_web_search_cache","POST",{on_conflict:"query_hash"},[{
-    query_hash:queryHash,make,model,year,part_query_category:clean(part,80),
-    provider:"tavily",results,checked_at:checkedAt.toISOString(),expiry:expiry.toISOString()
-   }]);
-  }
-  return json({status:"live",results,fetched_at:new Date().toISOString(),
-   stored:cacheEnabled,fitment_verified:false,prices_verified:false});
+   query_hash:queryHash,lookup_day:today
+  }]);
+  await db("live_web_search_cache","POST",{on_conflict:"query_hash"},[{
+   query_hash:queryHash,make,model,year,part_query_category:clean(part,80),
+   provider:"mwmbl",results,checked_at:fetched.toISOString(),expiry:expiry.toISOString()
+  }]);
+  return json({status:"live",provider:"mwmbl",license:"CC BY-NC-SA 4.0",
+   results,stored:true,fetched_at:fetched.toISOString(),
+   fitment_verified:false,prices_verified:false});
  }catch(e){
   console.error("CarParts live search:",e instanceof Error?e.message:"unknown");
   return json({status:"error",results:[],
