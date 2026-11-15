@@ -141,3 +141,18 @@ body.dark .confidence .outline-btn.light{
 }
 body.dark .confidence .outline-btn.light:hover{background:#263748!important}
 body.dark .confidence h2{color:#f8fbff!important;text-shadow:none}
+
+/* Build 13: category navigation for every selected model; categories are queries, not listings. */
+.parts-category-browser{margin:17px 0 5px;padding:13px 0 2px}
+.parts-category-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:5px 18px;margin-bottom:12px}
+.parts-category-head strong{font-size:13px;font-weight:850;color:var(--ink)}
+.parts-category-head small{color:var(--muted);font-size:11px;line-height:1.55;flex:1;min-width:230px;max-width:700px}
+.parts-more{margin-top:12px}
+.parts-more summary{display:inline-block;cursor:pointer;list-style:none;font-size:11px;font-weight:800;color:var(--soft-text);padding:10px 14px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.parts-more summary:hover{border-color:var(--accent)}
+.parts-more summary::-webkit-details-marker{display:none}
+.parts-more summary::after{content:" +";font-weight:900;color:var(--accent)}
+.parts-more[open] summary::after{content:" −"}
+.parts-more-grid{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+.parts-more-grid button{white-space:normal;text-align:center;line-height:1.35;max-width:100%}
+body.dark .parts-more summary{background:#1f2b38;color:#dde7ed;border-color:#425060}
