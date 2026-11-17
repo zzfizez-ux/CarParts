@@ -173,6 +173,39 @@ function updatePartsCoverage(){
    :"Noch keine belegten Artikel für dieses Modelljahr. Die Teilekategorien sind nur Suchhilfen.";
  }).catch(()=>{if(request===coverageRequest)el.textContent="Teileabdeckung gerade nicht abrufbar."});
 }
+let registryEvidenceRequest=0;
+function updateRegistryEvidence(){
+ const el=$("registryEvidence");if(!el)return;
+ const make=$("make").value,model=$("model").value,year=Number($("year").value);
+ const ticket=++registryEvidenceRequest;
+ if(!make||!model){
+  el.textContent="Offene Fahrzeugregister: nach der Modellauswahl verfügbar.";
+  el.className="registry-evidence";return;
+ }
+ el.className="registry-evidence";
+ el.textContent="Prüfe die Modellbezeichnung in offenen amtlichen Fahrzeugregistern…";
+ if(!window.CarPartsDB?.getRegistryEvidence)return;
+ window.CarPartsDB.getRegistryEvidence(make,model).then(entry=>{
+  if(ticket!==registryEvidenceRequest||$("make").value!==make||$("model").value!==model)return;
+  if(!entry){
+   el.textContent="Für diese Modellschreibweise kein eindeutiger offener Registerbeleg – keine Aussage zur Passform.";
+   return;
+  }
+  const first=Number(entry.model_first_year)||null,last=Number(entry.model_last_year)||null;
+  const notYet=(first&&year&&year<first)||(last&&year&&year>last);
+  if(notYet){
+   el.textContent="⚠ Modelljahr prüfen: Die offene Quelle dokumentiert diese Modellreihe"+
+    (first?" ab "+first:"")+(last?" bis "+last:"")+
+    ". Keine automatische Passform- oder Baujahrgarantie.";
+   el.className="registry-evidence registry-warning";return;
+  }
+  el.textContent=(entry.german_registration?"✓ Modellreihe in deutschen Registern belegt. ":"✓ Modellreihe in offenen Länderregistern belegt. ")+
+   "Keine bestätigte Ersatzteilpassform. Quelle: VehiclesDB · CC BY 4.0.";
+  el.className="registry-evidence registry-sourced";
+ }).catch(()=>{
+  if(ticket===registryEvidenceRequest)el.textContent="Offene Register gerade nicht abrufbar. Fahrzeugeingabe bleibt nutzbar.";
+ });
+}
 let vinCheckSequence=0;
 let vinResult={status:"idle",vin:"",decoded:null,local:null,reason:""};
 function vinInput(){return window.CarPartsVIN.check($("vin").value)}
@@ -221,7 +254,7 @@ function refreshVinComparison(){
  updateVinUI();
 }
 function vehicleChanged(){
- updatePartsCoverage();++catalogRequest;refreshVinComparison();
+ updatePartsCoverage();updateRegistryEvidence();++catalogRequest;refreshVinComparison();
  const make=$("make").value,model=$("model").value,year=$("year").value,
   engine=chosenEngine(),variant=$("variant").value;
  const score=(make?25:0)+(model?25:0)+(year?15:0)+(engine?20:0)+(variant?5:0)+
@@ -262,6 +295,7 @@ function setCatalogStatus(status){
  status==="error"?"Teilekatalog nicht erreichbar":
  status==="empty"?"Noch keine belegten Angebote für diese Auswahl":
  status==="research"?"Hersteller-Recherchehinweise · individuelle Passform NICHT geprüft":
+ status==="diagnostic"?"Offene Diagnose-Bauteilhinweise · keine Teilepassform bestätigt":
  status==="community"?"Open-Data-Recherche · Teilenummern NICHT fitmentgeprüft":"CarParts Teilekatalog · Suchergebnisse direkt auf dieser Seite";
 }
 function placeholderPartImage(kind){
@@ -496,6 +530,34 @@ function renderWebMerchantResults(data,term){
   '<strong>Öffentliche Webrecherche mit Mwmbl</strong><p>'+esc(phrase)+
   ' <a target="_blank" rel="noopener noreferrer" href="https://developer.mwmbl.org/terms/">Quelle &amp; CC BY-NC-SA 4.0 ↗</a></p></aside>');
 }
+function renderOpenDiagnostic(rows,term){
+ const title=rows[0]?.code_name||"Fehlercode aus der freien Datensammlung";
+ const make=state.vehicle?.make||"das Fahrzeug";
+ const unique=new Map();
+ rows.forEach(r=>{
+  if(r.part_name&&!unique.has(r.part_name))unique.set(r.part_name,r);
+ });
+ const matched=[...unique.values()].slice(0,18);
+ $("resultsTitle").textContent="Diagnose-Recherche · Fehlercode "+esc(String(term).toUpperCase());
+ $("resultsGrid").innerHTML=
+  '<section class="diagnostic-overview">'+
+  '<span class="diagnostic-label">Open-Data-Bauteilhinweise · ODbL 1.0 · KEINE Ersatzteil-Freigabe</span>'+
+  '<h3>Fehlercode '+esc(String(term).toUpperCase())+' · '+esc(title)+'</h3>'+
+  '<p>Die folgenden Bezeichnungen stammen aus einer frei lizenzierten Diagnose-Datensammlung.'+
+  ' Sie sind <strong>mögliche, von einem Fehlercode betroffene Bauteilarten</strong>, keine spezifischen'+
+  ' Produktnummern und keine Diagnose für '+esc(make)+'. Ein Fehlercode allein beweist nicht,'+
+  ' dass ein Bauteil defekt ist. Vor Arbeiten die genaue Diagnose fachgerecht klären.</p>'+
+  '<p>Quelle: <a href="https://github.com/MechanicDB/MechanicDB-public" target="_blank" rel="noopener noreferrer">'+
+  'MechanicDB Free Developer Sample (ODbL 1.0) ↗</a> ·'+
+  ' <a href="https://github.com/zzfizez-ux/CarParts/blob/main/data/open-diagnostic-part-hints.json"'+
+  ' target="_blank" rel="noopener noreferrer">Abgeleitete offene Daten ansehen ↗</a></p></section>'+
+  '<div class="diagnostic-hint-list">'+matched.map(p=>
+   '<article class="diagnostic-hint"><span class="diagnostic-label">Recherchehinweis · nicht fitmentgeprüft</span>'+
+   '<h4>'+esc(p.part_name)+'</h4>'+
+   '<p>Keine passende Teilenummer, kein Preis und keine bestätigte Fahrzeugkompatibilität vorhanden.</p>'+
+   '</article>').join("")+'</div>';
+ setCatalogStatus("diagnostic");
+}
 async function renderSupabaseResults(term,requestId){
  setCatalogStatus("loading");
  $("resultsGrid").innerHTML='<div class="empty-results">Prüfe Herstellerdaten, offene Quellen und Online-Händler…</div>';
@@ -507,6 +569,13 @@ async function renderSupabaseResults(term,requestId){
   if(rows.length){renderSupabaseCards(rows,term);shown=true}
  }catch(e){unavailable=true}
  if(requestId!==catalogRequest)return false;
+ if(!shown&&window.CarPartsDB?.diagnosticCode(term)&&window.CarPartsDB?.findDiagnosticParts){
+  try{
+   const refs=await window.CarPartsDB.findDiagnosticParts(term,current.make);
+   if(requestId!==catalogRequest)return false;
+   if(Array.isArray(refs)&&refs.length){renderOpenDiagnostic(refs,term);shown=true}
+  }catch(e){/* Optional open-data diagnostic layer: ordinary search remains usable. */}
+ }
  if(!shown&&window.CarPartsOpenOil?.isOilFilterQuery(term)){
   try{
    const refs=await window.CarPartsOpenOil.find(current,term);
