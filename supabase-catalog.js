@@ -185,5 +185,32 @@ async function searchLiveWeb(vehicle,term){
  if(!data||!Array.isArray(data.results))throw new Error("Unexpected web search result");
  return data;
 }
-window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage,discoverOilRefs,researchParts,researchCategory,searchLiveWeb};
+// Both evidence tables have independent read-only RLS and attribution licenses.
+// Registry matches DO NOT verify individual vehicle parts or even exact production year.
+const registryPromises=new Map();
+function getRegistryEvidence(make,model){
+ if(!make||!model)return Promise.resolve(null);
+ const k=make+"|"+model;
+ if(!registryPromises.has(k)){
+  const promise=read("vehicle_registry_evidence?select=registry_model,registry_id,model_first_year,model_last_year,german_registration,country_codes,body_types,source_license,source_url"+
+   "&make=eq."+encodeURIComponent(make)+"&model=eq."+encodeURIComponent(model)+"&limit=1")
+   .then(rows=>rows[0]||null).catch(e=>{registryPromises.delete(k);throw e});
+  registryPromises.set(k,promise);
+ }
+ return registryPromises.get(k);
+}
+function diagnosticCode(term){
+ const t=String(term||"").trim().toUpperCase();
+ return /^[PBCU][0-9A-F]{4}$/.test(t)?t:null;
+}
+async function findDiagnosticParts(term,make){
+ const code=diagnosticCode(term);
+ if(!code)return null;
+ const q="open_diagnostic_parts?select=dtc_code,code_name,part_name,system_category,oem_make,source_url,license"+
+  "&dtc_code=eq."+encodeURIComponent(code)+
+  "&or=(oem_make.is.null,oem_make.eq."+encodeURIComponent(make||"")+")"+
+  "&order=part_name.asc&limit=30";
+ return read(q);
+}
+window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage,discoverOilRefs,researchParts,researchCategory,searchLiveWeb,getRegistryEvidence,findDiagnosticParts,diagnosticCode};
 })();
