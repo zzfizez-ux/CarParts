@@ -1,3 +1,25 @@
+# CarParts – Build 22: legaler Open-Data-Ausbau (17.11.2026)
+
+**Zwei neue, einzeln lizenzgeprüfte Datenquellen sind real in Supabase eingebunden:**
+
+1. **[VehiclesDB](https://vehiclesdb.com)** – Daten aus offen lizenzierten Fahrzeugregistern (CC BY 4.0). **465 der 495** im CarParts-Frontend auswählbaren Modellreihen konnten eindeutig zugeordnet werden; bei **434** Modellen gibt es einen Registerbeleg aus Deutschland. Die Liste ist ein Quellenbeleg für den *Modellnamen*, keine Bestätigung der ausgewählten Motorvariante, des Modelljahres oder der Ersatzteilpassform. Ein teilweise vorhandener dokumentierter Modellstart führt höchstens zu einem Hinweis, nicht zu einer automatischen Sperre.
+2. **[MechanicDB – Free Developer Samples](https://github.com/MechanicDB/MechanicDB-public)** – frei verfügbare *Diagnose-Bauteilarten* unter der Open Database License (ODbL 1.0). Aus den **90 Sample-Fehlercodes und 449 zugehörigen Quellzuordnungen** wurden **299 eindeutige mechanische Bauteilhinweise für 85 Fehlercodes** übernommen. Sie werden nur angezeigt, wenn jemand einen bekannten OBD-Fehlercode wie **P0420** ins normale Suchfeld eingibt. **Keine Teilenummern, Preisangebote, spezifischen Fahrzeugzuordnungen, Reparaturanleitungen oder bestätigten Defektursachen** werden daraus abgeleitet.
+
+Die **18 bisherigen, einzeln belegten Hersteller-Teilenummern mit 23 konkreten Herstelleranwendungen** bleiben bestehen; ihre Anzahl wurde durch diese beiden *anderen* Quellen **nicht** künstlich erhöht.
+
+## Datennachweise und freie Weiterverwendung
+
+- Open-Register-Snapshot: [`data/vehicle-registry-evidence-2026.11.12.json`](data/vehicle-registry-evidence-2026.11.12.json), Lizenz **CC BY 4.0**, sichtbare Website-Attribution „Vehicle data by [VehiclesDB](https://vehiclesdb.com)“. Erforderliche vorgelagerte Register-Quellennachweise sind vollständig unter [`data/VEHICLESDB-ATTRIBUTION.md`](data/VEHICLESDB-ATTRIBUTION.md) erhalten.
+- Offener, reduzierter Diagnose-Datensatz: [`data/open-diagnostic-part-hints.json`](data/open-diagnostic-part-hints.json), **ODbL 1.0**, aus `dtc_codes.csv`, `diagnostic_fixes.csv` und `replacement_parts.csv` des öffentlichen MechanicDB-Entwicklersamples. Der abgeleitete Datensatz bleibt unter ODbL zugänglich und sichtbar dem Ursprung zugeordnet.
+- Supabase-Tabellen `public.vehicle_registry_evidence` und `public.open_diagnostic_parts` nutzen **RLS mit öffentlich lesbaren, aber nicht durch anonyme Browser veränderbaren Daten**. Keine Nutzer-VIN, Suchhistorie oder personenbezogenen Inhalte werden in diesen Datensätzen gespeichert.
+- Die neuen Texte und Tabellen sind **nicht** Teil der Hersteller-Fitment- oder Händlerpreis-Datenbank. Die genaue Teilepassung muss weiterhin durch belastbare Herstellerunterlagen, Motorcode, OE-Nummer und ggf. Bremsen-PR-Code geprüft werden.
+
+**Quellenauswahl:** Nicht übernommen wurden die nur zur Evaluation freigegebenen OE-Cross-References von FAPI, da die [Datenlizenz](https://github.com/fapi-dev/auto-parts-cross-reference/blob/main/DATA-LICENSE.md) eine Veröffentlichung in einem Produkt ausdrücklich ausschließt; ebenso nicht-automotive Drohnenkomponenten-Kataloge und kommerzielle Anbieter ohne Freigabe. Eine freie, rechtmäßig übernehmbare Komplettdatenbank mit mehreren Millionen Pkw-Artikelnummern, lizenzierten Fotos und aktuellen Händlerpreisen ließ sich nicht belastbar finden.
+
+Die aktuelle automatische Internetsuche über Mwmbl funktioniert unverändert und bleibt wegen des eingeschränkten Index und der nichtkommerziellen Lizenz eine klar gekennzeichnete Webrecherche, keine universelle Ersatzteil- oder Preisquelle.
+
+---
+
 # CarParts — belegte Autoteile direkt auf der Website
 
 **Stand 15.11.2026:** 41 kuratierte Automarken, 495 bekannte Modellreihen, 45 anklickbare Teilekategorien, **18 echte Artikelnummern und 23 durch Herstellerquellen belegte Fahrzeug-/Ausstattungsanwendungen** in Supabase. Die 45 Kategorien sind **Suchmöglichkeiten**, keine Produktlisten und keine bestätigten Passformen.
