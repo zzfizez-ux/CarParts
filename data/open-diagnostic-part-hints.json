@@ -1,0 +1,3002 @@
+{
+  "source": "https://github.com/MechanicDB/MechanicDB-public",
+  "license": "ODbL-1.0",
+  "source_files": [
+    "dtc_codes.csv",
+    "diagnostic_fixes.csv",
+    "replacement_parts.csv"
+  ],
+  "description": "MechanicDB developer sample: original code->fix->part-name relationships, filtered to generic mechanical component names. NO SKU, price, individual vehicle fitment, or repair instructions. License ODbL 1.0; derived data may be shared under the same license.",
+  "records": [
+    {
+      "dtc_code": "C0031",
+      "code_name": "Left Front Wheel Speed Sensor",
+      "part_name": "Wheel speed sensor",
+      "system_category": "Chassis",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "C0031",
+      "code_name": "Left Front Wheel Speed Sensor",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Chassis",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "C0035",
+      "code_name": "Right Front Wheel Speed Sensor Supply",
+      "part_name": "Wheel speed sensor",
+      "system_category": "Chassis",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "C0035",
+      "code_name": "Right Front Wheel Speed Sensor Supply",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Chassis",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "C0040",
+      "code_name": "Brake Pedal Switch A",
+      "part_name": "Brake pedal switch",
+      "system_category": "Chassis",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "C0040",
+      "code_name": "Brake Pedal Switch A",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Chassis",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0011",
+      "code_name": "A Camshaft Position - Timing Over-Advanced or System Performance Bank 1",
+      "part_name": "Engine oil filter",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0011",
+      "code_name": "A Camshaft Position - Timing Over-Advanced or System Performance Bank 1",
+      "part_name": "VVT oil control valve (OCV) solenoid",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0011",
+      "code_name": "A Camshaft Position - Timing Over-Advanced or System Performance Bank 1",
+      "part_name": "Camshaft phaser/VVT actuator",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0011",
+      "code_name": "A Camshaft Position - Timing Over-Advanced or System Performance Bank 1",
+      "part_name": "Timing chain/belt kit (chain or belt, tensioner, guides)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0016",
+      "code_name": "Crankshaft Position - Camshaft Position Correlation Bank 1 Sensor A",
+      "part_name": "Crankshaft position sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0016",
+      "code_name": "Crankshaft Position - Camshaft Position Correlation Bank 1 Sensor A",
+      "part_name": "Camshaft position sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0016",
+      "code_name": "Crankshaft Position - Camshaft Position Correlation Bank 1 Sensor A",
+      "part_name": "Timing chain/belt kit (chain or belt, tensioner, guides)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0016",
+      "code_name": "Crankshaft Position - Camshaft Position Correlation Bank 1 Sensor A",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0101",
+      "code_name": "Mass or Volume Air Flow Sensor A Circuit Range/Performance",
+      "part_name": "Mass air flow (MAF) sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0101",
+      "code_name": "Mass or Volume Air Flow Sensor A Circuit Range/Performance",
+      "part_name": "MAF sensor connector pigtail",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0101",
+      "code_name": "Mass or Volume Air Flow Sensor A Circuit Range/Performance",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0102",
+      "code_name": "Mass or Volume Air Flow Sensor A Circuit Low",
+      "part_name": "Mass air flow (MAF) sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0102",
+      "code_name": "Mass or Volume Air Flow Sensor A Circuit Low",
+      "part_name": "MAF sensor connector pigtail",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0102",
+      "code_name": "Mass or Volume Air Flow Sensor A Circuit Low",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0106",
+      "code_name": "Manifold Absolute Pressure/Barometric Pressure Sensor Circuit Range/Performance",
+      "part_name": "Manifold absolute pressure (MAP) sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0106",
+      "code_name": "Manifold Absolute Pressure/Barometric Pressure Sensor Circuit Range/Performance",
+      "part_name": "MAP sensor O-ring seal",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0106",
+      "code_name": "Manifold Absolute Pressure/Barometric Pressure Sensor Circuit Range/Performance",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0113",
+      "code_name": "Intake Air Temperature Sensor 1 Circuit High Bank 1",
+      "part_name": "Intake air temperature sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0113",
+      "code_name": "Intake Air Temperature Sensor 1 Circuit High Bank 1",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0114",
+      "code_name": "Intake Air Temperature Sensor 1 Circuit Intermittent Bank 1",
+      "part_name": "Intake air temperature sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0114",
+      "code_name": "Intake Air Temperature Sensor 1 Circuit Intermittent Bank 1",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0118",
+      "code_name": "Engine Coolant Temperature Sensor 1 Circuit High",
+      "part_name": "Coolant temperature sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0118",
+      "code_name": "Engine Coolant Temperature Sensor 1 Circuit High",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0121",
+      "code_name": "Throttle/Pedal Position Sensor/Switch A Circuit Range/Performance",
+      "part_name": "Accelerator pedal position sensor assembly",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0121",
+      "code_name": "Throttle/Pedal Position Sensor/Switch A Circuit Range/Performance",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0128",
+      "code_name": "Coolant Thermostat (Coolant Temperature Below Thermostat Regulating Temperature)",
+      "part_name": "Engine thermostat",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0128",
+      "code_name": "Coolant Thermostat (Coolant Temperature Below Thermostat Regulating Temperature)",
+      "part_name": "Thermostat housing gasket/seal",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0128",
+      "code_name": "Coolant Thermostat (Coolant Temperature Below Thermostat Regulating Temperature)",
+      "part_name": "Water pump",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0128",
+      "code_name": "Coolant Thermostat (Coolant Temperature Below Thermostat Regulating Temperature)",
+      "part_name": "Water pump gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0131",
+      "code_name": "O2 Sensor Circuit Low Voltage Bank 1 Sensor 1",
+      "part_name": "Exhaust manifold/pipe gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0131",
+      "code_name": "O2 Sensor Circuit Low Voltage Bank 1 Sensor 1",
+      "part_name": "Oxygen sensor (bank/position-specific)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0131",
+      "code_name": "O2 Sensor Circuit Low Voltage Bank 1 Sensor 1",
+      "part_name": "High-temperature wiring repair kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0133",
+      "code_name": "O2 Sensor Circuit Slow Response Bank 1 Sensor 1",
+      "part_name": "Silicone-free RTV sealant (for future repairs)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0133",
+      "code_name": "O2 Sensor Circuit Slow Response Bank 1 Sensor 1",
+      "part_name": "Oxygen sensor (bank/position-specific)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0133",
+      "code_name": "O2 Sensor Circuit Slow Response Bank 1 Sensor 1",
+      "part_name": "Exhaust manifold/pipe gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0135",
+      "code_name": "O2 Sensor Heater Circuit Bank 1 Sensor 1",
+      "part_name": "Relay (O2 heater circuit)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0135",
+      "code_name": "O2 Sensor Heater Circuit Bank 1 Sensor 1",
+      "part_name": "Oxygen sensor (heated, bank/position-specific)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0135",
+      "code_name": "O2 Sensor Heater Circuit Bank 1 Sensor 1",
+      "part_name": "High-temperature wiring repair kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0138",
+      "code_name": "O2 Sensor Circuit High Voltage Bank 1 Sensor 2",
+      "part_name": "Exhaust manifold/pipe gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0138",
+      "code_name": "O2 Sensor Circuit High Voltage Bank 1 Sensor 2",
+      "part_name": "Oxygen sensor (bank/position-specific)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0138",
+      "code_name": "O2 Sensor Circuit High Voltage Bank 1 Sensor 2",
+      "part_name": "High-temperature wiring repair kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0141",
+      "code_name": "O2 Sensor Heater Circuit Bank 1 Sensor 2",
+      "part_name": "Relay (O2 heater circuit)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0141",
+      "code_name": "O2 Sensor Heater Circuit Bank 1 Sensor 2",
+      "part_name": "Oxygen sensor (heated, bank/position-specific)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0141",
+      "code_name": "O2 Sensor Heater Circuit Bank 1 Sensor 2",
+      "part_name": "High-temperature wiring repair kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0171",
+      "code_name": "System Too Lean Bank 1",
+      "part_name": "Intake gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0171",
+      "code_name": "System Too Lean Bank 1",
+      "part_name": "PCV hose",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0171",
+      "code_name": "System Too Lean Bank 1",
+      "part_name": "Fuel filter",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0171",
+      "code_name": "System Too Lean Bank 1",
+      "part_name": "Fuel pump assembly (if weak)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0171",
+      "code_name": "System Too Lean Bank 1",
+      "part_name": "Exhaust manifold gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0171",
+      "code_name": "System Too Lean Bank 1",
+      "part_name": "Exhaust manifold stud/nut set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0172",
+      "code_name": "System Too Rich Bank 1",
+      "part_name": "Fuel injector",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0172",
+      "code_name": "System Too Rich Bank 1",
+      "part_name": "Injector seal/washer kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0172",
+      "code_name": "System Too Rich Bank 1",
+      "part_name": "Fuel pressure regulator",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0172",
+      "code_name": "System Too Rich Bank 1",
+      "part_name": "Regulator seal kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0174",
+      "code_name": "System Too Lean Bank 2",
+      "part_name": "Intake gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0174",
+      "code_name": "System Too Lean Bank 2",
+      "part_name": "PCV hose",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0174",
+      "code_name": "System Too Lean Bank 2",
+      "part_name": "Fuel filter",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0174",
+      "code_name": "System Too Lean Bank 2",
+      "part_name": "Fuel pump assembly (if weak)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0174",
+      "code_name": "System Too Lean Bank 2",
+      "part_name": "Exhaust manifold gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0174",
+      "code_name": "System Too Lean Bank 2",
+      "part_name": "Exhaust manifold stud/nut set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0175",
+      "code_name": "System Too Rich Bank 2",
+      "part_name": "Fuel injector",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0175",
+      "code_name": "System Too Rich Bank 2",
+      "part_name": "Injector seal/washer kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0175",
+      "code_name": "System Too Rich Bank 2",
+      "part_name": "Fuel pressure regulator",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0175",
+      "code_name": "System Too Rich Bank 2",
+      "part_name": "Regulator seal kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0300",
+      "code_name": "Random/Multiple Cylinder Misfire Detected",
+      "part_name": "Spark plug set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0300",
+      "code_name": "Random/Multiple Cylinder Misfire Detected",
+      "part_name": "Ignition coil boot/seal kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0300",
+      "code_name": "Random/Multiple Cylinder Misfire Detected",
+      "part_name": "Intake gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0300",
+      "code_name": "Random/Multiple Cylinder Misfire Detected",
+      "part_name": "Electric fuel pump assembly",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0300",
+      "code_name": "Random/Multiple Cylinder Misfire Detected",
+      "part_name": "Fuel pressure test gauge",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0301",
+      "code_name": "Cylinder 1 Misfire Detected",
+      "part_name": "Spark plug (single)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0301",
+      "code_name": "Cylinder 1 Misfire Detected",
+      "part_name": "Ignition coil-on-plug unit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0301",
+      "code_name": "Cylinder 1 Misfire Detected",
+      "part_name": "Fuel injector (single cylinder)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0301",
+      "code_name": "Cylinder 1 Misfire Detected",
+      "part_name": "Injector O-ring service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0301",
+      "code_name": "Cylinder 1 Misfire Detected",
+      "part_name": "Cylinder head gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0301",
+      "code_name": "Cylinder 1 Misfire Detected",
+      "part_name": "Valve seat/guide service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0302",
+      "code_name": "Cylinder 2 Misfire Detected",
+      "part_name": "Spark plug (single)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0302",
+      "code_name": "Cylinder 2 Misfire Detected",
+      "part_name": "Ignition coil-on-plug unit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0302",
+      "code_name": "Cylinder 2 Misfire Detected",
+      "part_name": "Fuel injector (single cylinder)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0302",
+      "code_name": "Cylinder 2 Misfire Detected",
+      "part_name": "Injector O-ring service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0302",
+      "code_name": "Cylinder 2 Misfire Detected",
+      "part_name": "Cylinder head gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0302",
+      "code_name": "Cylinder 2 Misfire Detected",
+      "part_name": "Valve seat/guide service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0303",
+      "code_name": "Cylinder 3 Misfire Detected",
+      "part_name": "Spark plug (single)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0303",
+      "code_name": "Cylinder 3 Misfire Detected",
+      "part_name": "Ignition coil-on-plug unit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0303",
+      "code_name": "Cylinder 3 Misfire Detected",
+      "part_name": "Fuel injector (single cylinder)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0303",
+      "code_name": "Cylinder 3 Misfire Detected",
+      "part_name": "Injector O-ring service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0303",
+      "code_name": "Cylinder 3 Misfire Detected",
+      "part_name": "Cylinder head gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0303",
+      "code_name": "Cylinder 3 Misfire Detected",
+      "part_name": "Valve seat/guide service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0304",
+      "code_name": "Cylinder 4 Misfire Detected",
+      "part_name": "Spark plug (single)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0304",
+      "code_name": "Cylinder 4 Misfire Detected",
+      "part_name": "Ignition coil-on-plug unit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0304",
+      "code_name": "Cylinder 4 Misfire Detected",
+      "part_name": "Fuel injector (single cylinder)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0304",
+      "code_name": "Cylinder 4 Misfire Detected",
+      "part_name": "Injector O-ring service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0304",
+      "code_name": "Cylinder 4 Misfire Detected",
+      "part_name": "Cylinder head gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0304",
+      "code_name": "Cylinder 4 Misfire Detected",
+      "part_name": "Valve seat/guide service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0305",
+      "code_name": "Cylinder 5 Misfire Detected",
+      "part_name": "Spark plug (single)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0305",
+      "code_name": "Cylinder 5 Misfire Detected",
+      "part_name": "Ignition coil-on-plug unit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0305",
+      "code_name": "Cylinder 5 Misfire Detected",
+      "part_name": "Fuel injector (single cylinder)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0305",
+      "code_name": "Cylinder 5 Misfire Detected",
+      "part_name": "Injector O-ring service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0305",
+      "code_name": "Cylinder 5 Misfire Detected",
+      "part_name": "Cylinder head gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0305",
+      "code_name": "Cylinder 5 Misfire Detected",
+      "part_name": "Valve seat/guide service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0306",
+      "code_name": "Cylinder 6 Misfire Detected",
+      "part_name": "Spark plug (single)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0306",
+      "code_name": "Cylinder 6 Misfire Detected",
+      "part_name": "Ignition coil-on-plug unit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0306",
+      "code_name": "Cylinder 6 Misfire Detected",
+      "part_name": "Fuel injector (single cylinder)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0306",
+      "code_name": "Cylinder 6 Misfire Detected",
+      "part_name": "Injector O-ring service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0306",
+      "code_name": "Cylinder 6 Misfire Detected",
+      "part_name": "Cylinder head gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0306",
+      "code_name": "Cylinder 6 Misfire Detected",
+      "part_name": "Valve seat/guide service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0325",
+      "code_name": "Knock/Combustion Vibration Sensor A Circuit",
+      "part_name": "Knock (combustion vibration) sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0325",
+      "code_name": "Knock/Combustion Vibration Sensor A Circuit",
+      "part_name": "Shielded automotive wiring repair kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0325",
+      "code_name": "Knock/Combustion Vibration Sensor A Circuit",
+      "part_name": "Engine control module (ECM), replacement unit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0335",
+      "code_name": "Crankshaft Position Sensor A Circuit",
+      "part_name": "Crankshaft position sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0335",
+      "code_name": "Crankshaft Position Sensor A Circuit",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0335",
+      "code_name": "Crankshaft Position Sensor A Circuit",
+      "part_name": "Crankshaft reluctor wheel/tone ring",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0340",
+      "code_name": "Camshaft Position Sensor A Circuit Bank 1 or Single Sensor",
+      "part_name": "Camshaft position sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0340",
+      "code_name": "Camshaft Position Sensor A Circuit Bank 1 or Single Sensor",
+      "part_name": "Sensor O-ring seal",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0340",
+      "code_name": "Camshaft Position Sensor A Circuit Bank 1 or Single Sensor",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0340",
+      "code_name": "Camshaft Position Sensor A Circuit Bank 1 or Single Sensor",
+      "part_name": "Timing chain/belt service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0341",
+      "code_name": "Camshaft Position Sensor A Circuit Range/Performance Bank 1 or Single Sensor",
+      "part_name": "Camshaft position sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0341",
+      "code_name": "Camshaft Position Sensor A Circuit Range/Performance Bank 1 or Single Sensor",
+      "part_name": "Sensor O-ring seal",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0341",
+      "code_name": "Camshaft Position Sensor A Circuit Range/Performance Bank 1 or Single Sensor",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0341",
+      "code_name": "Camshaft Position Sensor A Circuit Range/Performance Bank 1 or Single Sensor",
+      "part_name": "Timing chain/belt service kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0401",
+      "code_name": "EGR A Flow Insufficient Detected",
+      "part_name": "EGR valve gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0401",
+      "code_name": "EGR A Flow Insufficient Detected",
+      "part_name": "EGR cooler gasket/clamp set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0401",
+      "code_name": "EGR A Flow Insufficient Detected",
+      "part_name": "EGR valve position sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0401",
+      "code_name": "EGR A Flow Insufficient Detected",
+      "part_name": "EGR valve assembly",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0402",
+      "code_name": "EGR A Flow Excessive Detected",
+      "part_name": "EGR valve gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0402",
+      "code_name": "EGR A Flow Excessive Detected",
+      "part_name": "EGR cooler gasket/clamp set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0402",
+      "code_name": "EGR A Flow Excessive Detected",
+      "part_name": "EGR valve position sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0402",
+      "code_name": "EGR A Flow Excessive Detected",
+      "part_name": "EGR valve assembly",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0403",
+      "code_name": "EGR A Control Circuit/Open",
+      "part_name": "EGR valve gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0403",
+      "code_name": "EGR A Control Circuit/Open",
+      "part_name": "EGR control valve/throttle assembly",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0403",
+      "code_name": "EGR A Control Circuit/Open",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0411",
+      "code_name": "AIR System A Incorrect Flow Detected",
+      "part_name": "AIR delivery hose",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0411",
+      "code_name": "AIR System A Incorrect Flow Detected",
+      "part_name": "AIR system check valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0411",
+      "code_name": "AIR System A Incorrect Flow Detected",
+      "part_name": "AIR switching/combination valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0411",
+      "code_name": "AIR System A Incorrect Flow Detected",
+      "part_name": "Secondary air injection pump",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0411",
+      "code_name": "AIR System A Incorrect Flow Detected",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0420",
+      "code_name": "Catalyst System Efficiency Below Threshold Bank 1",
+      "part_name": "Exhaust manifold/downpipe gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0420",
+      "code_name": "Catalyst System Efficiency Below Threshold Bank 1",
+      "part_name": "Upstream oxygen sensor (Bank 1 Sensor 1)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0420",
+      "code_name": "Catalyst System Efficiency Below Threshold Bank 1",
+      "part_name": "Catalytic converter (direct-fit)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0420",
+      "code_name": "Catalyst System Efficiency Below Threshold Bank 1",
+      "part_name": "Valve stem seal set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0420",
+      "code_name": "Catalyst System Efficiency Below Threshold Bank 1",
+      "part_name": "Head gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0430",
+      "code_name": "Catalyst System Efficiency Below Threshold Bank 2",
+      "part_name": "Exhaust manifold/downpipe gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0430",
+      "code_name": "Catalyst System Efficiency Below Threshold Bank 2",
+      "part_name": "Upstream oxygen sensor (Bank 1 Sensor 1)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0430",
+      "code_name": "Catalyst System Efficiency Below Threshold Bank 2",
+      "part_name": "Catalytic converter (direct-fit)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0430",
+      "code_name": "Catalyst System Efficiency Below Threshold Bank 2",
+      "part_name": "Valve stem seal set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0430",
+      "code_name": "Catalyst System Efficiency Below Threshold Bank 2",
+      "part_name": "Head gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0440",
+      "code_name": "EVAP System",
+      "part_name": "Fuel filler cap (OE-style seal)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0440",
+      "code_name": "EVAP System",
+      "part_name": "EVAP vapor hose assortment",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0440",
+      "code_name": "EVAP System",
+      "part_name": "EVAP purge solenoid valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0440",
+      "code_name": "EVAP System",
+      "part_name": "EVAP charcoal canister with vent valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0441",
+      "code_name": "EVAP System Incorrect Purge Flow",
+      "part_name": "EVAP vapor hose assortment",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0441",
+      "code_name": "EVAP System Incorrect Purge Flow",
+      "part_name": "EVAP purge solenoid valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0441",
+      "code_name": "EVAP System Incorrect Purge Flow",
+      "part_name": "EVAP charcoal canister with vent valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0441",
+      "code_name": "EVAP System Incorrect Purge Flow",
+      "part_name": "EVAP purge flow sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0442",
+      "code_name": "EVAP System Leak Detected (small leak)",
+      "part_name": "Fuel filler cap (OE-style seal)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0442",
+      "code_name": "EVAP System Leak Detected (small leak)",
+      "part_name": "EVAP vapor hose assortment",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0442",
+      "code_name": "EVAP System Leak Detected (small leak)",
+      "part_name": "EVAP purge solenoid valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0442",
+      "code_name": "EVAP System Leak Detected (small leak)",
+      "part_name": "EVAP charcoal canister with vent valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0446",
+      "code_name": "EVAP System Vent Control Circuit",
+      "part_name": "EVAP vent control solenoid valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0446",
+      "code_name": "EVAP System Vent Control Circuit",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0455",
+      "code_name": "EVAP System Leak Detected - Large Leak",
+      "part_name": "Fuel filler cap (OE-style seal)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0455",
+      "code_name": "EVAP System Leak Detected - Large Leak",
+      "part_name": "EVAP vapor hose assortment",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0455",
+      "code_name": "EVAP System Leak Detected - Large Leak",
+      "part_name": "EVAP charcoal canister with vent valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0455",
+      "code_name": "EVAP System Leak Detected - Large Leak",
+      "part_name": "Fuel sending unit seal/gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0456",
+      "code_name": "EVAP System Leak Detected (very small leak)",
+      "part_name": "Fuel filler cap (OE-style seal)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0456",
+      "code_name": "EVAP System Leak Detected (very small leak)",
+      "part_name": "EVAP vapor hose assortment",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0456",
+      "code_name": "EVAP System Leak Detected (very small leak)",
+      "part_name": "EVAP purge solenoid valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0456",
+      "code_name": "EVAP System Leak Detected (very small leak)",
+      "part_name": "EVAP charcoal canister with vent valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0457",
+      "code_name": "EVAP System Leak Detected (fuel cap loose/off)",
+      "part_name": "Fuel filler cap (OE-style seal)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0457",
+      "code_name": "EVAP System Leak Detected (fuel cap loose/off)",
+      "part_name": "EVAP vapor hose assortment",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0457",
+      "code_name": "EVAP System Leak Detected (fuel cap loose/off)",
+      "part_name": "EVAP purge solenoid valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0457",
+      "code_name": "EVAP System Leak Detected (fuel cap loose/off)",
+      "part_name": "EVAP charcoal canister with vent valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0500",
+      "code_name": "Vehicle Speed Sensor A Circuit",
+      "part_name": "VSS connector pigtail",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0500",
+      "code_name": "Vehicle Speed Sensor A Circuit",
+      "part_name": "Vehicle speed sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0500",
+      "code_name": "Vehicle Speed Sensor A Circuit",
+      "part_name": "Sensor O-ring",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0500",
+      "code_name": "Vehicle Speed Sensor A Circuit",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0505",
+      "code_name": "Idle Control System",
+      "part_name": "Intake gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0505",
+      "code_name": "Idle Control System",
+      "part_name": "Vacuum hose assortment",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0505",
+      "code_name": "Idle Control System",
+      "part_name": "Idle air control valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0505",
+      "code_name": "Idle Control System",
+      "part_name": "IAC valve gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0505",
+      "code_name": "Idle Control System",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0506",
+      "code_name": "Idle Control System RPM - Lower Than Expected",
+      "part_name": "Intake gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0506",
+      "code_name": "Idle Control System RPM - Lower Than Expected",
+      "part_name": "Vacuum hose assortment",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0506",
+      "code_name": "Idle Control System RPM - Lower Than Expected",
+      "part_name": "Idle air control valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0506",
+      "code_name": "Idle Control System RPM - Lower Than Expected",
+      "part_name": "IAC valve gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0506",
+      "code_name": "Idle Control System RPM - Lower Than Expected",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0507",
+      "code_name": "Idle Control System RPM - Higher Than Expected",
+      "part_name": "Intake gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0507",
+      "code_name": "Idle Control System RPM - Higher Than Expected",
+      "part_name": "Vacuum hose assortment",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0507",
+      "code_name": "Idle Control System RPM - Higher Than Expected",
+      "part_name": "Idle air control valve",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0507",
+      "code_name": "Idle Control System RPM - Higher Than Expected",
+      "part_name": "IAC valve gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0507",
+      "code_name": "Idle Control System RPM - Higher Than Expected",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0562",
+      "code_name": "System Voltage Low",
+      "part_name": "Ground strap",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0562",
+      "code_name": "System Voltage Low",
+      "part_name": "Alternator/generator",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0563",
+      "code_name": "System Voltage High",
+      "part_name": "Ground strap",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0563",
+      "code_name": "System Voltage High",
+      "part_name": "Alternator/generator",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0700",
+      "code_name": "Transmission Control System (MIL Request)",
+      "part_name": "Transmission filter/pan gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0700",
+      "code_name": "Transmission Control System (MIL Request)",
+      "part_name": "TCM connector pigtail",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0705",
+      "code_name": "Transmission Range Sensor A Circuit (PRNDL Input)",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0705",
+      "code_name": "Transmission Range Sensor A Circuit (PRNDL Input)",
+      "part_name": "Transmission range sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0706",
+      "code_name": "Transmission Range Sensor A Circuit Range/Performance",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0706",
+      "code_name": "Transmission Range Sensor A Circuit Range/Performance",
+      "part_name": "Transmission range sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0715",
+      "code_name": "Input/Turbine Shaft Speed Sensor A Circuit",
+      "part_name": "Input/turbine shaft speed sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0715",
+      "code_name": "Input/Turbine Shaft Speed Sensor A Circuit",
+      "part_name": "Sensor O-ring",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0715",
+      "code_name": "Input/Turbine Shaft Speed Sensor A Circuit",
+      "part_name": "Internal transmission wiring harness section",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0720",
+      "code_name": "Output Shaft Speed Sensor Circuit",
+      "part_name": "Output shaft speed sensor",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0720",
+      "code_name": "Output Shaft Speed Sensor Circuit",
+      "part_name": "Sensor O-ring",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0720",
+      "code_name": "Output Shaft Speed Sensor Circuit",
+      "part_name": "Internal transmission wiring harness section",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0741",
+      "code_name": "Torque Converter Clutch Circuit Performance/Stuck Off",
+      "part_name": "Transmission filter/pan gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0741",
+      "code_name": "Torque Converter Clutch Circuit Performance/Stuck Off",
+      "part_name": "Torque converter clutch solenoid",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0741",
+      "code_name": "Torque Converter Clutch Circuit Performance/Stuck Off",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0743",
+      "code_name": "Torque Converter Clutch Circuit Electrical",
+      "part_name": "Transmission filter/pan gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0743",
+      "code_name": "Torque Converter Clutch Circuit Electrical",
+      "part_name": "Torque converter clutch solenoid",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0743",
+      "code_name": "Torque Converter Clutch Circuit Electrical",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0755",
+      "code_name": "Shift Solenoid B",
+      "part_name": "Transmission filter/pan gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0755",
+      "code_name": "Shift Solenoid B",
+      "part_name": "Shift solenoid (or solenoid pack)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P0755",
+      "code_name": "Shift Solenoid B",
+      "part_name": "Valve body internal connector/harness",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2002",
+      "code_name": "Particulate Filter Efficiency Below Threshold Bank 1",
+      "part_name": "High-temperature silicone vacuum hose",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2002",
+      "code_name": "Particulate Filter Efficiency Below Threshold Bank 1",
+      "part_name": "Hose clamp set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2002",
+      "code_name": "Particulate Filter Efficiency Below Threshold Bank 1",
+      "part_name": "Exhaust gasket and clamp set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2002",
+      "code_name": "Particulate Filter Efficiency Below Threshold Bank 1",
+      "part_name": "Diesel particulate filter assembly",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2096",
+      "code_name": "Post Catalyst Fuel Trim System Too Lean Bank 1",
+      "part_name": "Intake gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2096",
+      "code_name": "Post Catalyst Fuel Trim System Too Lean Bank 1",
+      "part_name": "PCV hose",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2096",
+      "code_name": "Post Catalyst Fuel Trim System Too Lean Bank 1",
+      "part_name": "Fuel filter",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2096",
+      "code_name": "Post Catalyst Fuel Trim System Too Lean Bank 1",
+      "part_name": "Fuel pump assembly (if weak)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2096",
+      "code_name": "Post Catalyst Fuel Trim System Too Lean Bank 1",
+      "part_name": "Exhaust manifold gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2096",
+      "code_name": "Post Catalyst Fuel Trim System Too Lean Bank 1",
+      "part_name": "Exhaust manifold stud/nut set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2097",
+      "code_name": "Post Catalyst Fuel Trim System Too Rich Bank 1",
+      "part_name": "Fuel injector",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2097",
+      "code_name": "Post Catalyst Fuel Trim System Too Rich Bank 1",
+      "part_name": "Injector seal/washer kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2097",
+      "code_name": "Post Catalyst Fuel Trim System Too Rich Bank 1",
+      "part_name": "Fuel pressure regulator",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2097",
+      "code_name": "Post Catalyst Fuel Trim System Too Rich Bank 1",
+      "part_name": "Regulator seal kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2101",
+      "code_name": "Throttle Actuator A Control Motor Circuit Range/Performance",
+      "part_name": "Throttle body gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2101",
+      "code_name": "Throttle Actuator A Control Motor Circuit Range/Performance",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2135",
+      "code_name": "Throttle/Pedal Position Sensor/Switch A/B Voltage Correlation",
+      "part_name": "Accelerator pedal position sensor assembly",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2135",
+      "code_name": "Throttle/Pedal Position Sensor/Switch A/B Voltage Correlation",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2138",
+      "code_name": "Throttle/Pedal Position Sensor/Switch D/E Voltage Correlation",
+      "part_name": "Accelerator pedal position sensor assembly",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2138",
+      "code_name": "Throttle/Pedal Position Sensor/Switch D/E Voltage Correlation",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2181",
+      "code_name": "Cooling System Performance",
+      "part_name": "Engine thermostat",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2181",
+      "code_name": "Cooling System Performance",
+      "part_name": "Thermostat housing gasket/seal",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2181",
+      "code_name": "Cooling System Performance",
+      "part_name": "Water pump",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2181",
+      "code_name": "Cooling System Performance",
+      "part_name": "Water pump gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2187",
+      "code_name": "System Too Lean at Idle Bank 1",
+      "part_name": "Intake gasket set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2187",
+      "code_name": "System Too Lean at Idle Bank 1",
+      "part_name": "PCV hose",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2187",
+      "code_name": "System Too Lean at Idle Bank 1",
+      "part_name": "Fuel filter",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2187",
+      "code_name": "System Too Lean at Idle Bank 1",
+      "part_name": "Fuel pump assembly (if weak)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2187",
+      "code_name": "System Too Lean at Idle Bank 1",
+      "part_name": "Exhaust manifold gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2187",
+      "code_name": "System Too Lean at Idle Bank 1",
+      "part_name": "Exhaust manifold stud/nut set",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2195",
+      "code_name": "O2 Sensor Signal Biased/Stuck Lean Bank 1 Sensor 1",
+      "part_name": "Exhaust manifold/pipe gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2195",
+      "code_name": "O2 Sensor Signal Biased/Stuck Lean Bank 1 Sensor 1",
+      "part_name": "Oxygen sensor (bank/position-specific)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2195",
+      "code_name": "O2 Sensor Signal Biased/Stuck Lean Bank 1 Sensor 1",
+      "part_name": "High-temperature wiring repair kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2270",
+      "code_name": "O2 Sensor Signal Biased/Stuck Lean Bank 1 Sensor 2",
+      "part_name": "Exhaust manifold/pipe gasket",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2270",
+      "code_name": "O2 Sensor Signal Biased/Stuck Lean Bank 1 Sensor 2",
+      "part_name": "Oxygen sensor (bank/position-specific)",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P2270",
+      "code_name": "O2 Sensor Signal Biased/Stuck Lean Bank 1 Sensor 2",
+      "part_name": "High-temperature wiring repair kit",
+      "system_category": "Powertrain",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "U0100",
+      "code_name": "Lost Communication With ECM/PCM A",
+      "part_name": "Battery terminal cleaning brush",
+      "system_category": "Network",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "U0101",
+      "code_name": "Lost Communication With TCM",
+      "part_name": "Battery terminal cleaning brush",
+      "system_category": "Network",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "U0121",
+      "code_name": "Lost Communication With Anti-Lock Brake System (ABS) Control Module A",
+      "part_name": "Replacement control module",
+      "system_category": "Network",
+      "oem_make": null,
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1083",
+      "code_name": "Fuel Control Mixture Lean Bank 1 Sensor 1",
+      "part_name": "Intake gasket set",
+      "system_category": "Powertrain",
+      "oem_make": "BMW",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1083",
+      "code_name": "Fuel Control Mixture Lean Bank 1 Sensor 1",
+      "part_name": "PCV hose",
+      "system_category": "Powertrain",
+      "oem_make": "BMW",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1083",
+      "code_name": "Fuel Control Mixture Lean Bank 1 Sensor 1",
+      "part_name": "Fuel filter",
+      "system_category": "Powertrain",
+      "oem_make": "BMW",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1083",
+      "code_name": "Fuel Control Mixture Lean Bank 1 Sensor 1",
+      "part_name": "Fuel pump assembly (if weak)",
+      "system_category": "Powertrain",
+      "oem_make": "BMW",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1083",
+      "code_name": "Fuel Control Mixture Lean Bank 1 Sensor 1",
+      "part_name": "Exhaust manifold gasket",
+      "system_category": "Powertrain",
+      "oem_make": "BMW",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1083",
+      "code_name": "Fuel Control Mixture Lean Bank 1 Sensor 1",
+      "part_name": "Exhaust manifold stud/nut set",
+      "system_category": "Powertrain",
+      "oem_make": "BMW",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1086",
+      "code_name": "Fuel Control Mixture Rich Bank 2 Sensor 1",
+      "part_name": "Fuel injector",
+      "system_category": "Powertrain",
+      "oem_make": "BMW",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1086",
+      "code_name": "Fuel Control Mixture Rich Bank 2 Sensor 1",
+      "part_name": "Injector seal/washer kit",
+      "system_category": "Powertrain",
+      "oem_make": "BMW",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1086",
+      "code_name": "Fuel Control Mixture Rich Bank 2 Sensor 1",
+      "part_name": "Fuel pressure regulator",
+      "system_category": "Powertrain",
+      "oem_make": "BMW",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1086",
+      "code_name": "Fuel Control Mixture Rich Bank 2 Sensor 1",
+      "part_name": "Regulator seal kit",
+      "system_category": "Powertrain",
+      "oem_make": "BMW",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1345",
+      "code_name": "CKP/CMP Correlation",
+      "part_name": "Crankshaft position sensor",
+      "system_category": "Powertrain",
+      "oem_make": "Chevrolet",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1345",
+      "code_name": "CKP/CMP Correlation",
+      "part_name": "Camshaft position sensor",
+      "system_category": "Powertrain",
+      "oem_make": "Chevrolet",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1345",
+      "code_name": "CKP/CMP Correlation",
+      "part_name": "Timing chain/belt kit (chain or belt, tensioner, guides)",
+      "system_category": "Powertrain",
+      "oem_make": "Chevrolet",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1345",
+      "code_name": "CKP/CMP Correlation",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": "Chevrolet",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1626",
+      "code_name": "Theft Deterrent Fuel Enable Signal Lost",
+      "part_name": "Passlock lock-cylinder sensor",
+      "system_category": "Powertrain",
+      "oem_make": "Chevrolet",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1626",
+      "code_name": "Theft Deterrent Fuel Enable Signal Lost",
+      "part_name": "Wiring pigtail connector",
+      "system_category": "Powertrain",
+      "oem_make": "Chevrolet",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1626",
+      "code_name": "Theft Deterrent Fuel Enable Signal Lost",
+      "part_name": "Body control module",
+      "system_category": "Powertrain",
+      "oem_make": "Chevrolet",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1698",
+      "code_name": "No CCD Messages Received From PCM",
+      "part_name": "Battery terminal cleaning brush",
+      "system_category": "Powertrain",
+      "oem_make": "Dodge",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1131",
+      "code_name": "Lack of Upstream Heated Oxygen Sensor Switch Sensor Indicates Lean Bank 1",
+      "part_name": "Silicone-free RTV sealant (for future repairs)",
+      "system_category": "Powertrain",
+      "oem_make": "Ford",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1131",
+      "code_name": "Lack of Upstream Heated Oxygen Sensor Switch Sensor Indicates Lean Bank 1",
+      "part_name": "Oxygen sensor (bank/position-specific)",
+      "system_category": "Powertrain",
+      "oem_make": "Ford",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1131",
+      "code_name": "Lack of Upstream Heated Oxygen Sensor Switch Sensor Indicates Lean Bank 1",
+      "part_name": "Exhaust manifold/pipe gasket",
+      "system_category": "Powertrain",
+      "oem_make": "Ford",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1351",
+      "code_name": "IC Circuit High Voltage",
+      "part_name": "Ignition coil-on-plug unit",
+      "system_category": "Powertrain",
+      "oem_make": "GMC",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1351",
+      "code_name": "IC Circuit High Voltage",
+      "part_name": "Coil boot/seal kit",
+      "system_category": "Powertrain",
+      "oem_make": "GMC",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1351",
+      "code_name": "IC Circuit High Voltage",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": "GMC",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1351",
+      "code_name": "IC Circuit High Voltage",
+      "part_name": "Ignition control module",
+      "system_category": "Powertrain",
+      "oem_make": "GMC",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1259",
+      "code_name": "VTEC System Malfunction Rear Bank 1",
+      "part_name": "Oil filter",
+      "system_category": "Powertrain",
+      "oem_make": "Honda",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1259",
+      "code_name": "VTEC System Malfunction Rear Bank 1",
+      "part_name": "Wiring repair kit",
+      "system_category": "Powertrain",
+      "oem_make": "Honda",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1320",
+      "code_name": "Ignition Signal",
+      "part_name": "Ignition coil-on-plug unit",
+      "system_category": "Powertrain",
+      "oem_make": "Nissan",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1320",
+      "code_name": "Ignition Signal",
+      "part_name": "Coil boot/seal kit",
+      "system_category": "Powertrain",
+      "oem_make": "Nissan",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1320",
+      "code_name": "Ignition Signal",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": "Nissan",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1320",
+      "code_name": "Ignition Signal",
+      "part_name": "Ignition control module",
+      "system_category": "Powertrain",
+      "oem_make": "Nissan",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1100",
+      "code_name": "BARO Sensor Circuit",
+      "part_name": "Barometric pressure sensor",
+      "system_category": "Powertrain",
+      "oem_make": "Toyota",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1100",
+      "code_name": "BARO Sensor Circuit",
+      "part_name": "Automotive wiring repair kit (solder + heat-shrink)",
+      "system_category": "Powertrain",
+      "oem_make": "Toyota",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1100",
+      "code_name": "BARO Sensor Circuit",
+      "part_name": "Engine control module (ECM)",
+      "system_category": "Powertrain",
+      "oem_make": "Toyota",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1155",
+      "code_name": "Air/Fuel Sensor Heater Circuit Bank 1 Sensor 2",
+      "part_name": "Relay (O2 heater circuit)",
+      "system_category": "Powertrain",
+      "oem_make": "Toyota",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1155",
+      "code_name": "Air/Fuel Sensor Heater Circuit Bank 1 Sensor 2",
+      "part_name": "Oxygen sensor (heated, bank/position-specific)",
+      "system_category": "Powertrain",
+      "oem_make": "Toyota",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1155",
+      "code_name": "Air/Fuel Sensor Heater Circuit Bank 1 Sensor 2",
+      "part_name": "High-temperature wiring repair kit",
+      "system_category": "Powertrain",
+      "oem_make": "Toyota",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1128",
+      "code_name": "Long Term Fuel Trim Bank 1 System Too Lean",
+      "part_name": "Intake gasket set",
+      "system_category": "Powertrain",
+      "oem_make": "Volkswagen",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    },
+    {
+      "dtc_code": "P1128",
+      "code_name": "Long Term Fuel Trim Bank 1 System Too Lean",
+      "part_name": "Fuel injector (as needed by bank)",
+      "system_category": "Powertrain",
+      "oem_make": "Volkswagen",
+      "source_url": "https://github.com/MechanicDB/MechanicDB-public",
+      "license": "ODbL-1.0",
+      "reference_status": "diagnostic_hint_only"
+    }
+  ]
+}
