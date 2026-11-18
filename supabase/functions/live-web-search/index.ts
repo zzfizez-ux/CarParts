@@ -9,7 +9,7 @@ const DOMAINS=[
  "mister-auto.de","daparto.de","pkwteile.de","autoteile-markt.de",
  "autoteiledirekt.de","ebay.de"
 ];
-const MAX_LOOKUPS_PER_DAY=25; // Conserve free quota; never trigger paid add-ons.
+
 const headers={
  "Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store",
  "Access-Control-Allow-Origin":ORIGIN,
@@ -37,14 +37,6 @@ async function db(table:string,method:"GET"|"POST",filters:Record<string,string>
   signal:AbortSignal.timeout(6000)});
  if(!r.ok)throw Error(table+" "+r.status);
  return await r.json();
-}
-function safeName(v:unknown):v is string{
- return typeof v==="string"&&v.length>0&&v.length<=70&&/^[\p{L}\p{N} .&'/-]+$/u.test(v);
-}
-function safePart(v:unknown):v is string{
- return typeof v==="string"&&v.length>=2&&v.length<=80&&
- /^[\p{L}\p{N}\p{M} .+/-]+$/u.test(v)&&
- !(/[A-HJ-NPR-Z0-9]{17}/.test(v.replace(/\s/g,""))||/@/.test(v));
 }
 const clean=(s:string,n:number)=>s.replace(/[\r\n\t]+/g," ").replace(/\s+/g," ").trim().slice(0,n);
 function hostAllowed(s:string){
@@ -89,73 +81,76 @@ async function hash(s:string){
  const digest=await crypto.subtle.digest("SHA-256",data);
  return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,"0")).join("");
 }
+const normalize=(s:string)=>s.normalize("NFKC").trim().replace(/\s+/g," ");
+function validField(value:unknown,max:number,required=false):value is string{
+ return typeof value==="string" && value.length<=max && (!required||!!value.trim()) &&
+  /^[\p{L}\p{N}\p{M} &'’.,+()#:/_–—-]*$/u.test(value) &&
+  !/\b[A-HJ-NPR-Z0-9]{17}\b/i.test(value);
+}
+async function readResult(key:string){
+ const rows=await db("shared_parts_research","GET",{select:"payload,checked_at",
+  query_hash:"eq."+key,expires_at:"gt."+new Date().toISOString(),limit:"1"});
+ return rows[0]?{...rows[0].payload,status:"cached",fetched_at:rows[0].checked_at}:null;
+}
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
  if(req.method!=="POST")return json({error:"Method not allowed"},405);
  if(req.headers.get("origin")!==ORIGIN)return json({error:"Origin not permitted"},403);
  if(!pubkeys().includes(req.headers.get("apikey")||""))return json({error:"Invalid publishable key"},401);
  try{
-  if(Number(req.headers.get("content-length")||0)>700)return json({error:"Too large"},413);
-  const p=await req.json();
-  if(!p||typeof p!=="object"||Array.isArray(p)||Object.keys(p).some(k=>!["make","model","year","part","engine"].includes(k)))
-   return json({error:"Invalid input"},422);
-  const {make,model,part}=p;const year=Number(p.year);
-  const engine=typeof p.engine==="string"?p.engine:"";
-  if(!safeName(make)||!safeName(model)||!safePart(part)||
-    !Number.isInteger(year)||year<1980||year>2027||
-    (engine&&!(engine.length<=100&&/^[\p{L}\p{N}\p{M} .,+()/-]+$/u.test(engine))))return json({error:"Invalid vehicle/part"},422);
-  const makes=await db("car_brands","GET",{select:"id",name:"eq."+make,limit:"1"});
-  if(!makes.length)return json({error:"Unknown make"},422);
-  const models=await db("car_models","GET",{
-   select:"id",brand_id:"eq."+makes[0].id,name:"eq."+model,limit:"1"});
-  if(!models.length)return json({error:"Unknown model"},422);
-
-  // Free anonymous Mwmbl API: no account, key or payment method.
-  const queryHash=await hash([make,model,year,clean(part,80),clean(engine,70)].join("|").toLowerCase());
-  const now=Date.now();
-  const cache=await db("live_web_search_cache","GET",{
-   select:"results,checked_at,expiry,provider",query_hash:"eq."+queryHash,limit:"1"
-  });
-  if(cache.length&&cache[0].provider==="mwmbl"&&Date.parse(cache[0].expiry)>now){
-   return json({status:"cached",provider:"mwmbl",license:"CC BY-NC-SA 4.0",
-    results:cache[0].results||[],fetched_at:cache[0].checked_at,
-    fitment_verified:false,prices_verified:false});
+  const raw=await req.text();
+  if(raw.length>1200)return json({error:"Too large"},413);
+  let p;try{p=JSON.parse(raw)}catch{return json({error:"Invalid JSON"},400)}
+  if(!p||typeof p!=="object"||Array.isArray(p)||Object.keys(p).some(k=>
+   !["make","model","year","part","engine","series","variant","category"].includes(k)))return json({error:"Invalid input"},422);
+  const {year}=p;
+  if(!validField(p.make,90,true)||!validField(p.model,140,true)||!validField(p.part,80,true)||
+   !Number.isInteger(year)||year<1885||year>new Date().getUTCFullYear()+1||
+   !validField(p.engine??"",160)||!validField(p.series??"",160)||!validField(p.variant??"",100)||
+   !validField(p.category??"",80))return json({error:"Invalid vehicle/part"},422);
+  const [make,model,series,engine,variant,part,category]=
+   [p.make,p.model,p.series||"",p.engine||"",p.variant||"",p.part,p.category||""].map(normalize);
+  const key=await hash(JSON.stringify([make,model,series,year,engine,variant,part,category]).toLowerCase());
+  const saved=await readResult(key);
+  if(saved)return json(saved);
+  const references=category?await db("research_part_candidates","GET",{
+   select:"manufacturer,manufacturer_part_number,part_name,source_vehicle_variant,fitment_conditions,source_url,year_from,year_to",
+   make:"eq."+make,model:"eq."+model,category:"eq."+category,
+   and:"(or(year_from.is.null,year_from.lte."+year+"),or(year_to.is.null,year_to.gte."+year+"))",
+   order:"manufacturer.asc,manufacturer_part_number.asc",limit:"20"
+  }):[];
+  const claim=await db("rpc/reserve_parts_web_lookup","POST",{},{key_hash:key});
+  if(claim==="busy"){
+   for(const delay of [500,1000,2000,3000,5000]){
+    await new Promise(resolve=>setTimeout(resolve,delay));
+    const hit=await readResult(key);if(hit)return json(hit);
+   }
+   return json({status:"busy",results:[],references});
   }
-  const today=new Date().toISOString().slice(0,10);
-  const counts=await db("live_web_search_budget","GET",{
-   select:"query_hash",lookup_day:"eq."+today,limit:String(MAX_LOOKUPS_PER_DAY+1)});
-  if(counts.length>=MAX_LOOKUPS_PER_DAY||counts.some((v:any)=>v.query_hash===queryHash)){
-   return json({status:"quota",provider:"mwmbl",results:[],
-    message:"Kostenloses Tageslimit erreicht. Bereits gespeicherte Suchtreffer bleiben verfügbar.",
-    fitment_verified:false,prices_verified:false});
+  let results:ReturnType<typeof formatted>=[],web_status="quota";
+  if(claim==="reserved"){
+   const query=[make,model,series,year,engine,variant,part].filter(Boolean).join(" ");
+   const url="https://api.mwmbl.org/api/v2/search/?q="+encodeURIComponent(query);
+   try{
+    const r=await fetch(url,{headers:{Accept:"application/json"},signal:AbortSignal.timeout(12000)});
+    web_status=r.status===429?"quota":"provider_error";
+    if(r.ok){
+     const data=await r.json();
+     if(Array.isArray(data.results)){results=formatted(data.results,make,model,part);web_status="live"}
+    }
+   }catch{web_status="provider_error"}
   }
-  const q=clean(make+" "+model+" "+part,150);
-  const url="https://api.mwmbl.org/api/v2/search/?q="+encodeURIComponent(q);
-  const external=await fetch(url,{
-   headers:{Accept:"application/json"},
-   signal:AbortSignal.timeout(13000)
-  });
-  if(external.status===429)return json({status:"quota",provider:"mwmbl",results:[],
-   message:"Der kostenlose Suchanbieter hat sein Rate-Limit erreicht.",fitment_verified:false});
-  if(!external.ok)return json({status:"provider_error",provider:"mwmbl",results:[],
-   message:"Mwmbl-Websuche nicht verfügbar ("+external.status+").",fitment_verified:false});
-  const payload=await external.json();
-  const results=formatted(payload.results,make,model,part);
-  // Store only bounded source-attributed references and aggregate query budgets.
-  const fetched=new Date(),expiry=new Date(fetched.getTime()+22*3600_000);
-  await db("live_web_search_budget","POST",{on_conflict:"query_hash,lookup_day"},[{
-   query_hash:queryHash,lookup_day:today
+  const payload={results,references,web_status,provider:"mwmbl",license:"CC BY-NC-SA 4.0",
+   fitment_verified:false,prices_verified:false};
+  const checked=new Date();
+  if(web_status!=="live"&&!references.length)return json({...payload,status:web_status});
+  const hours=results.length?22:references.length?22:1;
+  await db("shared_parts_research","POST",{on_conflict:"query_hash"},[{
+   query_hash:key,payload,checked_at:checked.toISOString(),expires_at:new Date(+checked+hours*3600000).toISOString()
   }]);
-  await db("live_web_search_cache","POST",{on_conflict:"query_hash"},[{
-   query_hash:queryHash,make,model,year,part_query_category:clean(part,80),
-   provider:"mwmbl",results,checked_at:fetched.toISOString(),expiry:expiry.toISOString()
-  }]);
-  return json({status:"live",provider:"mwmbl",license:"CC BY-NC-SA 4.0",
-   results,stored:true,fetched_at:fetched.toISOString(),
-   fitment_verified:false,prices_verified:false});
+  return json({...payload,status:"live",stored:true,fetched_at:checked.toISOString()});
  }catch(e){
-  console.error("CarParts live search:",e instanceof Error?e.message:"unknown");
-  return json({status:"error",results:[],
-   message:"Websuche vorübergehend nicht verfügbar.",fitment_verified:false},200);
+  console.error("CarParts shared research",e instanceof Error?e.message:"unknown");
+  return json({status:"error",results:[],references:[]},503);
  }
 });

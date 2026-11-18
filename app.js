@@ -326,6 +326,7 @@ function inlineCatalogEmpty(term,unavailable=false){
  setCatalogStatus(unavailable?"error":"empty");
 }
 function renderResultsInternal(term){
+ $("sharedResearch")?.replaceChildren();
  $("resultsTitle").textContent=state.vehicle?"Teile im CarParts-Katalog für "+[state.vehicle.make,state.vehicle.model,state.vehicle.series].filter(Boolean).join(" "):
   "Wähle zuerst ein Fahrzeug";
  $("resultsGrid").innerHTML='<div class="empty-results">'+(state.vehicle?
@@ -488,8 +489,7 @@ function showResearchQueued(result,term){
   ' Du kannst Motorcode, Baujahr und Teilebezeichnung weiter präzisieren.</p></section>';
  setCatalogStatus("empty");
 }
-function renderWebMerchantResults(data,term){
- const grid=$("resultsGrid");
+function renderWebMerchantResults(data,term,grid=$("resultsGrid")){
  const safeUrl=x=>typeof x==="string"&&/^https:\/\/[a-z0-9.-]+\/\S*$/i.test(x);
  const hits=(Array.isArray(data.results)?data.results:[]).filter(x=>safeUrl(x.url));
  const status=data.status==="cached"?"Gespeichert · 22-Stunden-Cache":"Frische Suche mit Mwmbl (kostenlos)";
@@ -518,9 +518,10 @@ function renderWebMerchantResults(data,term){
    '<div class="web-merchant-grid">'+articles+'</div></section>');
   return;
  }
- const phrase=data.status==="quota"
+ const providerStatus=data.web_status||data.status;
+ const phrase=providerStatus==="busy"?"Diese Recherche läuft gerade. Bitte in Kürze erneut suchen.":providerStatus==="quota"
   ? "Das kostenlose Suchlimit von Mwmbl ist erreicht. Später erneut versuchen."
-  : data.status==="provider_error"||data.status==="error"
+  : providerStatus==="provider_error"||providerStatus==="error"
   ? "Die kostenlose Mwmbl-Websuche ist gerade nicht erreichbar."
   : data.status==="not_configured"
   ? "Websuchanbieter nicht verbunden."
@@ -566,10 +567,43 @@ function seriesCompatible(vehicle, description) {
  const mentioned=codes.filter(code=>words.includes(" "+code+" "));
  return !mentioned.length || mentioned.includes(vehicle.series.toUpperCase());
 }
+async function showSharedResearch(vehicle,term,requestId){
+ const panel=$("sharedResearch");
+ if(!panel)return false;
+ panel.textContent="Gespeicherte Recherche und Quellen werden geprüft…";
+ try{
+  const data=await window.CarPartsDB.searchLiveWeb(vehicle,term);
+  if(requestId!==catalogRequest)return false;
+  const rows=(data.references||[]).filter(row=>seriesCompatible(vehicle,row.source_vehicle_variant));
+  const stamp=data.fetched_at?new Date(data.fetched_at).toLocaleString("de-DE"):"";
+  const status=data.status==="cached"?"Gespeicherte Recherche aus der CarParts-Datenbank":
+   data.stored?"Neue Recherche in CarParts gespeichert":"Recherche";
+  panel.innerHTML='<div class="catalog-grid-heading"><h3>'+esc(status)+'</h3><p>'+
+   esc([vehicle.make,vehicle.model,vehicle.series,vehicle.year,vehicle.engine,vehicle.variant,term].filter(Boolean).join(" · "))+
+   (stamp?' · Stand '+esc(stamp):'')+'</p></div>';
+  for(const row of rows){
+   const card=document.createElement("article");card.className="source-research-card catalog-item-body";
+   const name=document.createElement("strong");name.textContent=[row.manufacturer,row.part_name,row.manufacturer_part_number].filter(Boolean).join(" · ");
+   const detail=document.createElement("p");detail.textContent=[row.source_vehicle_variant,row.fitment_conditions].filter(Boolean).join(" · ");
+   card.append(name,detail);
+   if(/^https:\/\//i.test(row.source_url)){
+    const link=document.createElement("a");link.href=row.source_url;link.target="_blank";link.rel="noopener noreferrer";
+    link.textContent="Herstellerquelle öffnen und Ausführung prüfen";card.append(link);
+   }
+   panel.append(card);
+  }
+  renderWebMerchantResults(data,term,panel);
+  return true;
+ }catch{
+  if(requestId===catalogRequest)panel.textContent="Die Online-Recherche ist gerade nicht erreichbar.";
+  return false;
+ }
+}
 async function renderSupabaseResults(term,requestId){
  setCatalogStatus("loading");
  $("resultsGrid").innerHTML='<div class="empty-results">Prüfe Herstellerdaten, offene Quellen und Online-Händler…</div>';
  const current={...state.vehicle};
+ const shared=showSharedResearch(current,term,requestId);
  let shown=false,unavailable=false;
  try{
   const candidates=await window.CarPartsDB.findVerifiedParts(current,term);
@@ -592,7 +626,8 @@ async function renderSupabaseResults(term,requestId){
    if(Array.isArray(refs)&&refs.length){renderOpenOilReferences(refs,term);shown=true}
   }catch(e){/* Keep usable manufacturer search or honest empty-state. */}
  }
- if(!shown&&window.CarPartsDB?.researchParts){
+ if(!shown&&!(await shared)&&window.CarPartsDB?.researchParts){
+  if(requestId!==catalogRequest)return false;
   try{
    const research=await window.CarPartsDB.researchParts(current,term);
    if(requestId!==catalogRequest)return false;
@@ -604,18 +639,15 @@ async function renderSupabaseResults(term,requestId){
    }
   }catch(e){/* Do not manufacture parts on a failed source. */}
  }
+ if(requestId!==catalogRequest)return false;
  if(!shown)inlineCatalogEmpty(term,unavailable);
  if(requestId!==catalogRequest)return false;
- if(window.CarPartsDB?.searchLiveWeb){
+ if($("sharedResearch"))await shared;
+ else if(window.CarPartsDB?.searchLiveWeb){
   try{
-   const results=await window.CarPartsDB.searchLiveWeb(current,term);
-   if(requestId!==catalogRequest)return false;
-   renderWebMerchantResults(results,term);
-  }catch(e){
-   if(requestId===catalogRequest){
-    renderWebMerchantResults({status:"error",results:[]},term);
-   }
-  }
+   const data=await window.CarPartsDB.searchLiveWeb(current,term);
+   if(requestId===catalogRequest)renderWebMerchantResults(data,term);
+  }catch{if(requestId===catalogRequest)renderWebMerchantResults({status:"error",results:[]},term)}
  }
  return true;
 }
@@ -656,6 +688,7 @@ async function search(){
   show("VIN-Prüfung enthält einen Fehler. Bitte die VIN/Fahrzeugauswahl korrigieren.");
   $("vinStatus").scrollIntoView({behavior:"smooth",block:"center"});return;
  }
+ $("parts").scrollIntoView({behavior:"smooth"});
  const searchedVehicle=state.vehicle;
  const searchId=catalogRequest+1;
  await renderLiveResults(q);

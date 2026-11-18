@@ -171,12 +171,9 @@ async function researchParts(vehicle,term){
  return result;
 }
 async function searchLiveWeb(vehicle,term){
- // The deployed search service uses the part field in its provider query and cache key.
- const searchTerms=[term,vehicle.series].filter(Boolean).join(" ").replace(/[^\p{L}\p{M}\p{N} .+/-]/gu," ").trim();
  const request={
-  make:String(vehicle.make||""),model:String(vehicle.model||""),
-  year:Number(vehicle.year),part:searchTerms.slice(0,80),
-  engine:String(vehicle.engine||"").trim().slice(0,100),
+  make:vehicle.make,model:vehicle.model,series:vehicle.series||"",year:Number(vehicle.year),
+  engine:vehicle.engine||"",variant:vehicle.variant||"",part:term.trim(),category:researchCategory(term)||""
  };
  const res=await fetch(base+"/functions/v1/live-web-search",{
   method:"POST",headers:{"apikey":key,"Content-Type":"application/json"},
