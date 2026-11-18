@@ -171,9 +171,11 @@ async function researchParts(vehicle,term){
  return result;
 }
 async function searchLiveWeb(vehicle,term){
+ // The deployed search service uses the part field in its provider query and cache key.
+ const searchTerms=[term,vehicle.series].filter(Boolean).join(" ").replace(/[^\p{L}\p{M}\p{N} .+/-]/gu," ").trim();
  const request={
   make:String(vehicle.make||""),model:String(vehicle.model||""),
-  year:Number(vehicle.year),part:String(term||"").trim().slice(0,80),
+  year:Number(vehicle.year),part:searchTerms.slice(0,80),
   engine:String(vehicle.engine||"").trim().slice(0,100),
  };
  const res=await fetch(base+"/functions/v1/live-web-search",{
@@ -214,3 +216,4 @@ async function findDiagnosticParts(term,make){
 }
 window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage,discoverOilRefs,researchParts,researchCategory,searchLiveWeb,getRegistryEvidence,findDiagnosticParts,diagnosticCode};
 })();
+

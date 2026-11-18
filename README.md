@@ -1,3 +1,9 @@
+# CarParts – Build 23 · Fahrzeugbaureihen
+
+Die Fahrzeugauswahl führt von Marke und Modell zur Baureihe, zum Baujahr und zur Motorisierung. Der Modellindex und häufige Typcodes sind lokal verfügbar. Weitere Generationen und Motorbezeichnungen lädt die Website je Marke aus einer festgelegten Datenversion. Eine fehlende Baureihe lässt sich von Hand ergänzen.
+
+Der [Modellindex](series-index.js) und die [reduzierten Markendateien](data/series/) sind Bearbeitungen von [vehicle-makes-models](https://github.com/gor3a/vehicle-makes-models/tree/ad1d97654d7ac50b393bfeafad3b8b21f5f15657) mit Fahrzeugdaten von autoevolution.com. Die abgeleiteten Daten stehen unter [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/). Sie enthalten Modellnamen, Baureihen, Zeiträume und Motorbezeichnungen. Die [Baureihe W140](https://www.mercedes-benz.com/de/innovation/meilensteine/baureihen/s-klasse-baureihe-w-140/) ist zusätzlich lokal hinterlegt. Für die Passform eines Ersatzteils gelten die Bedingungen der jeweiligen Herstelleranwendung.
+
 # CarParts – Build 22: legaler Open-Data-Ausbau (17.11.2026)
 
 **Zwei neue, einzeln lizenzgeprüfte Datenquellen sind real in Supabase eingebunden:**
@@ -190,4 +196,5 @@ The frontend intentionally displays no parts when the backend is unconfigured, u
 A licensed TecDoc Web Service subscription, or another legitimate automotive parts data source, plus actual supplier pricing feeds is still required for a populated catalog. Provider API keys must remain on the server; do not commit them to GitHub.
 
 TecAlliance: https://www.tecalliance.net/products?solution=catalogue-ecommerce
+
 
