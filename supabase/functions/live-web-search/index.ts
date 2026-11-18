@@ -1,3 +1,4 @@
+import {searchOffers,webOffers} from "./offers.ts";
 // CarParts keyless web discovery: public Mwmbl JSON API, respecting its noncommercial CC BY-NC-SA license.
 // 1,000 free anonymous queries/month at 1 req/s per provider IP; our daily limit is stricter.
 // Show only directly relevant short references with source attribution; never mislabel as fitted parts.
@@ -110,7 +111,7 @@ Deno.serve(async(req:Request)=>{
    !validField(p.category??"",80))return json({error:"Invalid vehicle/part"},422);
   const [make,model,series,engine,variant,part,category]=
    [p.make,p.model,p.series||"",p.engine||"",p.variant||"",p.part,p.category||""].map(normalize);
-  const key=await hash(JSON.stringify([make,model,series,year,engine,variant,part,category]).toLowerCase());
+  const key=await hash(JSON.stringify(["products-v1",make,model,series,year,engine,variant,part,category]).toLowerCase());
   const saved=await readResult(key);
   if(saved)return json(saved);
   const references=category?await db("research_part_candidates","GET",{
@@ -128,6 +129,7 @@ Deno.serve(async(req:Request)=>{
    return json({status:"busy",results:[],references});
   }
   let results:ReturnType<typeof formatted>=[],web_status="quota";
+  const productTask=claim==="reserved"?searchOffers({make,model,series,year,engine,variant},part,category,references[0]?.manufacturer_part_number).catch(()=>[]):Promise.resolve([]);
   if(claim==="reserved"){
    const query=[make,model,series,year,engine,variant,part].filter(Boolean).join(" ");
    const url="https://api.mwmbl.org/api/v2/search/?q="+encodeURIComponent(query);
@@ -140,11 +142,13 @@ Deno.serve(async(req:Request)=>{
     }
    }catch{web_status="provider_error"}
   }
-  const payload={results,references,web_status,provider:"mwmbl",license:"CC BY-NC-SA 4.0",
+  const direct=await productTask;
+  const products=direct.length?direct:await webOffers(results);
+  const payload={products,results,references,web_status,provider:"mwmbl",license:"CC BY-NC-SA 4.0",
    fitment_verified:false,prices_verified:false};
   const checked=new Date();
-  if(web_status!=="live"&&!references.length)return json({...payload,status:web_status});
-  const hours=results.length?22:references.length?22:1;
+  if(web_status!=="live"&&!references.length&&!products.length)return json({...payload,status:web_status});
+  const hours=products.length?4:results.length?22:references.length?22:1;
   await db("shared_parts_research","POST",{on_conflict:"query_hash"},[{
    query_hash:key,payload,checked_at:checked.toISOString(),expires_at:new Date(+checked+hours*3600000).toISOString()
   }]);
