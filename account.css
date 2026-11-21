@@ -1,0 +1,12 @@
+#accountDialog{width:min(26rem,calc(100% - 2rem));margin:auto;padding:1.75rem;border:1px solid var(--line);border-radius:1rem;background:var(--card,#fff);color:var(--ink,#15222e)}
+#accountDialog::backdrop{background:rgb(10 18 24 / .68)}
+#accountDialog [hidden]{display:none!important}
+#accountDialog h2{margin:0 2rem 1.25rem 0}#accountDialog p{overflow-wrap:anywhere}
+#accountDialog label{display:grid;gap:.35rem;margin:.85rem 0;font-weight:600}
+#accountDialog input{padding:.75rem;font:inherit;border:1px solid var(--line,#aaa);border-radius:.5rem;background:var(--card,#fff);color:inherit;width:100%;box-sizing:border-box}
+#accountDialog [data-close]{position:absolute;right:1rem;top:.75rem;font-size:1.5rem}
+#accountDialog button:not(.primary-btn){border:none;background:transparent;color:inherit;cursor:pointer}
+#accountDialog [data-go]{text-decoration:underline;padding:.5rem .5rem .5rem 0}
+#accountDialog [role=status]{margin:.75rem 0;font-size:.95rem}
+#accountDialog .primary-btn{width:100%;justify-content:center}
+@media(max-width:650px){.nav{flex-wrap:wrap;height:auto}.nav-tools{flex-wrap:wrap}}
