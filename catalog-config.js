@@ -1,3 +1,8 @@
+window.CARPARTS_SUPABASE_CONFIG = Object.freeze({
+  url: "https://umhzxsryqhwzxrmkbmwp.supabase.co",
+  publishableKey: "sb_publishable_NHGz3NHOpX97VDO2GLd08w_5kCpkYHI"
+});
+
 window.CARPARTS_CATALOG_CONFIG = {
   // Set this to your own secure backend endpoint, e.g. "https://api.example.com/catalog".
   // Do NOT put TecDoc/API keys in this file or in frontend JavaScript.

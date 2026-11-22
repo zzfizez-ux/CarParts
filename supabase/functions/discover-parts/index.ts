@@ -1,24 +1,14 @@
 // CarParts on-demand discovery: source is the immutable, CC0-licensed OilSpec snapshot.
 // This endpoint receives make/model/year only. Never send or store VINs, IPs or raw user text.
 // No arbitrary URLs, scraping of marketplaces, prices, or unverified "fits" claims.
+import {siteRequest} from "../_shared/site-config.mjs";
+
 const PROJECT = "umhzxsryqhwzxrmkbmwp";
 const SUPABASE = "https://" + PROJECT + ".supabase.co";
 const SNAPSHOT = "https://raw.githubusercontent.com/zzfizez-ux/CarParts/494de293e3ecec51d72741c0b6087b53c90e9ef5/open-oilfilters-data.js";
 const SOURCE = "https://github.com/carbonautorepair/oilspec-commons";
-const ORIGIN = "https://zzfizez-ux.github.io";
 const MAX_ROWS = 40;
 const DAY_BUDGET = 120;
-const headers = {
-  "Access-Control-Allow-Origin": ORIGIN,
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "content-type, apikey",
-  "Vary": "Origin",
-  "Content-Type": "application/json; charset=utf-8",
-  "Cache-Control": "no-store",
-};
-function respond(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers });
-}
 function publicKeys(): string[] {
   try {
     const value = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}");
@@ -101,9 +91,10 @@ async function sourceRows(make: string, model: string, year: number) {
   return found;
 }
 Deno.serve(async (req: Request) => {
+  const {allowed, headers, json: respond} = siteRequest(req, "content-type, apikey");
+  if (!allowed) return respond({ error: "Origin not permitted" }, 403);
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
   if (req.method !== "POST") return respond({ error: "Method not allowed" }, 405);
-  if (req.headers.get("origin") !== ORIGIN) return respond({ error: "Origin not permitted" }, 403);
   const apikey = req.headers.get("apikey") || "";
   if (!apikey || !publicKeys().includes(apikey)) return respond({ error: "Invalid publishable key" }, 401);
   try {

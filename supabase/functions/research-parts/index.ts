@@ -1,11 +1,10 @@
 // CarParts source-reviewed research catalog and privacy-safe demand queue.
 // This is NOT a general web crawler. It returns reviewed public manufacturer references,
 // and records category demand until further legally reusable source adapters are approved.
-const PROJECT="umhzxsryqhwzxrmkbmwp", ORIGIN="https://zzfizez-ux.github.io";
+import {siteRequest} from "../_shared/site-config.mjs";
+
+const PROJECT="umhzxsryqhwzxrmkbmwp";
 const API="https://"+PROJECT+".supabase.co/rest/v1/";
-const headers={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Methods":"POST, OPTIONS",
-  "Access-Control-Allow-Headers":"content-type, apikey","Vary":"Origin",
-  "Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"};
 const allowedCategories=new Set([
  "Bremsbeläge","Bremsscheiben","Ölfilter","Kraftstofffilter","Luftfilter","Innenraumfilter",
  "Bremssättel","Bremsleitungen","Bremsflüssigkeit","Zündkerzen","Glühkerzen",
@@ -16,7 +15,6 @@ const allowedCategories=new Set([
  "Klimakompressor","Lambdasonde","Luftmassenmesser","Turbolader","AGR-Ventil",
  "Katalysator","Partikelfilter","Auspuff","Einspritzdüsen","Zündspulen","Riemenspanner"
 ]);
-function response(body:unknown,status=200){return new Response(JSON.stringify(body),{headers,status})}
 function keyMatch(k:string){
  try{const p=JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}");
   return !!k && Object.values(p).includes(k);
@@ -41,9 +39,10 @@ async function sql(table:string,method:"GET"|"POST",filters:Record<string,string
 const safeName=(s:unknown):s is string=>
  typeof s==="string"&&s.length>0&&s.length<=70&&/^[\p{L}\p{N} .&'/-]+$/u.test(s);
 Deno.serve(async(req:Request)=>{
+ const {allowed,headers,json:response}=siteRequest(req,"content-type, apikey");
+ if(!allowed)return response({error:"Origin denied"},403);
  if(req.method==="OPTIONS")return new Response(null,{headers,status:204});
  if(req.method!=="POST")return response({error:"Method not allowed"},405);
- if(req.headers.get("origin")!==ORIGIN)return response({error:"Origin denied"},403);
  if(!keyMatch(req.headers.get("apikey")||""))return response({error:"Invalid publishable key"},401);
  try{
   if(Number(req.headers.get("content-length")||0)>512)return response({error:"Too large"},413);

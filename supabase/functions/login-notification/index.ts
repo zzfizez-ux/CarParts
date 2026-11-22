@@ -1,7 +1,10 @@
 // Auth verifies the bearer token. Recipients and event IDs come only from that verified login.
-const headers={"Access-Control-Allow-Origin":"https://zzfizez-ux.github.io","Access-Control-Allow-Headers":"authorization, apikey, x-client-info, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Cache-Control":"no-store"};
-const reply=(status:number)=>new Response(null,{status,headers});
+import {primarySiteUrl, siteRequest} from "../_shared/site-config.mjs";
+
 Deno.serve(async req=>{
+ const {allowed,headers}=siteRequest(req,"authorization, apikey, x-client-info, content-type",{allowWithoutOrigin:true});
+ const reply=(status:number)=>new Response(null,{status,headers});
+ if(!allowed)return reply(403);
  if(req.method==="OPTIONS")return reply(204);
  if(req.method!=="POST")return reply(405);
  const bearer=req.headers.get("authorization")||"";
@@ -20,7 +23,7 @@ Deno.serve(async req=>{
   const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{
    Authorization:"Bearer "+key,"Content-Type":"application/json","Idempotency-Key":"carparts-login-"+claims.session_id
   },body:JSON.stringify({from,to:[user.email],subject:"Neue Anmeldung bei CarParts",
-   text:"Dein CarParts-Konto wurde am "+time+" Uhr (Berlin) angemeldet. Wenn du das warst, ist nichts zu tun. Andernfalls ändere dein Passwort über „Passwort vergessen“ auf https://zzfizez-ux.github.io/CarParts/."}),signal:AbortSignal.timeout(8000)});
+   text:"Dein CarParts-Konto wurde am "+time+" Uhr (Berlin) angemeldet. Wenn du das warst, ist nichts zu tun. Andernfalls ändere dein Passwort über „Passwort vergessen“ auf "+primarySiteUrl()}),signal:AbortSignal.timeout(8000)});
   return reply(response.ok?204:502);
  }catch{return reply(503)}
 });

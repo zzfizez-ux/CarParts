@@ -40,7 +40,8 @@
  }
  async function init(){
   const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/+esm');
-  client=createClient('https://umhzxsryqhwzxrmkbmwp.supabase.co','sb_publishable_NHGz3NHOpX97VDO2GLd08w_5kCpkYHI',{
+  const {url,publishableKey}=window.CARPARTS_SUPABASE_CONFIG;
+  client=createClient(url,publishableKey,{
    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'carparts-account-v1'}
   });
   client.auth.onAuthStateChange((event,session)=>{

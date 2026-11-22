@@ -32,6 +32,24 @@ Die Edge Function `login-notification` sendet die Benachrichtigung nach verifizi
 
 [Supabase SMTP](https://supabase.com/docs/guides/auth/auth-smtp) · [E-Mail-Vorlagen](https://supabase.com/docs/guides/auth/auth-email-templates)
 
+## Umzug auf IONOS Webhosting
+
+Der Export enthält die Website für den IONOS-Webspace. Supabase bleibt für Konten, Fahrzeugdaten, Recherchecache und Edge Functions zuständig. Die Website lässt sich am Domainstamm oder in einem Unterverzeichnis ablegen. Die Pfade der Website-Dateien sind relativ.
+
+
+```sh
+node tools/prepare-ionos.mjs ../carparts-ionos
+```
+
+Für den späteren Upload kann die endgültige HTTPS-Adresse als zweites Argument angegeben werden, etwa `https://carparts.example/`. Damit erhält jede alte Versions-URL den passenden kanonischen Verweis. Der ausgewählte Ausgabeordner enthält auch die `.htaccess` für den JavaScript-MIME-Typ der `.mjs`-Dateien.
+
+1. Den Inhalt des Exportordners einschließlich `.htaccess` per SFTP in den mit der IONOS-Domain verbundenen Webspace-Ordner laden. Danach die Seite über HTTPS öffnen.
+2. In den Supabase Edge Function Secrets `CARPARTS_ALLOWED_ORIGINS` auf die erlaubten HTTPS-Origins setzen. Für einen Paralleltest gehören die GitHub-Pages-Origin und die neue Origin kommasepariert in die Liste, etwa `https://zzfizez-ux.github.io,https://carparts.example`. Origins enthalten keinen Unterverzeichnispfad.
+3. In Supabase Auth unter **URL Configuration** die exakte neue URL mit abschließendem Schrägstrich zu **Redirect URLs** hinzufügen. Zum Umstieg auch **Site URL** und das Edge Function Secret `CARPARTS_SITE_URL` auf diese Adresse setzen. Die Edge Function nutzt sie in Anmeldebenachrichtigungen.
+4. Auf der neuen Adresse die Fahrzeugauswahl, eine Teilesuche bis zum Händlerangebot, Anmeldung und Passwort-Reset prüfen. Bei einer neuen Domain melden sich Kunden mit ihrem vorhandenen Konto erneut an. Der Garagenspeicher des Browsers ist an die bisherige Domain gebunden.
+
+[IONOS SFTP](https://www.ionos.de/hilfe/hosting/ftp-zugaenge-einrichten-und-verwalten/dateien-per-sftp-mit-filezilla-uebertragen/) · [Supabase Edge Function Secrets](https://supabase.com/docs/guides/functions/secrets) · [Supabase Auth Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls)
+
 ## Datenquellen
 
 - Der [Modellindex](series-index.js) und die [lokalen Markendateien](data/series/) sind bearbeitete Daten aus [vehicle-makes-models](https://github.com/gor3a/vehicle-makes-models/tree/ad1d97654d7ac50b393bfeafad3b8b21f5f15657) mit Fahrzeugdaten von autoevolution.com. Lizenz [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/).

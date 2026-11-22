@@ -4,8 +4,7 @@ import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-se
 // Do not put secret/service_role keys in browser code.
 (function(){
 "use strict";
-const base="https://umhzxsryqhwzxrmkbmwp.supabase.co";
-const key="sb_publishable_NHGz3NHOpX97VDO2GLd08w_5kCpkYHI";
+const {url:base,publishableKey:key}=window.CARPARTS_SUPABASE_CONFIG;
 let brandsPromise=null;
 async function read(path){
  const controller=new AbortController();

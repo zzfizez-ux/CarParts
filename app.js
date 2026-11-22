@@ -1,4 +1,4 @@
-import "./supabase-catalog.js?v=27";
+import "./supabase-catalog.js?v=28";
 import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=27";
 import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=27";
 

@@ -3,17 +3,8 @@ import {catalogueEngines, catalogueParts} from "./catalogue.mjs";
 import {merchantUrl, offersFromWeb, searchOffers} from "./offers.ts";
 import type {Article, Vehicle} from "./offers.ts";
 import {matchesPartText, seriesEvidence, words} from "./vehicle-fitment.mjs";
+import {siteRequest} from "../_shared/site-config.mjs";
 
-const origin = "https://zzfizez-ux.github.io";
-const headers = {
-  "Content-Type":"application/json; charset=utf-8",
-  "Cache-Control":"no-store",
-  "Access-Control-Allow-Origin":origin,
-  "Access-Control-Allow-Methods":"POST, OPTIONS",
-  "Access-Control-Allow-Headers":"content-type,apikey",
-  Vary:"Origin"
-};
-const json = (body:unknown,status=200)=>new Response(JSON.stringify(body),{headers,status});
 const publishableKeys = () => Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}"));
 const serviceKey = () => JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default ||
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -163,9 +154,10 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
 }
 
 Deno.serve(async (request:Request)=>{
+  const {allowed, headers, json} = siteRequest(request, "content-type, apikey");
+  if (!allowed) return json({error:"Origin not permitted"},403);
   if (request.method==="OPTIONS") return new Response(null,{status:204,headers});
   if (request.method!=="POST") return json({error:"Method not allowed"},405);
-  if (request.headers.get("origin")!==origin) return json({error:"Origin not permitted"},403);
   try {
     if (!publishableKeys().includes(request.headers.get("apikey")||"")) return json({error:"Invalid publishable key"},401);
     const raw = await request.text();
