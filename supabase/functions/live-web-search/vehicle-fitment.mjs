@@ -9,6 +9,7 @@ export function partNumber(value) {
 
 const catalogueSeries = {
   "audi/a1": {"8X":["A1 (2010)","A1 (2014)"], "GB":["A1 (2018)","A1 (2022)"]},
+  "audi/a3": {"8V":[]},
   "bmw/3er": {"F30":["3 Series Sedan (2011)","3 Series Sedan (2015)"], "F31":["3 Series Touring (2012)","3 Series Touring (2015)"]},
   "dacia/logan": {
     "Logan I":["Logan (2004)","Logan (2008)","Logan I (LS)"],
@@ -25,6 +26,10 @@ const catalogueSeries = {
   },
   "nissan/qashqai": {"J10":["Qashqai I","Qashqai (2007)","Qashqai (2010)"], "J11":["Qashqai II","Qashqai (2013)","Qashqai (2014)","Qashqai (2017)"], "J12":["Qashqai III","Qashqai (2021)","Qashqai (2024)"]},
   "opel/corsa": {"Corsa D":["Corsa (2006)","Corsa (2011)"], "Corsa E":["Corsa (2014)","Corsa (2015)"], "Corsa F":["Corsa (2019)","Corsa (2023)"]},
+  "opel/astra": {"Astra K":[]},
+  "porsche/911": {"997.1":[], "997.2":[]},
+  "mini/cooper": {"R56":[]},
+  "smart/fortwo": {"451 Coupé":[], "451 Cabrio":[]},
   "renault/clio": {"Clio III":["Clio 3","Clio (2005)","Clio (2009)"], "Clio IV":["Clio 4","Clio (2012)","Clio (2016)"], "Clio V":["Clio 5","Clio (2019)","Clio (2023)"]},
   "toyota/yaris": {"Yaris II":["XP90"], "Yaris III":["Yaris 3","XP130","Yaris (2011)","Yaris (2014)","Yaris (2017)"], "Yaris IV":["XP210","Yaris (2020)"]},
   "volkswagen/golf": {

@@ -1,4 +1,5 @@
-import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=27";
+import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=33";
+import {seriesKey} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=33";
 
 // CarParts public vehicle catalogue — safe publishable key, read-only RLS-protected tables.
 // Do not put secret/service_role keys in browser code.
@@ -55,25 +56,30 @@ async function findVerifiedParts(vehicle,term){
  const selected=await catalogueParts(readTable,engines,vehicle,term,researchCategory(term));
  if(!selected.length)return [];
  const filter="part_id=in.("+[...new Set(selected.map(p=>p.id))].join(",")+")";
+ const freshSince=new Date(Date.now()-7*24*60*60*1000).toISOString();
  const results=await Promise.allSettled([
   read("part_images?select=part_id,image_url,alt_text,source_url&"+
     filter+"&verified_for_display=eq.true&limit=100"),
   read("part_offers?select=part_id,merchant_name,price_amount,currency,availability,observed_at,product_url,source_url&"+
-    filter+"&verification_status=eq.verified&order=price_amount.asc&limit=100")
+    filter+"&verification_status=eq.verified&observed_at=gte."+encodeURIComponent(freshSince)+"&order=price_amount.asc&limit=1000")
  ]);
  const images=results[0].status==="fulfilled"?results[0].value:[];
  const offers=results[1].status==="fulfilled"?results[1].value:[];
- const freshThreshold=Date.now()-7*24*60*60*1000;
  return selected.map(p=>({
   ...p,images:images.filter(x=>x.part_id===p.id),
-  offers:offers.filter(x=>x.part_id===p.id&&Date.parse(x.observed_at)>=freshThreshold)
+  offers:offers.filter(x=>x.part_id===p.id)
  }));
 }
 async function getCoverage(make,model,year,series){
  const engines=await getEngines(make,model,year,series);
  if(!engines.length)return {documentedEngines:0,verifiedArticles:0};
- const rows=await read("part_fitments?select=part_id&engine_id=in.("+engines.map(e=>e.id).join(",")+")&status=eq.verified&limit=1000");
- return {documentedEngines:engines.length,verifiedArticles:new Set(rows.map(x=>x.part_id)).size};
+ const rows=await readTable("part_fitments",{
+  select:"part_id,series_keys",engine_id:"in.("+engines.map(e=>e.id).join(",")+")",status:"eq.verified",limit:"1000",
+  and:"(or(year_from.is.null,year_from.lte."+year+"),or(year_to.is.null,year_to.gte."+year+"))"
+ });
+ const key=seriesKey(make,model,series);
+ const matching=rows.filter(row=>!row.series_keys||row.series_keys.includes(key));
+ return {documentedEngines:engines.length,verifiedArticles:new Set(matching.map(x=>x.part_id)).size};
 }
 async function discoverOilRefs(vehicle){
  const payload={

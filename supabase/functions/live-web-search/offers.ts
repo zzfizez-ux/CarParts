@@ -8,6 +8,7 @@ const stores: Record<string,string> = {
   "levoil.de":"levoil", "www.autodoc.de":"AUTODOC", "www.atp-autoteile.de":"ATP Autoteile",
   "www.kfzteile24.de":"kfzteile24", "www.kfzparts24.de":"KfzParts24",
   "www.motointegrator.de":"Motointegrator", "www.autoteiledirekt.de":"Autoteile Direkt",
+  "www.filter-technik.de":"Filter-Technik",
   "www.pkwteile.de":"PKWteile", "www.mister-auto.de":"Mister-Auto", "www.daparto.de":"Daparto"
 };
 const articlePages: Record<string,string[]> = {
@@ -27,14 +28,14 @@ const s63Discs = [
 
 export type Vehicle = {make:string; model:string; series:string; engine:string; year:number; variant:string};
 export type Article = {
-  manufacturer:string; manufacturer_part_number:string; condition:string;
+  part_id:number; manufacturer:string; manufacturer_part_number:string; condition:string;
   source_url:string; urls:string[];
 };
 type Page = {url:string; article?:Article; reviewed222?:boolean};
 type SourceFailure = {merchant:string; reason:string};
 type Product = {
   name:string; price:number; currency:string; image:string; url:string; merchant:string;
-  sku:string; condition:string; source_url:string; evidence:string; observed_at:string
+  part_id?:number; sku:string; condition:string; source_url:string; evidence:string; observed_at:string
 };
 
 function httpsUrl(raw:string, base?:string) {
@@ -161,6 +162,7 @@ async function product(source:Page, vehicle:Vehicle, term:string, category:strin
     : "Baureihe laut Händlerangebot. Motor, Ausstattung und OE-Nummer am Fahrzeug abgleichen.");
   return {
     name:name.slice(0,200), price, currency, image:photo.href, url:url.href, merchant:stores[url.hostname],
+    part_id:article?.part_id,
     sku:(article?.manufacturer_part_number || sku).slice(0,90), condition,
     source_url:article?.source_url||"", evidence:article ? "manufacturer" : "merchant",
     observed_at:new Date().toISOString()

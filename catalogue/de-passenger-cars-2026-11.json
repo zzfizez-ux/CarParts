@@ -1,0 +1,955 @@
+[
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 2.0 TDI 150 PS (CRBC) – mit Wassersensor",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2020,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "HU 7020 z",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/hu7020z_mann-filter.html",
+    "fitment_notes": "Golf VII 5G1/BA5, 110 kW mit CRBC. Ölfilterzuordnung unabhängig vom Wassersensor des Kraftstofffilters. Ab 11/2012 laut Katalog.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "oe_numbers": [
+      {
+        "number": "03N 115 562",
+        "manufacturer": "VW Group"
+      },
+      {
+        "number": "03N 115 562 B",
+        "manufacturer": "VW Group"
+      },
+      {
+        "number": "03N 115 466",
+        "manufacturer": "VW Group"
+      }
+    ],
+    "offers": [
+      {
+        "merchant_name": "KfzParts24",
+        "product_url": "https://www.kfzparts24.de/de/i360552/mann-filter-oelfilter/1106439",
+        "source_url": "https://www.kfzparts24.de/de/i360552/mann-filter-oelfilter/1106439",
+        "price_amount": 6.3,
+        "currency": "EUR",
+        "observed_at": "2026-11-22T19:16:07Z",
+        "availability": "in_stock"
+      },
+      {
+        "merchant_name": "levoil",
+        "product_url": "https://levoil.de/produkt/mann-filter-oelfilter-hu-7020-z-passend-fuer-vw-golf-7-passat-b8-audi-a3-skoda-octavia-1-6-2-0-tdi/",
+        "source_url": "https://levoil.de/produkt/mann-filter-oelfilter-hu-7020-z-passend-fuer-vw-golf-7-passat-b8-audi-a3-skoda-octavia-1-6-2-0-tdi/",
+        "price_amount": 11.95,
+        "currency": "EUR",
+        "observed_at": "2026-11-22T19:14:12Z",
+        "availability": "in_stock"
+      }
+    ]
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 2.0 TDI 150 PS (CRBC) – mit Wassersensor",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2020,
+    "fuel_type": "Diesel",
+    "manufacturer": "Hengst Filter",
+    "manufacturer_part_number": "E340H D247",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/1283230000-00/tw/",
+    "fitment_notes": "Golf VII 5G1/BQ1/BE1/BE2, 2.0 TDI 110 kW mit CRBC. OE-Nummer am ausgebauten Teil abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "article_url": "https://catalog.hengst.com/de/online-katalog/produkt/2377130000-03/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst",
+    "oe_numbers": [
+      {
+        "number": "03N 115 562",
+        "manufacturer": "VW Group",
+        "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/2377130000-03/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+      },
+      {
+        "number": "03N 115 562 B",
+        "manufacturer": "VW Group",
+        "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/2377130000-03/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+      },
+      {
+        "number": "03N 115 466",
+        "manufacturer": "VW Group",
+        "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/2377130000-03/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+      }
+    ],
+    "offers": [
+      {
+        "merchant_name": "Filter-Technik",
+        "product_url": "https://www.filter-technik.de/hengst-filter/e340h-d247-oelfilterelement",
+        "source_url": "https://www.filter-technik.de/hengst-filter/e340h-d247-oelfilterelement",
+        "price_amount": 8.0,
+        "currency": "EUR",
+        "observed_at": "2026-11-22T19:14:11Z",
+        "availability": "in_stock"
+      }
+    ]
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 2.0 TDI 150 PS (CRBC) – mit Wassersensor",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2020,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "C 30 005",
+    "part_name": "Luftfilter",
+    "category": "Luftfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/c30005_mann-filter.html",
+    "fitment_notes": "Golf VII 5G1/BA5, 2.0 TDI 110 kW mit CRBC. Filtergehäuse und OE-Referenz vor der Bestellung abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 2.0 TDI 150 PS (CRBC) – mit Wassersensor",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2020,
+    "fuel_type": "Diesel",
+    "manufacturer": "Hengst Filter",
+    "manufacturer_part_number": "E1126L",
+    "part_name": "Luftfilter",
+    "category": "Luftfilter",
+    "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/1283230000-00/tw/",
+    "fitment_notes": "Golf VII 2.0 TDI 110 kW mit CRBC. Der Hengst-Katalog führt mehrere Luftfilter für diese Motorgruppe. Filtergehäuse und OE-Nummer abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "article_url": "https://catalog.hengst.com/de/online-katalog/produkt/7856310000-01/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 2.0 TDI 150 PS (CRBC) – mit Wassersensor",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2020,
+    "fuel_type": "Diesel",
+    "manufacturer": "Hengst Filter",
+    "manufacturer_part_number": "E2998LB",
+    "part_name": "Innenraumfilter",
+    "category": "Innenraumfilter",
+    "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/1283230000-00/tw/",
+    "fitment_notes": "Golf VII 5G1/BQ1/BE1/BE2, 2.0 TDI 110 kW. Typ und Maße des vorhandenen Innenraumfilters prüfen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "article_url": "https://catalog.hengst.com/de/online-katalog/produkt/12080310000-00/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 2.0 TDI 150 PS (CRBC) – ohne Wassersensor",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2020,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "HU 7020 z",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/hu7020z_mann-filter.html",
+    "fitment_notes": "Golf VII 5G1/BA5, 110 kW mit CRBC. Ölfilterzuordnung unabhängig vom Wassersensor des Kraftstofffilters. Ab 11/2012 laut Katalog.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "oe_numbers": [
+      {
+        "number": "03N 115 562",
+        "manufacturer": "VW Group"
+      },
+      {
+        "number": "03N 115 562 B",
+        "manufacturer": "VW Group"
+      },
+      {
+        "number": "03N 115 466",
+        "manufacturer": "VW Group"
+      }
+    ],
+    "offers": []
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 2.0 TDI 150 PS (CRBC) – ohne Wassersensor",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2020,
+    "fuel_type": "Diesel",
+    "manufacturer": "Hengst Filter",
+    "manufacturer_part_number": "E340H D247",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/1283230000-00/tw/",
+    "fitment_notes": "Golf VII 5G1/BQ1/BE1/BE2, 2.0 TDI 110 kW mit CRBC. OE-Nummer am ausgebauten Teil abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "article_url": "https://catalog.hengst.com/de/online-katalog/produkt/2377130000-03/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst",
+    "oe_numbers": [
+      {
+        "number": "03N 115 562",
+        "manufacturer": "VW Group",
+        "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/2377130000-03/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+      },
+      {
+        "number": "03N 115 562 B",
+        "manufacturer": "VW Group",
+        "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/2377130000-03/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+      },
+      {
+        "number": "03N 115 466",
+        "manufacturer": "VW Group",
+        "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/2377130000-03/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+      }
+    ],
+    "offers": []
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 2.0 TDI 150 PS (CRBC) – ohne Wassersensor",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2020,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "C 30 005",
+    "part_name": "Luftfilter",
+    "category": "Luftfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/c30005_mann-filter.html",
+    "fitment_notes": "Golf VII 5G1/BA5, 2.0 TDI 110 kW mit CRBC. Filtergehäuse und OE-Referenz vor der Bestellung abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 2.0 TDI 150 PS (CRBC) – ohne Wassersensor",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2020,
+    "fuel_type": "Diesel",
+    "manufacturer": "Hengst Filter",
+    "manufacturer_part_number": "E1126L",
+    "part_name": "Luftfilter",
+    "category": "Luftfilter",
+    "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/1283230000-00/tw/",
+    "fitment_notes": "Golf VII 2.0 TDI 110 kW mit CRBC. Der Hengst-Katalog führt mehrere Luftfilter für diese Motorgruppe. Filtergehäuse und OE-Nummer abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "article_url": "https://catalog.hengst.com/de/online-katalog/produkt/7856310000-01/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 2.0 TDI 150 PS (CRBC) – ohne Wassersensor",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2020,
+    "fuel_type": "Diesel",
+    "manufacturer": "Hengst Filter",
+    "manufacturer_part_number": "E2998LB",
+    "part_name": "Innenraumfilter",
+    "category": "Innenraumfilter",
+    "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/1283230000-00/tw/",
+    "fitment_notes": "Golf VII 5G1/BQ1/BE1/BE2, 2.0 TDI 110 kW. Typ und Maße des vorhandenen Innenraumfilters prüfen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "article_url": "https://catalog.hengst.com/de/online-katalog/produkt/12080310000-00/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 1.6 TDI 105 PS (CLHA)",
+    "engine_code": "CLHA",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2017,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "HU 7020 z",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/hu7020z_mann-filter.html",
+    "fitment_notes": "Golf VII 5G1/BA5 mit CLHA bei 77 kW. Im Katalog von 11/2012 bis 03/2017 geführt.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "oe_numbers": [
+      {
+        "number": "03N 115 562",
+        "manufacturer": "VW Group"
+      },
+      {
+        "number": "03N 115 562 B",
+        "manufacturer": "VW Group"
+      },
+      {
+        "number": "03N 115 466",
+        "manufacturer": "VW Group"
+      }
+    ]
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "designation": "Golf VII 1.6 TDI 105 PS (CLHA)",
+    "engine_code": "CLHA",
+    "series_keys": [
+      "golf vii"
+    ],
+    "year_from": 2012,
+    "year_to": 2017,
+    "fuel_type": "Diesel",
+    "manufacturer": "Hengst Filter",
+    "manufacturer_part_number": "E340H D247",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://catalog.hengst.com/de/online-katalog/produkt/1283230000-00/tw/",
+    "fitment_notes": "Golf VII 5G1/BQ1/BE1/BE2 mit CLHA bei 77 kW. Im Katalog von 08/2012 bis 03/2017 geführt.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "article_url": "https://catalog.hengst.com/de/online-katalog/produkt/2377130000-03/tw/?tx_uihengst_uihengst%5Baction%5D=product&tx_uihengst_uihengst%5Bcontroller%5D=hengst"
+  },
+  {
+    "make": "Audi",
+    "model": "A3",
+    "designation": "A3 8V 2.0 TDI 150 PS (CRBC)",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "8v"
+    ],
+    "year_from": 2012,
+    "year_to": 2016,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "HU 7020 z",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/hu7020z_mann-filter.html",
+    "fitment_notes": "Audi A3 der Baureihe 8V, 2.0 TDI 110 kW mit Motorcode CRBC. Teilenummer des vorhandenen Filters prüfen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "oe_numbers": [
+      {
+        "number": "03N 115 562",
+        "manufacturer": "VW Group"
+      },
+      {
+        "number": "03N 115 562 B",
+        "manufacturer": "VW Group"
+      },
+      {
+        "number": "03N 115 466",
+        "manufacturer": "VW Group"
+      }
+    ]
+  },
+  {
+    "make": "Audi",
+    "model": "A3",
+    "designation": "A3 8V 2.0 TDI 150 PS (CRBC)",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "8v"
+    ],
+    "year_from": 2012,
+    "year_to": 2016,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "CU 26 009",
+    "part_name": "Innenraumfilter",
+    "category": "Innenraumfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/cu26009_mann-filter.html",
+    "fitment_notes": "Audi A3 8V mit CRBC bei 110 kW. Partikelfilter-Ausführung mit der Fahrzeugausstattung abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Audi",
+    "model": "A3",
+    "designation": "A3 8V 2.0 TDI 150 PS (CRBC)",
+    "engine_code": "CRBC",
+    "series_keys": [
+      "8v"
+    ],
+    "year_from": 2012,
+    "year_to": 2016,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "CUK 26 009",
+    "part_name": "Innenraumfilter mit Aktivkohle",
+    "category": "Innenraumfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/cuk26009_mann-filter.html",
+    "fitment_notes": "Audi A3 8V mit CRBC bei 110 kW. Ausführung mit Aktivkohle und Abmessungen vor der Bestellung abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "BMW",
+    "model": "3er",
+    "designation": "320d F30/F31 184 PS (N47D20C)",
+    "engine_code": "N47D20C",
+    "series_keys": [
+      "f30",
+      "f31"
+    ],
+    "year_from": 2012,
+    "year_to": 2015,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "C 24 024",
+    "part_name": "Luftfilter",
+    "category": "Luftfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/c24024_mann-filter.html",
+    "fitment_notes": "BMW 320d F30/F31 mit N47D20C und 135 kW. Kataloganwendung von 10/2011 bis 03/2016.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "BMW",
+    "model": "3er",
+    "designation": "320d F30/F31 184 PS (N47D20C)",
+    "engine_code": "N47D20C",
+    "series_keys": [
+      "f30",
+      "f31"
+    ],
+    "year_from": 2012,
+    "year_to": 2015,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "WK 5005/1 z",
+    "part_name": "Kraftstofffilter",
+    "category": "Kraftstofffilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/wk5005/1z_mann-filter.html",
+    "fitment_notes": "BMW 320d F30/F31 mit N47D20C und 135 kW. Anschlüsse und OE-Nummer am vorhandenen Kraftstofffilter abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "BMW",
+    "model": "3er",
+    "designation": "318d F30/F31 143 PS (N47D20C)",
+    "engine_code": "N47D20C",
+    "series_keys": [
+      "f30",
+      "f31"
+    ],
+    "year_from": 2012,
+    "year_to": 2015,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "HU 6004 x",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/hu6004x_mann-filter.html",
+    "fitment_notes": "BMW 318d F30/F31, 105 kW. Die Zuordnung gilt für N47D20C. Motorcode und Teilenummer am Fahrzeug abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "S-Klasse",
+    "designation": "S 400 W140 279 PS (M 119.971)",
+    "engine_code": "M 119.971",
+    "series_keys": [
+      "w140"
+    ],
+    "year_from": 1993,
+    "year_to": 1998,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "H 829/1 x",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/h829/1x_mann-filter.html",
+    "fitment_notes": "S 400 W140 mit M 119.971. Laut Hersteller für die Modellanwendung von 06/1993 bis 09/1998.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "offers": [
+      {
+        "merchant_name": "KfzParts24",
+        "product_url": "https://www.kfzparts24.de/de/i359794/mann-filter-oelfilter-h-829-1-x/864380",
+        "source_url": "https://www.kfzparts24.de/de/i359794/mann-filter-oelfilter-h-829-1-x/864380",
+        "price_amount": 7.96,
+        "currency": "EUR",
+        "observed_at": "2026-11-22T19:14:11Z"
+      }
+    ]
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "S-Klasse",
+    "designation": "S 400 W140 279 PS (M 119.971)",
+    "engine_code": "M 119.971",
+    "series_keys": [
+      "w140"
+    ],
+    "year_from": 1993,
+    "year_to": 1998,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "C 33 102",
+    "part_name": "Luftfilter",
+    "category": "Luftfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/c33102_mann-filter.html",
+    "fitment_notes": "S 400 W140 mit M 119.971. MANN-FILTER gibt für die Motoranwendung zwei Filtereinsätze an.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "S-Klasse",
+    "designation": "S 400 W140 279 PS (M 119.971)",
+    "engine_code": "M 119.971",
+    "series_keys": [
+      "w140"
+    ],
+    "year_from": 1994,
+    "year_to": 1998,
+    "fuel_type": "Benzin",
+    "engine_year_from": 1993,
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "WK 831",
+    "part_name": "Kraftstofffilter",
+    "category": "Kraftstofffilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/wk831_mann-filter.html",
+    "fitment_notes": "S 400 W140 mit M 119.971. Der Hersteller begrenzt den Einsatz auf Produktion ab 09/1994. Bei Baujahr 1994 den Produktionsmonat prüfen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "S-Klasse",
+    "designation": "S 500 W140 320 PS (M 119.970)",
+    "engine_code": "M 119.970",
+    "series_keys": [
+      "w140"
+    ],
+    "year_from": 1993,
+    "year_to": 1998,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "H 829/1 x",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/h829/1x_mann-filter.html",
+    "fitment_notes": "S 500 W140 mit M 119.970. Laut Hersteller für die Modellanwendung von 06/1993 bis 09/1998.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "offers": []
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "S-Klasse",
+    "designation": "S 500 W140 320 PS (M 119.970)",
+    "engine_code": "M 119.970",
+    "series_keys": [
+      "w140"
+    ],
+    "year_from": 1993,
+    "year_to": 1998,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "C 33 102",
+    "part_name": "Luftfilter",
+    "category": "Luftfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/c33102_mann-filter.html",
+    "fitment_notes": "S 500 W140 mit M 119.970. MANN-FILTER gibt für die Motoranwendung zwei Filtereinsätze an.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "S-Klasse",
+    "designation": "S 500 W140 320 PS (M 119.970)",
+    "engine_code": "M 119.970",
+    "series_keys": [
+      "w140"
+    ],
+    "year_from": 1994,
+    "year_to": 1998,
+    "fuel_type": "Benzin",
+    "engine_year_from": 1993,
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "WK 831",
+    "part_name": "Kraftstofffilter",
+    "category": "Kraftstofffilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/wk831_mann-filter.html",
+    "fitment_notes": "S 500 W140 mit M 119.970. Der Hersteller begrenzt den Einsatz auf Produktion ab 09/1994. Bei Baujahr 1994 den Produktionsmonat prüfen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "S-Klasse",
+    "designation": "400 SE W140 286 PS (M 119.971)",
+    "engine_code": "M 119.971",
+    "series_keys": [
+      "w140"
+    ],
+    "year_from": 1991,
+    "year_to": 1993,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "H 829/1 x",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/h829/1x_mann-filter.html",
+    "fitment_notes": "400 SE W140 mit 210 kW und M 119.971. Frühe Motoranwendung, Hersteller führt die Ausführung ab 02/1991.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "S-Klasse",
+    "designation": "400 SE W140 286 PS (M 119.971)",
+    "engine_code": "M 119.971",
+    "series_keys": [
+      "w140"
+    ],
+    "year_from": 1991,
+    "year_to": 1993,
+    "fuel_type": "Benzin",
+    "manufacturer": "Brembo",
+    "manufacturer_part_number": "09.5704.20",
+    "part_name": "Bremsscheibe vorne",
+    "category": "Bremsscheiben",
+    "source_url": "https://www.bremboparts.com/europe/en/catalogue/mercedes-benz-s-class-w140-400-se-sel-s420-140-042-140-043/000000954-1",
+    "fitment_notes": "400 SE W140 Typ 140.042, 210 kW. Brembo nennt die Vorderachse und 320 × 30 mm. Produktionsdatum, Bremssystem, Maße und OE-Nr. am Fahrzeug prüfen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "article_url": "https://www.bremboparts.com/europe/de/catalogue/disc/09-5704-20"
+  },
+  {
+    "make": "Opel",
+    "model": "Astra",
+    "designation": "Astra K 1.6 CDTI 136 PS (B16DTH)",
+    "engine_code": "B16DTH",
+    "series_keys": [
+      "astra k"
+    ],
+    "year_from": 2015,
+    "year_to": 2018,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "HU 6019 z",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/hu6019z_mann-filter.html",
+    "fitment_notes": "Opel Astra K 1.6 CDTI mit 100 kW und B16DTH. In der Herstelleranwendung ab 08/2015.",
+    "source_type": "manufacturer_application",
+    "reviewed": true,
+    "oe_numbers": [
+      {
+        "number": "95526687",
+        "manufacturer": "Opel"
+      }
+    ]
+  },
+  {
+    "make": "Opel",
+    "model": "Astra",
+    "designation": "Astra K 1.6 CDTI 136 PS (B16DTH)",
+    "engine_code": "B16DTH",
+    "series_keys": [
+      "astra k"
+    ],
+    "year_from": 2015,
+    "year_to": 2018,
+    "fuel_type": "Diesel",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "C 16 012",
+    "part_name": "Luftfilter",
+    "category": "Luftfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/c16012_mann-filter.html",
+    "fitment_notes": "Opel Astra K mit B16DTH, 100 kW ab 08/2015. Bauform und OE-Nummer des eingebauten Filters abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "MINI",
+    "model": "Cooper",
+    "designation": "Cooper R56 1.6 122 PS (N16B16A)",
+    "engine_code": "N16B16A",
+    "series_keys": [
+      "r56"
+    ],
+    "year_from": 2010,
+    "year_to": 2013,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "HU 711/51 x",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/hu711/51x_mann-filter.html",
+    "fitment_notes": "MINI Cooper R56 mit N16B16A bei 90 kW. Hersteller nennt diese Motoranwendung ab 03/2010.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "MINI",
+    "model": "Cooper",
+    "designation": "Cooper R56 1.6 122 PS (N16B16A)",
+    "engine_code": "N16B16A",
+    "series_keys": [
+      "r56"
+    ],
+    "year_from": 2010,
+    "year_to": 2013,
+    "fuel_type": "Benzin",
+    "manufacturer": "Brembo",
+    "manufacturer_part_number": "09.A761.11",
+    "part_name": "Bremsscheibe vorne",
+    "category": "Bremsscheiben",
+    "source_url": "https://www.bremboparts.com/europe/de/catalogue/mini-mini-r56-cooper/000033053-1",
+    "fitment_notes": "Cooper R56 90 kW. Brembo nennt 280 × 22 mm vorne für Fahrzeuge ohne Sportpaket. Bremssystem und OE-Nr. abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "MINI",
+    "model": "Cooper",
+    "designation": "Cooper R56 1.6 122 PS (N16B16A)",
+    "engine_code": "N16B16A",
+    "series_keys": [
+      "r56"
+    ],
+    "year_from": 2010,
+    "year_to": 2013,
+    "fuel_type": "Benzin",
+    "manufacturer": "Brembo",
+    "manufacturer_part_number": "P 06 034",
+    "part_name": "Bremsbeläge vorne",
+    "category": "Bremsbeläge",
+    "source_url": "https://www.bremboparts.com/europe/de/catalogue/mini-mini-r56-cooper/000033053-1",
+    "fitment_notes": "Cooper R56 90 kW mit Lucas-Bremse vorne. Belagform, Bremssystem und OE-Nummer vor Bestellung abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Smart",
+    "model": "Fortwo",
+    "designation": "Fortwo Coupé 451 1.0 71 PS (M 132, 451.331/451.380)",
+    "engine_code": "M 132",
+    "series_keys": [
+      "451 coupe"
+    ],
+    "year_from": 2007,
+    "year_to": 2014,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "W 6011",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/w6011_mann-filter.html",
+    "fitment_notes": "Smart Fortwo Coupé Typ 451, 1.0 mit 52 kW und M 132. Herstelleranwendung beginnt 03/2007.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Smart",
+    "model": "Fortwo",
+    "designation": "Fortwo Coupé 451 1.0 71 PS (M 132, 451.331/451.380)",
+    "engine_code": "M 132",
+    "series_keys": [
+      "451 coupe"
+    ],
+    "year_from": 2007,
+    "year_to": 2014,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "C 2716/1",
+    "part_name": "Luftfilter",
+    "category": "Luftfilter",
+    "source_url": "https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/c2716/1_mann-filter.html",
+    "fitment_notes": "Smart Fortwo 451 mit M 132 und 52 kW. Herstelleranwendung von 03/2007 bis 09/2014. Filtermaße abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Smart",
+    "model": "Fortwo",
+    "designation": "Fortwo Coupé 451 1.0 71 PS (M 132, 451.331/451.380)",
+    "engine_code": "M 132",
+    "series_keys": [
+      "451 coupe"
+    ],
+    "year_from": 2007,
+    "year_to": 2014,
+    "fuel_type": "Benzin",
+    "manufacturer": "Brembo",
+    "manufacturer_part_number": "08.8163.21",
+    "part_name": "Bremsscheibe vorne",
+    "category": "Bremsscheiben",
+    "source_url": "https://www.bremboparts.com/europe/de/catalogue/smart-fortwo-coupe-451-1-0-451-331-451-380/000022474-1",
+    "fitment_notes": "Fortwo Coupé 451.331/451.380, 52 kW. Brembo nennt die Vorderachse und 280 × 9,6 mm. Maße und OE-Nr. am Fahrzeug prüfen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Smart",
+    "model": "Fortwo",
+    "designation": "Fortwo Coupé 451 1.0 71 PS (M 132, 451.331/451.380)",
+    "engine_code": "M 132",
+    "series_keys": [
+      "451 coupe"
+    ],
+    "year_from": 2007,
+    "year_to": 2014,
+    "fuel_type": "Benzin",
+    "manufacturer": "Brembo",
+    "manufacturer_part_number": "P 50 038",
+    "part_name": "Bremsbeläge vorne",
+    "category": "Bremsbeläge",
+    "source_url": "https://www.bremboparts.com/europe/de/catalogue/smart-fortwo-coupe-451-1-0-451-331-451-380/000022474-1",
+    "fitment_notes": "Fortwo Coupé 451.331/451.380, 52 kW mit Bosch-Bremse vorne. Belagform, Verschleißanzeige und OE-Nr. abgleichen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Porsche",
+    "model": "911",
+    "designation": "911 Carrera 997.1 3.6 325 PS (M 96.05)",
+    "engine_code": "M 96.05",
+    "series_keys": [
+      "997 1"
+    ],
+    "year_from": 2004,
+    "year_to": 2008,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "HU 719/5 x",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/my-en/catalog/search-results/product.html/hu719/5x_mann-filter.html",
+    "fitment_notes": "911 Carrera 997 3.6, 239 kW mit Motor M 96.05. In der Herstelleranwendung von 07/2004 bis 06/2008.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Porsche",
+    "model": "911",
+    "designation": "911 Carrera 997.2 3.6 345 PS (MA1.02)",
+    "engine_code": "MA1.02",
+    "series_keys": [
+      "997 2"
+    ],
+    "year_from": 2008,
+    "year_to": 2012,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "HU 9001 x",
+    "part_name": "Ölfilter",
+    "category": "Ölfilter",
+    "source_url": "https://www.mann-filter.com/en/catalog/search-results/product.html/hu9001x_mann-filter.html",
+    "fitment_notes": "911 Carrera 997/2 3.6, 254 kW mit Motor MA1.02. Herstelleranwendung von 07/2008 bis 12/2012.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Porsche",
+    "model": "911",
+    "designation": "911 Carrera 997.1 3.6 325 PS (M 96.05)",
+    "engine_code": "M 96.05",
+    "series_keys": [
+      "997 1"
+    ],
+    "year_from": 2004,
+    "year_to": 2008,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "CU 3360",
+    "part_name": "Innenraumfilter",
+    "category": "Innenraumfilter",
+    "source_url": "https://www.mann-filter.com/mea-en/catalogue/search-results/product.html/cu3360_mann-filter.html",
+    "fitment_notes": "911 Carrera 997.1 3.6 mit Motor M 96.05. Herstelleranwendung von 07/2004 bis 06/2008.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Porsche",
+    "model": "911",
+    "designation": "911 Carrera 997.2 3.6 345 PS (MA1.02)",
+    "engine_code": "MA1.02",
+    "series_keys": [
+      "997 2"
+    ],
+    "year_from": 2008,
+    "year_to": 2012,
+    "fuel_type": "Benzin",
+    "manufacturer": "MANN-FILTER",
+    "manufacturer_part_number": "CU 3360",
+    "part_name": "Innenraumfilter",
+    "category": "Innenraumfilter",
+    "source_url": "https://www.mann-filter.com/mea-en/catalogue/search-results/product.html/cu3360_mann-filter.html",
+    "fitment_notes": "911 Carrera 997.2 3.6 mit Motor MA1.02. Herstelleranwendung von 07/2008 bis 12/2012.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  },
+  {
+    "make": "Porsche",
+    "model": "911",
+    "designation": "911 Carrera 997.1 3.6 325 PS (M 96.05)",
+    "engine_code": "M 96.05",
+    "series_keys": [
+      "997 1"
+    ],
+    "year_from": 2004,
+    "year_to": 2008,
+    "fuel_type": "Benzin",
+    "manufacturer": "Brembo",
+    "manufacturer_part_number": "09.C880.11",
+    "part_name": "Bremsscheibe vorne",
+    "category": "Bremsscheiben",
+    "source_url": "https://www.bremboparts.com/europe/de/catalogue/porsche-911-997-3-6-carrera/000018060-1",
+    "fitment_notes": "911 Carrera 997 3.6, 239 kW. Brembo nennt die Vorderachse und 318 × 28 mm. Bremssystem, Maße und OE-Nr. prüfen.",
+    "source_type": "manufacturer_application",
+    "reviewed": true
+  }
+]

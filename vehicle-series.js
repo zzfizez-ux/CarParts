@@ -1,4 +1,4 @@
-import {catalogueSeriesNames, seriesKey as keyForSeries} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=27";
+import {catalogueSeriesNames, seriesKey as keyForSeries} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=33";
 
 const $=id=>document.getElementById(id);
 

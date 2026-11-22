@@ -10,6 +10,8 @@ Die Auswahl verwendet Marke, Modell, Baureihe, Baujahr und Motor. Dokumentierte 
 
 `live-web-search` sucht zuerst nach Händlerprodukten für dokumentierte Teilenummern und weiteren eindeutigen Baureihen-Treffern. CarParts liest Artikelname, EUR-Preis und Produktbild aus der Produktseite. Fehlen Händlerprodukte, kann Mwmbl weitere Händlerseiten liefern. Der sichtbare Preis enthält einen Abrufzeitpunkt. Einbauposition, Motorcode, OE-Nummer und Ausstattungsbedingungen stehen bei der jeweiligen Quelle.
 
+Auf der Artikelkarte stehen gespeicherte Preisbeobachtungen und zu derselben Teilenummer verifizierte Live-Angebote gemeinsam. CarParts sortiert die Preise je Währung und verlinkt jedes Angebot einzeln. Gespeicherte Preise erscheinen bis zu sieben Tage nach der Erfassung mit dem jeweiligen Abrufdatum. Bilder kommen aus freigegebenen Bilddatensätzen oder dem zugeordneten, aktuellen Händlerangebot.
+
 Angebote werden vier Stunden in `shared_parts_research` wiederverwendet. Quellen ohne Produktangebot werden eine Stunde gespeichert. Leere Abfragen werden kürzer zwischengespeichert. Die Datenbank zählt direkte Händlerabfragen und Mwmbl-Websuchen getrennt. Die Tagesgrenzen liegen bei 100 Händlerrecherchen und 25 Mwmbl-Recherchen pro UTC-Tag. Im Protokoll erscheinen Händlerdomain und Fehlergrund. Preise und Produktbilder hängen von der Abdeckung und den öffentlich abrufbaren Produktdaten ab.
 
 `research-parts` verwaltet Kategorienachfragen und hinterlegte Herstellerreferenzen. `discover-parts` findet offene Ölfilterreferenzen aus OilSpec Commons. OBD-Suchen lesen die Diagnosehinweise aus `open_diagnostic_parts`. Die VIN-Prüfung nutzt NHTSA vPIC. Fahrzeugfotos mit lesbarer VIN werden per Tesseract im Browser verarbeitet. Die Fahrzeuggarage speichert die Auswahl auf dem aktuellen Gerät.
@@ -31,7 +33,24 @@ Die RapidAPI-Anwendung benötigt ein Abonnement für **Auto Parts Finder**. Der 
 - Die produktiven Edge Functions sind `live-web-search`, `research-parts`, `discover-parts` und `login-notification`. `live-web-search` verwendet die TypeScript- und Moduldateien im gleichnamigen Ordner.
 - `backend/` enthält die optionale Cloudflare-/D1-Implementierung. Ein leerer `baseUrl` in `catalog-config.js` wählt den produktiven Supabase-Pfad.
 - Die Content Security Policy in `index.html` beschränkt Skripte und Netzwerkziele. Bei einem Wechsel des Supabase-Projekts oder der Aktivierung des optionalen Cloudflare-Backends muss die neue API-Origin auch in `connect-src` aufgenommen werden.
-- Für einzeln geprüfte Herstelleranwendungen validiert `node tools/import-reviewed-parts.cjs approved-records.json` eine Quelldatei. Die Freigabe erfolgt mit `--apply` und den serverseitigen Supabase-Zugangsdaten. Für neue Baureihen werden die stabilen Zuordnungsschlüssel als `series_keys` mitgeliefert.
+- Die Importfunktion wird über [catalogue_import.sql](supabase/sql/catalogue_import.sql) eingerichtet. Der serverseitige Import ist ausschließlich mit der Supabase-Servicerolle möglich.
+
+## Teilekatalog erweitern
+
+Der [Startbestand für acht Fahrzeugmarken](catalogue/de-passenger-cars-2026-11.json) enthält einzeln überprüfte Herstelleranwendungen mit Quellen und die Preisbeobachtungen vom 22. November 2026. Er dient als Vorlage für weitere Datenlieferungen.
+
+```sh
+node tools/import-reviewed-parts.cjs catalogue/de-passenger-cars-2026-11.json
+node tools/import-reviewed-parts.cjs catalogue/de-passenger-cars-2026-11.json --apply
+```
+
+Der erste Befehl validiert die Datei. Der zweite schreibt die Daten in atomaren Paketen und benötigt `SUPABASE_URL` und `SUPABASE_SERVICE_ROLE_KEY` in einer privaten Laufzeitumgebung. Ein erneuter Import aktualisiert denselben Artikel und dieselbe Fahrzeuganwendung. Die jüngste Preisbeobachtung zum jeweiligen Händlerprodukt bleibt maßgeblich.
+
+- Jede Zeile enthält den CarParts-Marke-/Modellnamen, die konkrete Motorbezeichnung, Baureihenschlüssel, Anwendungsjahre, Teilehersteller, Artikelnummer und eine Herstellerquelle. `engine_year_from` und `engine_year_to` beschreiben optional das weitere Produktionsfenster des Fahrzeugs. Für die Artikelsuche gilt das Anwendungsfenster.
+- `oe_numbers` enthält die Originalreferenzen des Herstellers. `offers` enthält einzelne Händlerproduktlinks, beobachteten Preis, Währung, Datum und Quelle. `images` enthält das konkrete Produktfoto, seine Quelle und die Freigabe für die Anzeige.
+- Für große Datenlieferungen wird ein freigegebener Fahrzeug-, Artikel- und Verknüpfungsexport auf dieses Format abgebildet. TecDoc Data Package bietet strukturierte Aftermarket-Daten. Originalteilkataloge und Händlerfeeds ergänzen Herstellerteile und laufende Marktpreise.
+
+[TecDoc-Datenpakete](https://www.tecalliance.net/products) · [LexCom Originalteilkataloge](https://www.lexcom.de/home/en/what-we-do.html) · [Awin Produktfeeds](https://help.awin.com/developers/docs/product-feed-publisher-guide-intro)
 
 ## Konto und E-Mails
 

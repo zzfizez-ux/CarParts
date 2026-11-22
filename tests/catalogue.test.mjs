@@ -40,3 +40,25 @@ test("a generic engine choice gives a source candidate only",async()=>{
   assert.equal(part.match,"conditional");
   assert.equal(part.manufacturer_part_number,"HU 7020 z");
 });
+
+test("catalogue lookup reaches later pages and respects the imported application bounds",async()=>{
+  const vehicle={make:"BMW",model:"3er",series:"F30",year:2014,engine:"320d N47D20C"};
+  const engines=[{id:1,designation:vehicle.engine,engine_code:"N47D20C"}];
+  const part={id:2,part_name:"Ölfilter",category:"Ölfilter",manufacturer_part_number:"HU 6004 x"};
+  const page=Array.from({length:100},(_,i)=>({
+    id:i+1,engine_id:1,parts:{...part,manufacturer_part_number:"HU 6019 z"}
+  }));
+  const calls=[];
+  const read=async(table,query)=>{
+    calls.push({...query});
+    if(!query.id)return page;
+    return [
+      {id:101,engine_id:1,parts:part,series_keys:["f31"],year_from:2013,year_to:2015},
+      {id:102,engine_id:1,parts:part,series_keys:["f30"],year_from:2015,year_to:2017},
+      {id:103,engine_id:1,parts:part,series_keys:["f30"],year_from:2013,year_to:2015}
+    ];
+  };
+  const found=await catalogueParts(read,engines,vehicle,"HU6004X","");
+  assert.deepEqual(found.map(row=>row.fitment.id),[103]);
+  assert.equal(calls[1].id,"gt.100");
+});

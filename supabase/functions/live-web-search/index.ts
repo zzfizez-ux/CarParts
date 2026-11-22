@@ -162,7 +162,7 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
     verification_status:"eq.verified",limit:"40"
   }).catch(()=>[]) : [];
   const articles:Article[] = foundParts.map(row=>({
-    manufacturer:row.manufacturer, manufacturer_part_number:row.manufacturer_part_number,
+    part_id:row.id, manufacturer:row.manufacturer, manufacturer_part_number:row.manufacturer_part_number,
     source_url:row.fitment.source_url || row.source_url,
     condition:row.fitment.notes || row.engine,
     urls:oldOffers.filter((offer:{part_id:number})=>offer.part_id===row.id).map((offer:{product_url:string})=>offer.product_url)
@@ -222,7 +222,7 @@ Deno.serve(async (request:Request)=>{
       year:p.year,engine:normalize(p.engine||""),variant:normalize(p.variant||"")
     };
     const term = normalize(p.part), category = normalize(p.category||"");
-    const key = await hashKey(["products-v4",vehicle,term,category]);
+    const key = await hashKey(["products-v5",vehicle,term,category]);
     return json(await research(vehicle,term,category,key));
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);
