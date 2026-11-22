@@ -7,8 +7,7 @@ const {runInNewContext} = require("node:vm");
 const site = "https://zzfizez-ux.github.io/CarParts/";
 const testUser = {email: "customer@example.invalid"};
 const recoverySession = {user: testUser};
-const source = readFileSync(join(__dirname, "../account.js"), "utf8")
-  .replace(/await import\('[^']+'\)/, "supabaseMock");
+const source = readFileSync(join(__dirname, "../account.js"), "utf8");
 
 function fixture(href, verifyOtp = async () => ({data: {session: recoverySession}})) {
   const node = () => ({value: "", textContent: "", closest: () => ({}), addEventListener() {}});
@@ -41,8 +40,10 @@ function fixture(href, verifyOtp = async () => ({data: {session: recoverySession
     URL, URLSearchParams, location: {href},
     history: {replaceState(_, __, next) { calls.push(next); }},
     document: {getElementById: id => id === "accountDialog" ? dialog : account},
-    window: {CARPARTS_SUPABASE_CONFIG: {url: "https://project.example", publishableKey: "public"}},
-    supabaseMock: {createClient: () => ({auth})}
+    window: {
+      CARPARTS_SUPABASE_CONFIG: {url: "https://project.example", publishableKey: "public"},
+      supabase: {createClient: () => ({auth})}
+    }
   });
 
   return {
@@ -65,6 +66,7 @@ test("a recovery email opens code entry with the email field enabled", async () 
   await page.submit();
   assert.deepEqual(page.calls[1], {email: testUser.email, token: "123456", type: "recovery"});
   assert.equal(page.title.textContent, "Neues Passwort wählen");
+  assert.equal(page.fields.password.minLength, 12);
 
   page.dialog.close();
   page.account.onclick();

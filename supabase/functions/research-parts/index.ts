@@ -2,6 +2,7 @@
 // This is NOT a general web crawler. It returns reviewed public manufacturer references,
 // and records category demand until further legally reusable source adapters are approved.
 import {siteRequest} from "../_shared/site-config.mjs";
+import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
 
 const PROJECT="umhzxsryqhwzxrmkbmwp";
 const API="https://"+PROJECT+".supabase.co/rest/v1/";
@@ -45,8 +46,7 @@ Deno.serve(async(req:Request)=>{
  if(req.method!=="POST")return response({error:"Method not allowed"},405);
  if(!keyMatch(req.headers.get("apikey")||""))return response({error:"Invalid publishable key"},401);
  try{
-  if(Number(req.headers.get("content-length")||0)>512)return response({error:"Too large"},413);
-  const v=await req.json();
+  const v=await readJson(req,1024);
   if(!v||typeof v!=="object"||Array.isArray(v)||
    Object.keys(v).some(x=>!["make","model","year","category"].includes(x)))return response({error:"Unsupported request"},422);
   const {make,model,category}=v,year=Number(v.year);
@@ -84,6 +84,7 @@ Deno.serve(async(req:Request)=>{
     ?"Hersteller-Referenzen gefunden: Fahrzeugvariante und Bremsanlage prüfen."
     :"Suchanfrage erfasst. Für diese Kategorie fehlt noch eine freigegebene externe Datenquelle."});
  }catch(e){
+  if(e instanceof JsonBodyError)return response({error:e.message},e.status);
   console.error("CarParts research lookup",e instanceof Error?e.message:"unknown error");
   return response({error:"Research temporarily unavailable"},503);
  }

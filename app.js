@@ -1,4 +1,4 @@
-import "./supabase-catalog.js?v=28";
+import "./supabase-catalog.js?v=31";
 import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=27";
 import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=27";
 
@@ -8,12 +8,19 @@ const hasSeries = !!document.getElementById("series");
 const modelIndex = window.CarPartsModelIndex || {};
 const POPULAR_MAKES = [...new Set([...Object.keys(window.CARPARTS_POPULAR_MODELS || {}), ...Object.keys(modelIndex)])]
  .filter(name => !["Mini","DS Automobiles"].includes(name)).sort((a,b)=>a.localeCompare(b,"de"));
-const state={mode:"value",lang:localStorage.getItem("cp-lang")||"en",vehicle:null,garage:(()=>{try{return JSON.parse(localStorage.getItem("cp-garage")||"[]")}catch{return []}})()};
+function preference(key,fallback=""){
+ try{return localStorage.getItem(key)??fallback}catch{return fallback}
+}
+function storePreference(key,value){
+ try{localStorage.setItem(key,value);return true}catch{return false}
+}
+const state={mode:"value",lang:preference("cp-lang")==="de"?"de":"en",vehicle:null,garage:(()=>{try{return JSON.parse(preference("cp-garage","[]"))}catch{return []}})()};
 // Never persist VINs: remove any VIN previously saved by older CarParts versions.
-state.garage=Array.isArray(state.garage)?state.garage.filter(v=>v&&v.make&&v.model).map(v=>({
- make:v.make,model:v.model,year:v.year,engine:v.engine||"",variant:v.variant||"",series:v.series||""
+const savedText=value=>typeof value==="string"?value:"";
+state.garage=Array.isArray(state.garage)?state.garage.filter(v=>savedText(v?.make)&&savedText(v.model)).map(v=>({
+ make:v.make,model:v.model,year:v.year,engine:savedText(v.engine),variant:savedText(v.variant),series:savedText(v.series)
 })):[];
-try{localStorage.setItem("cp-garage",JSON.stringify(state.garage))}catch(e){}
+storePreference("cp-garage",JSON.stringify(state.garage));
 const $=id=>document.getElementById(id),toastEl=$("toast");
 function show(m){toastEl.textContent=m;toastEl.classList.add("show");clearTimeout(window.__t);window.__t=setTimeout(()=>toastEl.classList.remove("show"),3000)}
 function api(path){return fetch(API+path,{signal:AbortSignal.timeout(8000)}).then(r=>{if(!r.ok)throw Error("API");return r.json()})}
@@ -125,7 +132,6 @@ function loadEngines(preferred){
  return basic;
 }
 function chosenEngine(){return $("engineCustom")?.value.trim()||($("engine").value==="Andere Motorisierung (selbst eingeben)"?"":$("engine").value)}
-function setOptionSelect(id,value,placeholder){const el=$(id);if(!el)return;el.innerHTML='<option value="">'+placeholder+'</option>'+(value?'<option value="'+String(value).replaceAll('"','&quot;')+'">'+value+'</option>':'');if(value)el.value=value}
 // NHTSA VIN parsing is handled in the separately tested vin-check.js module.
 async function applyVinVehicleProfile(p,force=false){
  if(!p?.make)return false;
@@ -538,11 +544,56 @@ function showManufacturerReferences(panel,rows){
  panel.append(container);
 }
 
+function showRapidReferences(panel,parts){
+ if(!parts.length)return;
+ const section=document.createElement("section");
+ section.innerHTML='<div class="catalog-grid-heading"><h3>Teilehinweise von Auto Parts Finder</h3>'+
+  '<p>Die Quelle sucht nach Modell, Baujahr und Motor. Baureihe, Teilenummer und Ausstattung beim Hersteller abgleichen.</p></div>';
+ for(const part of parts){
+  const card=document.createElement("article");
+  card.className="source-research-card catalog-item-body";
+  const title=document.createElement("strong");
+  title.textContent=part.reference;
+  const description=document.createElement("p");
+  description.textContent=part.type;
+  card.append(title,description);
+  if(/^https:\/\//i.test(part.image)){
+   const photo=document.createElement("img");
+   photo.src=part.image;
+   photo.alt=part.reference;
+   photo.width=120;
+   photo.loading="lazy";
+   photo.referrerPolicy="no-referrer";
+   photo.addEventListener("error",()=>photo.remove(),{once:true});
+   card.append(photo);
+  }
+  const price=document.createElement("p");
+  if(Number.isFinite(part.price)&&part.price>0){
+   price.textContent="Preis laut Anbieter · "+(part.currency
+    ?new Intl.NumberFormat("de-DE",{style:"currency",currency:part.currency}).format(part.price)
+    :new Intl.NumberFormat("de-DE",{minimumFractionDigits:2}).format(part.price)+" (Währung offen)");
+  }else price.textContent="Preis beim Händler prüfen";
+  card.append(price);
+  if(/^https:\/\//i.test(part.url)){
+   const link=document.createElement("a");
+   link.href=part.url;
+   link.target="_blank";
+   link.rel="noopener noreferrer";
+   link.textContent="Händlerquelle öffnen ↗";
+   card.append(link);
+  }
+  section.append(card);
+ }
+ panel.append(section);
+}
+
 function merchantNotice(data){
  if(data.status==="busy")return "Für dieses Fahrzeug und Teil läuft bereits eine Suche. Bitte versuche es in Kürze erneut.";
  if(data.merchant_status==="quota")return "Das Tageslimit für Händlerabfragen ist erreicht.";
  if(data.merchant_status==="cooldown")return "Neue Händlerabfragen für dieses Teil sind in wenigen Minuten verfügbar.";
  if(data.merchant_failures?.length)return "Einige Händlerdaten waren gerade nicht abrufbar.";
+ if(!data.products?.length&&["access","unavailable"].includes(data.rapid_status))return "Auto Parts Finder ist vorübergehend nicht verfügbar.";
+ if(!data.products?.length&&data.rapid_status==="quota")return "Das Abfragelimit von Auto Parts Finder ist erreicht.";
  if(data.web_status==="quota"&&!data.products?.length)return "Das Tageslimit der Websuche ist erreicht.";
  if(data.web_status==="provider_error"&&!data.products?.length)return "Die ergänzende Websuche ist gerade nicht erreichbar.";
  return "";
@@ -550,7 +601,7 @@ function merchantNotice(data){
 
 async function showSharedResearch(vehicle,term,requestId){
  const panel=$("sharedResearch");
- panel.textContent="Händlerangebote und Herstellerquellen werden gesucht…";
+ panel.textContent="Händlerangebote und Teilequellen werden gesucht…";
  try{
   const data=await window.CarPartsDB.searchLiveWeb(vehicle,term);
   if(requestId!==catalogRequest)return {};
@@ -558,6 +609,7 @@ async function showSharedResearch(vehicle,term,requestId){
    /^https:\/\//i.test(item.image)&&/^https:\/\//i.test(item.url)&&seriesMatches(vehicle,item.name));
   const references=(data.references||[]).filter(row=>seriesMatches(vehicle,row.source_vehicle_variant));
   const links=(data.results||[]).filter(item=>/^https:\/\//i.test(item.url)&&seriesMatches(vehicle,[item.title,item.snippet].join(" ")));
+  const rapid=(data.rapid_parts||[]).filter(item=>seriesMatches(vehicle,[item.reference,item.type].join(" ")));
   panel.replaceChildren();
   if(products.length){
    const header=document.createElement("div");
@@ -568,6 +620,7 @@ async function showSharedResearch(vehicle,term,requestId){
   }
   const offered=new Set(products.map(item=>item.sku).filter(Boolean));
   showManufacturerReferences(panel,references.filter(row=>!offered.has(row.manufacturer_part_number)));
+  showRapidReferences(panel,rapid);
   showWebReferences(panel,links);
   const notice=merchantNotice(data);
   if(notice || (products.length&&data.status==="cached")){
@@ -576,7 +629,7 @@ async function showSharedResearch(vehicle,term,requestId){
    message.textContent=notice || "Angebote aus der letzten Händlerabfrage.";
    panel.append(message);
   }
-  return {hasProducts:products.length>0,hasReferences:references.length>0||links.length>0,busy:data.status==="busy"};
+  return {hasProducts:products.length>0,hasReferences:references.length>0||links.length>0||rapid.length>0,busy:data.status==="busy"};
  }catch{
   if(requestId===catalogRequest)panel.textContent="Händlerrecherche gerade nicht erreichbar.";
   return {};
@@ -680,7 +733,6 @@ async function search(){
  if(!state.vehicle){show("Bitte zuerst Marke, Modell, Baureihe und Baujahr wählen.");$("finder").scrollIntoView({behavior:"smooth"});return}
  if(!q){show("Bitte Teilebezeichnung oder Artikelnummer eingeben.");return}
  const typed=window.CarPartsVIN.check($("vin").value);
- if(typed.vin&&vinResult.status==="unchecked")await decodeVin(typed.vin);
  if(typed.vin&&["invalid","mismatch","checking"].includes(vinResult.status)){
   show("VIN-Prüfung enthält einen Fehler. Bitte die VIN/Fahrzeugauswahl korrigieren.");
   $("vinStatus").scrollIntoView({behavior:"smooth",block:"center"});return;
@@ -703,7 +755,7 @@ async function search(){
   const confirmed=vinResult.status==="matched";
   const message=confirmed?
    "VIN-Stammdaten abgeglichen – die angezeigten Teile sind NICHT individuell per VIN auf Passform bestätigt. Motorcode, Bauzeit und Ausstattung prüfen.":
-   "VIN nicht vollständig bestätigt. Die angezeigten Teile sind nur Katalog- oder Community-Hinweise; bitte Fahrzeugdaten und Ausstattung selbst prüfen.";
+   "Teilesuche anhand der Fahrzeugauswahl. Für einen VIN-Abgleich klicke bei den Fahrzeugangaben auf „VIN jetzt prüfen“.";
   panel.insertAdjacentHTML("afterbegin",'<div class="vin-results-disclaimer">'+esc(message)+'</div>');
  }
  $("parts").scrollIntoView({behavior:"smooth"});
@@ -730,18 +782,18 @@ if(hasSeries){
  $("customSeries").oninput=vehicleChanged;
 }
 $("engine").onchange=()=>{$("engineCustom").value="";vehicleChanged()};$("engineCustom").oninput=vehicleChanged;$("variant").oninput=vehicleChanged;
-$("vin").addEventListener("input",()=>{
+function markVinUnchecked(){
  vinCheckSequence++;vinResult={status:"unchecked",vin:window.CarPartsVIN.check($("vin").value).vin,decoded:null,local:null,reason:""};
  vehicleChanged();
-});
-$("vin").addEventListener("change",()=>{const v=$("vin").value.trim();if(v)decodeVin(v)});
+}
+$("vin").addEventListener("input",markVinUnchecked);
 $("searchBtn").onclick=search;$("partSearch").addEventListener("keydown",e=>{if(e.key==="Enter")search()});document.querySelectorAll(".quick-tags button").forEach(b=>b.onclick=()=>{$("partSearch").value=b.dataset.part;search()});
 document.querySelectorAll(".quality-toggle button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".quality-toggle button").forEach(x=>x.classList.remove("active"));b.classList.add("active");state.mode=b.dataset.mode;const q=$("partSearch").value.trim();if(q&&state.vehicle)renderLiveResults(q);else renderResults()});
-$("themeBtn").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("cp-dark",document.body.classList.contains("dark"));$("themeBtn").firstChild.textContent=document.body.classList.contains("dark")?"☀ ":"☾ ";$("themeBtn").lastChild.textContent=state.lang==="de"?(document.body.classList.contains("dark")?"Hell":"Dunkel"):(document.body.classList.contains("dark")?"Light":"Dark")};
-if(localStorage.getItem("cp-dark")==="true"){document.body.classList.add("dark");$("themeBtn").firstChild.textContent="☀ "}
+$("themeBtn").onclick=()=>{document.body.classList.toggle("dark");storePreference("cp-dark",document.body.classList.contains("dark"));$("themeBtn").firstChild.textContent=document.body.classList.contains("dark")?"☀ ":"☾ ";$("themeBtn").lastChild.textContent=state.lang==="de"?(document.body.classList.contains("dark")?"Hell":"Dunkel"):(document.body.classList.contains("dark")?"Light":"Dark")};
+if(preference("cp-dark")==="true"){document.body.classList.add("dark");$("themeBtn").firstChild.textContent="☀ "}
 
-const T={en:{series:"Generation / chassis code",how:"How it works",browse:"Browse parts",why:"Why CarParts",dark:"Dark",garage:"My garage",saveGarage:"Save vehicle",smart:"Smart vehicle parts search",heroTitle:"Find the right part.<br><em>First time.</em>",heroText:"Select your vehicle and search source-backed replacement parts directly on CarParts. Availability, photos and prices appear only when verified data is available.",findPart:"Find a part <span>→</span>",seeHow:"See how it works",compat:"compatibility focused",after:"and aftermarket",data:"vehicle data assisted",yourVehicle:"YOUR VEHICLE",ready:"READY",change:"Change",exactFit:"Vehicle check",finder:"PART FINDER",startKnow:"Start with what you know.",finderText:"Search the live vehicle database by make, model, year and engine. You can also upload a vehicle photo or document for OCR/VIN assistance.",uploadTitle:"Upload a vehicle photo",uploadText:"Choose a photo with a readable VIN, such as a picture of your registration document.",choose:"Choose file",vehicleDetails:"VEHICLE DETAILS",make:"Brand",model:"Model",year:"Year",engine:"Engine",body:"Body / variant",need:"What do you need?",search:"Search",partPlaceholder:"e.g. front brake pads, oil filter…",matched:"PARTS ON CARPARTS",best:"Best value",premium:"Premium",oem:"OEM",noGuess:"NO GUESSING",confidenceTitle:"Not enough information? We'll tell you exactly what to check.",confidenceText:"If more than one variant is possible, CarParts will not pretend the fit is certain. We'll explain what is missing — such as VIN, engine code, OEM number, dimensions or a clearer photo.",example:"See an example →",howIt:"HOW IT WORKS",howTitle:"Parts shopping, without the parts knowledge.",howText:"Select your vehicle, then see available source-backed parts directly on CarParts. Exact fitment requires checking the manufacturer details.",step1:"Identify your vehicle",step1p:"Use the live vehicle database, a VIN, or upload a document/photo for identifier extraction.",step2:"Tell us what you need",step2p:"Search by part name. CarParts keeps the selected vehicle attached to the search.",step3:"Choose your match",step3p:"See sourced articles and current merchant offers when available, with missing prices clearly indicated.",built:"BUILT DIFFERENT",builtTitle:"The simple way to find vehicle parts.",f1:"Vehicle-first search",f1p:"Vehicle selection comes before part matching, reducing generic and incorrect results.",f2:"Clear compatibility",f2p:"No fake certainty. Missing fitment information is called out and explained.",f3:"Your preference, your price",f3p:"Find the cheapest good option, best value, premium quality or original parts."},de:{series:"Baureihe / Typcode",how:"So funktioniert's",browse:"Teile finden",why:"Warum CarParts",dark:"Dunkel",garage:"Meine Garage",saveGarage:"Fahrzeug speichern",smart:"Intelligente Teilesuche",heroTitle:"Das richtige Teil.<br><em>Beim ersten Mal.</em>",heroText:"Gib dein Fahrzeug und das gesuchte Teil an. CarParts sucht passende Teile — von Ersatzteilen bis zu Original-OEM-Teilen.",findPart:"Teil finden <span>→</span>",seeHow:"So funktioniert's",compat:"auf Kompatibilität fokussiert",after:"OEM & Zubehör",data:"mit Fahrzeugdaten",yourVehicle:"DEIN FAHRZEUG",ready:"BEREIT",change:"Ändern",exactFit:"Fahrzeugabgleich",finder:"TEILEFINDER",startKnow:"Starte mit deinen Angaben.",finderText:"Suche über die Fahrzeugdatenbank nach Marke, Modell, Baujahr und Motor. Lade alternativ ein Fahrzeugfoto oder Dokument für OCR/VIN-Erkennung hoch.",uploadTitle:"Fahrzeugfoto hochladen",uploadText:"Wähle ein Foto mit lesbarer VIN, etwa ein Bild vom Fahrzeugschein.",choose:"Datei wählen",vehicleDetails:"FAHRZEUGDATEN",make:"Marke",model:"Modell",year:"Baujahr",engine:"Motor",body:"Karosserie / Variante",need:"Was brauchst du?",search:"Suchen",partPlaceholder:"z. B. Bremsbeläge vorne, Ölfilter…",matched:"ERSATZTEILE AUF CARPARTS",best:"Preis-Leistung",premium:"Premium",oem:"OEM",noGuess:"KEIN RATESPIEL",confidenceTitle:"Nicht genug Informationen? Wir sagen dir genau, was noch fehlt.",confidenceText:"Wenn mehrere Varianten möglich sind, behauptet CarParts nicht einfach, dass das Teil passt. Wir zeigen dir, ob VIN, Motorkennbuchstabe, OEM-Nummer, Maße oder ein klareres Foto fehlt.",example:"Beispiel ansehen →",howIt:"SO FUNKTIONIERT'S",howTitle:"Teilesuche ohne Fachwissen.",howText:"Wähle dein Fahrzeug und sieh dir belegte Ersatzteile direkt auf CarParts an. Prüfe vor dem Kauf die genaue Herstellerausführung.",step1:"Fahrzeug bestimmen",step1p:"Nutze die Live-Fahrzeugdatenbank, eine VIN oder lade ein Dokument/Fahrzeugfoto zur Erkennung hoch.",step2:"Teil angeben",step2p:"Suche nach dem Namen des Teils. Dein Fahrzeug bleibt mit der Suche verknüpft.",step3:"Passendes Teil wählen",step3p:"Vergleiche Preis-Leistung, Premium und OEM — mit klarer Kennzeichnung bei Unsicherheit.",built:"ANDERS GEDACHT",builtTitle:"Die einfache Art, Fahrzeugteile zu finden.",f1:"Fahrzeug zuerst",f1p:"Die Fahrzeugauswahl kommt vor der Teilesuche und reduziert allgemeine Fehlresultate.",f2:"Klare Kompatibilität",f2p:"Keine erfundene Sicherheit. Fehlende Angaben werden erklärt.",f3:"Deine Wahl, dein Preis",f3p:"Günstig und gut, beste Preis-Leistung, Premium oder Originalteil."}};
-function applyLang(){const d=T[state.lang];document.documentElement.lang=state.lang;document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.dataset.i18n;if(d[k]!=null)el.innerHTML=d[k]});document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>el.placeholder=d[el.dataset.i18nPlaceholder]);$("langBtn").textContent=state.lang==="en"?"DE":"EN";$("themeBtn").lastChild.textContent=state.lang==="de"?(document.body.classList.contains("dark")?"Hell":"Dunkel"):(document.body.classList.contains("dark")?"Light":"Dark");localStorage.setItem("cp-lang",state.lang)}
+const T={en:{series:"Generation / chassis code",how:"How it works",browse:"Browse parts",why:"Why CarParts",dark:"Dark",garage:"My garage",saveGarage:"Save vehicle",smart:"Smart vehicle parts search",heroTitle:"Find the right part.<br><em>First time.</em>",heroText:"Select your vehicle and search source-backed replacement parts directly on CarParts. Availability, photos and prices appear only when verified data is available.",findPart:"Find a part <span>→</span>",seeHow:"See how it works",compat:"compatibility focused",after:"and aftermarket",data:"vehicle data assisted",yourVehicle:"YOUR VEHICLE",ready:"READY",change:"Change",exactFit:"Vehicle check",finder:"PART FINDER",startKnow:"Start with what you know.",finderText:"Search the live vehicle database by make, model, year and engine. You can also choose a vehicle photo for local VIN recognition.",uploadTitle:"Upload a vehicle photo",uploadText:"Choose a photo with a readable VIN, such as a picture of your registration document.",choose:"Choose file",vehicleDetails:"VEHICLE DETAILS",make:"Brand",model:"Model",year:"Year",engine:"Engine",body:"Body / variant",need:"What do you need?",search:"Search",partPlaceholder:"e.g. front brake pads, oil filter…",matched:"PARTS ON CARPARTS",best:"Best value",premium:"Premium",oem:"OEM",noGuess:"NO GUESSING",confidenceTitle:"Not enough information? We'll tell you exactly what to check.",confidenceText:"If more than one variant is possible, CarParts will not pretend the fit is certain. We'll explain what is missing — such as VIN, engine code, OEM number, dimensions or a clearer photo.",example:"See an example →",howIt:"HOW IT WORKS",howTitle:"Parts shopping, without the parts knowledge.",howText:"Select your vehicle, then see available source-backed parts directly on CarParts. Exact fitment requires checking the manufacturer details.",step1:"Identify your vehicle",step1p:"Use the live vehicle database, a VIN, or choose a photo to read the VIN.",step2:"Tell us what you need",step2p:"Search by part name. CarParts keeps the selected vehicle attached to the search.",step3:"Choose your match",step3p:"See sourced articles and current merchant offers when available, with missing prices clearly indicated.",built:"BUILT DIFFERENT",builtTitle:"The simple way to find vehicle parts.",f1:"Vehicle-first search",f1p:"Vehicle selection comes before part matching, reducing generic and incorrect results.",f2:"Clear compatibility",f2p:"No fake certainty. Missing fitment information is called out and explained.",f3:"Your preference, your price",f3p:"Find the cheapest good option, best value, premium quality or original parts."},de:{series:"Baureihe / Typcode",how:"So funktioniert's",browse:"Teile finden",why:"Warum CarParts",dark:"Dunkel",garage:"Meine Garage",saveGarage:"Fahrzeug speichern",smart:"Intelligente Teilesuche",heroTitle:"Das richtige Teil.<br><em>Beim ersten Mal.</em>",heroText:"Gib dein Fahrzeug und das gesuchte Teil an. CarParts sucht passende Teile — von Ersatzteilen bis zu Original-OEM-Teilen.",findPart:"Teil finden <span>→</span>",seeHow:"So funktioniert's",compat:"auf Kompatibilität fokussiert",after:"OEM & Zubehör",data:"mit Fahrzeugdaten",yourVehicle:"DEIN FAHRZEUG",ready:"BEREIT",change:"Ändern",exactFit:"Fahrzeugabgleich",finder:"TEILEFINDER",startKnow:"Starte mit deinen Angaben.",finderText:"Suche über die Fahrzeugdatenbank nach Marke, Modell, Baujahr und Motor. Du kannst die VIN auch aus einem Fahrzeugfoto erkennen lassen.",uploadTitle:"Fahrzeugfoto hochladen",uploadText:"Wähle ein Foto mit lesbarer VIN, etwa ein Bild vom Fahrzeugschein.",choose:"Datei wählen",vehicleDetails:"FAHRZEUGDATEN",make:"Marke",model:"Modell",year:"Baujahr",engine:"Motor",body:"Karosserie / Variante",need:"Was brauchst du?",search:"Suchen",partPlaceholder:"z. B. Bremsbeläge vorne, Ölfilter…",matched:"ERSATZTEILE AUF CARPARTS",best:"Preis-Leistung",premium:"Premium",oem:"OEM",noGuess:"KEIN RATESPIEL",confidenceTitle:"Nicht genug Informationen? Wir sagen dir genau, was noch fehlt.",confidenceText:"Wenn mehrere Varianten möglich sind, behauptet CarParts nicht einfach, dass das Teil passt. Wir zeigen dir, ob VIN, Motorkennbuchstabe, OEM-Nummer, Maße oder ein klareres Foto fehlt.",example:"Beispiel ansehen →",howIt:"SO FUNKTIONIERT'S",howTitle:"Teilesuche ohne Fachwissen.",howText:"Wähle dein Fahrzeug und sieh dir belegte Ersatzteile direkt auf CarParts an. Prüfe vor dem Kauf die genaue Herstellerausführung.",step1:"Fahrzeug bestimmen",step1p:"Nutze die Live-Fahrzeugdatenbank, eine VIN oder wähle ein Foto, um die VIN zu erkennen.",step2:"Teil angeben",step2p:"Suche nach dem Namen des Teils. Dein Fahrzeug bleibt mit der Suche verknüpft.",step3:"Passendes Teil wählen",step3p:"Vergleiche Preis-Leistung, Premium und OEM — mit klarer Kennzeichnung bei Unsicherheit.",built:"ANDERS GEDACHT",builtTitle:"Die einfache Art, Fahrzeugteile zu finden.",f1:"Fahrzeug zuerst",f1p:"Die Fahrzeugauswahl kommt vor der Teilesuche und reduziert allgemeine Fehlresultate.",f2:"Klare Kompatibilität",f2p:"Keine erfundene Sicherheit. Fehlende Angaben werden erklärt.",f3:"Deine Wahl, dein Preis",f3p:"Günstig und gut, beste Preis-Leistung, Premium oder Originalteil."}};
+function applyLang(){const d=T[state.lang];document.documentElement.lang=state.lang;document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.dataset.i18n;if(d[k]!=null)el.innerHTML=d[k]});document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>el.placeholder=d[el.dataset.i18nPlaceholder]);$("langBtn").textContent=state.lang==="en"?"DE":"EN";$("themeBtn").lastChild.textContent=state.lang==="de"?(document.body.classList.contains("dark")?"Hell":"Dunkel"):(document.body.classList.contains("dark")?"Light":"Dark");storePreference("cp-lang",state.lang)}
 $("langBtn").onclick=()=>{state.lang=state.lang==="en"?"de":"en";applyLang()};applyLang();
 
 $("uploadBtn").onclick=()=>$("photoInput").click();document.querySelector(".upload-card").onclick=e=>{if(e.target.closest("button"))return;$("photoInput").click()};
@@ -751,8 +803,12 @@ $("photoInput").onchange=async()=>{
  const file=$("photoInput").files[0];
  if(!file)return;
  const scan=++scanSequence;
- if(!file.type.startsWith("image/")){
+ if(!file.type.startsWith("image/")||file.type==="image/svg+xml"){
   $("scanProgress").textContent="Wähle ein Bild mit lesbarer VIN.";
+  return;
+ }
+ if(file.size>12*1024*1024){
+  $("scanProgress").textContent="Wähle ein Foto mit höchstens 12 MB.";
   return;
  }
  if(photoUrl)URL.revokeObjectURL(photoUrl);
@@ -764,14 +820,20 @@ $("photoInput").onchange=async()=>{
  $("scanProgress").textContent="Suche nach einer lesbaren VIN…";
  try{
   if(!window.Tesseract)throw Error("OCR unavailable");
-  const result=await window.Tesseract.recognize(file,"eng");
+  const result=await window.Tesseract.recognize(file,"eng",{
+   workerPath:"https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js",
+   corePath:"https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1/",
+   langPath:"https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int"
+  });
   if(scan!==scanSequence)return;
   const vin=(result.data.text.toUpperCase().match(/\b[A-HJ-NPR-Z0-9]{17}\b/)||[])[0];
   if(!vin){
    $("scanProgress").textContent="Keine lesbare VIN gefunden. Gib sie ein oder wähle das Fahrzeug manuell.";
    return;
   }
-  await decodeVin(vin);
+  $("vin").value=vin;
+  markVinUnchecked();
+  $("scanProgress").textContent="VIN aus dem Foto übernommen. Klicke auf „VIN jetzt prüfen“, wenn du die Fahrzeugdaten abgleichen möchtest.";
  }catch{
   if(scan===scanSequence)$("scanProgress").textContent="Das Bild konnte nicht gelesen werden. Wähle das Fahrzeug manuell.";
  }
@@ -834,8 +896,7 @@ function saveGarage(){
   return;
  }
  const updated=[...state.garage,vehicle];
- try{localStorage.setItem("cp-garage",JSON.stringify(updated));}
- catch{
+ if(!storePreference("cp-garage",JSON.stringify(updated))){
   show(state.lang==="de"?"Die Garage konnte im Browser nicht gespeichert werden.":"The browser could not save the garage.");
   return;
  }

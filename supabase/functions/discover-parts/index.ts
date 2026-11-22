@@ -2,6 +2,7 @@
 // This endpoint receives make/model/year only. Never send or store VINs, IPs or raw user text.
 // No arbitrary URLs, scraping of marketplaces, prices, or unverified "fits" claims.
 import {siteRequest} from "../_shared/site-config.mjs";
+import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
 
 const PROJECT = "umhzxsryqhwzxrmkbmwp";
 const SUPABASE = "https://" + PROJECT + ".supabase.co";
@@ -98,8 +99,7 @@ Deno.serve(async (req: Request) => {
   const apikey = req.headers.get("apikey") || "";
   if (!apikey || !publicKeys().includes(apikey)) return respond({ error: "Invalid publishable key" }, 401);
   try {
-    if (Number(req.headers.get("content-length") || 0) > 512) return respond({ error: "Request too large" }, 413);
-    const request = await req.json();
+    const request = await readJson(req,1024);
     if (!request || typeof request !== "object" || Array.isArray(request) ||
       Object.keys(request).some(k => !["make","model","year","category"].includes(k)))
       return respond({ error: "Only make, model, year and category supported" }, 400);
@@ -134,6 +134,7 @@ Deno.serve(async (req: Request) => {
     }, [{ make, model, model_year: year, result_count: discovered.length, checked_at: new Date().toISOString() }]);
     return respond({ rows: rowsToClient(discovered), source: "newly-saved", stored: discovered.length, verified: false, license: "CC0-1.0" });
   } catch (e) {
+    if (e instanceof JsonBodyError) return respond({error:e.message},e.status);
     console.error("CarParts community lookup failed", e instanceof Error ? e.message : "unknown");
     return respond({ error: "Community source temporarily unavailable" }, 503);
   }

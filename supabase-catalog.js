@@ -140,7 +140,7 @@ async function searchLiveWeb(vehicle,term){
  };
  const res=await fetch(base+"/functions/v1/live-web-search",{
   method:"POST",headers:{"apikey":key,"Content-Type":"application/json"},
-  body:JSON.stringify(request),signal:AbortSignal.timeout(40000)
+  body:JSON.stringify(request),signal:AbortSignal.timeout(56000)
  });
  if(!res.ok)throw new Error("Live web search "+res.status);
  const data=await res.json();

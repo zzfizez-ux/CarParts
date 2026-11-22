@@ -16,12 +16,21 @@ Angebote werden vier Stunden in `shared_parts_research` wiederverwendet. Quellen
 
 [MANN-FILTER HU 7020 z für den Golf VII](https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/hu7020z_mann-filter.html) · [Mwmbl-Bedingungen und Lizenz der Suchergebnisse](https://developer.mwmbl.org/terms/)
 
+### Auto Parts Finder
+
+Fehlt ein direkt belegtes Händlerangebot, kann `live-web-search` für ausgewählte Teilekategorien zusätzlich Auto Parts Finder abfragen. Der Dienst erhält das Modell, den Motor, das Modelljahr und die Teilekategorie. CarParts zeigt die Ergebnisse als Teilehinweise. Der Händler bestätigt die Währung, und der Hersteller bestätigt Baureihe, Einbauposition und Ausstattung.
+
+Die RapidAPI-Anwendung benötigt ein Abonnement für **Auto Parts Finder**. Der Schlüssel wird im Supabase-Projekt als Edge Function Secret `RAPIDAPI_AUTO_PARTS_KEY` hinterlegt. CarParts speichert die Hinweise bis zu 24 Stunden und begrenzt neue Aufrufe entsprechend der Basic-Menge auf 50 pro 31 Tage.
+
+[Auto Parts Finder – Endpunkt](https://rapidapi.com/Makh83/api/auto-parts-finder1/playground/Get%20Compatible%20Parts) · [Tarife](https://rapidapi.com/Makh83/api/auto-parts-finder1/pricing)
+
 ## Betrieb
 
 - Der Browser verwendet die öffentliche Supabase-Projektkennung. Herstellerdaten, geprüfte Artikel und OE-Referenzen sind lesbar. Die privaten Recherche- und Budgettabellen werden von den Edge Functions geschrieben.
 - Die SQL-Dateien in [supabase/sql](supabase/sql) dokumentieren den Recherchecache, die Baureihen der geprüften Anwendungen, den Golf-Ölfilter und das Händlerbudget.
 - Die produktiven Edge Functions sind `live-web-search`, `research-parts`, `discover-parts` und `login-notification`. `live-web-search` verwendet die TypeScript- und Moduldateien im gleichnamigen Ordner.
 - `backend/` enthält die optionale Cloudflare-/D1-Implementierung. Ein leerer `baseUrl` in `catalog-config.js` wählt den produktiven Supabase-Pfad.
+- Die Content Security Policy in `index.html` beschränkt Skripte und Netzwerkziele. Bei einem Wechsel des Supabase-Projekts oder der Aktivierung des optionalen Cloudflare-Backends muss die neue API-Origin auch in `connect-src` aufgenommen werden.
 - Für einzeln geprüfte Herstelleranwendungen validiert `node tools/import-reviewed-parts.cjs approved-records.json` eine Quelldatei. Die Freigabe erfolgt mit `--apply` und den serverseitigen Supabase-Zugangsdaten. Für neue Baureihen werden die stabilen Zuordnungsschlüssel als `series_keys` mitgeliefert.
 
 ## Konto und E-Mails

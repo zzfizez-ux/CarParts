@@ -24,7 +24,7 @@
   }
   password.value='';code.value='';
   password.autocomplete=mode==='login'?'current-password':'new-password';
-  password.minLength=mode==='login'?1:8;
+  password.minLength=mode==='login'?1:12;
   dialog.querySelectorAll('[data-modes]').forEach(el=>el.hidden=!el.dataset.modes.split(' ').includes(mode));
   dialog.querySelector('[data-identity]').textContent=mode==='account'?user?.email||'':'';
  }
@@ -56,6 +56,7 @@
 
  function failure(error){
   if(error.status===429)return 'Zu viele Versuche. Bitte warte einen Moment.';
+  if(error.code==='weak_password')return 'Wähle ein stärkeres Passwort mit mindestens zwölf Zeichen.';
   if(error.code==='email_not_confirmed')return 'Bitte bestätige zuerst deine E-Mail-Adresse.';
   if(mode==='verify'){
    if(error.code==='otp_expired'||error.status===400||error.status===403){
@@ -68,7 +69,7 @@
   return 'Der Vorgang konnte nicht abgeschlossen werden. '+(error.message||'Bitte versuche es erneut.');
  }
  async function init(){
-  const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/+esm');
+  const {createClient}=window.supabase;
   const {url,publishableKey}=window.CARPARTS_SUPABASE_CONFIG;
   client=createClient(url,publishableKey,{
    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'carparts-account-v1'}

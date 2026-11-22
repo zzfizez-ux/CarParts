@@ -4,6 +4,8 @@ import {merchantUrl, offersFromWeb, searchOffers} from "./offers.ts";
 import type {Article, Vehicle} from "./offers.ts";
 import {matchesPartText, seriesEvidence, words} from "./vehicle-fitment.mjs";
 import {siteRequest} from "../_shared/site-config.mjs";
+import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
+import {lookupRapidParts, rapidQuery} from "./rapid-parts.mjs";
 
 const publishableKeys = () => Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}"));
 const serviceKey = () => JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default ||
@@ -23,6 +25,7 @@ async function database(table:string, filter:Record<string,string>, body?:unknow
     signal:AbortSignal.timeout(4000)
   });
   if (!response.ok) throw new Error(table+" "+response.status);
+  if (response.status===204) return null;
   return await response.json();
 }
 
@@ -36,8 +39,8 @@ function normalize(value:string) {
   return value.normalize("NFKC").trim().replace(/\s+/g," ");
 }
 
-async function searchKey(vehicle:Vehicle, term:string, category:string) {
-  const encoded = new TextEncoder().encode(JSON.stringify(["products-v3",vehicle,term,category]).toLowerCase());
+async function hashKey(parts:unknown[]) {
+  const encoded = new TextEncoder().encode(JSON.stringify(parts).toLowerCase());
   const digest = await crypto.subtle.digest("SHA-256",encoded);
   return Array.from(new Uint8Array(digest), byte=>byte.toString(16).padStart(2,"0")).join("");
 }
@@ -47,6 +50,49 @@ async function savedResearch(key:string) {
     select:"payload,checked_at",query_hash:"eq."+key,expires_at:"gt."+new Date().toISOString(),limit:"1"
   });
   return rows[0] ? {...rows[0].payload,status:"cached",fetched_at:rows[0].checked_at} : null;
+}
+
+async function saveResearch(key:string, payload:unknown, minutes:number, checked = new Date()) {
+  try {
+    await database("shared_parts_research",{on_conflict:"query_hash"},[{
+      query_hash:key,payload,checked_at:checked.toISOString(),
+      expires_at:new Date(+checked+minutes*60000).toISOString()
+    }]);
+  } catch { console.warn("CarParts search cache write failed"); }
+}
+
+async function autoPartsFinder(vehicle:Vehicle, term:string, category:string) {
+  const secret = Deno.env.get("RAPIDAPI_AUTO_PARTS_KEY");
+  const query = rapidQuery(vehicle,term,category);
+  if (!secret || !query) return {status:"skipped",parts:[]};
+  try {
+    const key = await hashKey(["auto-parts-finder-v1",vehicle.make,vehicle.series,query]);
+    const stored = await savedResearch(key);
+    if (stored && Array.isArray(stored.rapid_parts)) return {status:"cached",parts:stored.rapid_parts};
+    const pauseKey = await hashKey(["auto-parts-finder-pause-v1"]);
+    const paused = await savedResearch(pauseKey);
+    if (paused) return {status:paused.rapid_status,parts:[]};
+    const claim = await database("rpc/reserve_parts_rapidapi_lookup",{},{key_hash:key});
+    if (claim!=="reserved") return {status:claim,parts:[]};
+
+    const result = await lookupRapidParts(query,category,term,secret);
+    if (result.status==="ready" || result.status==="empty") {
+      await saveResearch(key,{rapid_parts:result.parts},result.parts.length?1440:60);
+    } else {
+      console.warn("Auto Parts Finder",result.status,result.http ?? "");
+      if (result.status==="access") {
+        await database("rpc/mark_parts_rapidapi_access_denied",{},{key_hash:key})
+          .catch(()=>console.warn("Auto Parts Finder allowance adjustment failed"));
+      }
+      if (result.status==="access" || result.status==="quota") {
+        await saveResearch(pauseKey,{rapid_status:result.status},2);
+      }
+    }
+    return result;
+  } catch {
+    console.warn("Auto Parts Finder could not load the private lookup state");
+    return {status:"unavailable",parts:[]};
+  }
 }
 
 async function manufacturerReferences(vehicle:Vehicle, category:string) {
@@ -128,28 +174,30 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
   const references = [...conditional,...(reviewed.status==="fulfilled" ? reviewed.value : [])];
   const direct = merchantClaim==="reserved" ? await searchOffers(vehicle,term,category,articles)
     : {products:[],failures:[]};
+  const rapidTask = direct.products.length
+    ? Promise.resolve({status:"skipped",parts:[]}) : autoPartsFinder(vehicle,term,category);
   const web = direct.products.length ? {status:"skipped",results:[]} : await webResearch(key,vehicle,term,category);
   const fallback = merchantClaim==="reserved" && !direct.products.length && web.results.length
     ? await offersFromWeb(web.results,vehicle,term,category) : {products:[],failures:[]};
   const products = direct.products.length ? direct.products : fallback.products;
+  const rapid = await rapidTask;
+  const rapidParts = rapid.parts.filter((part:{reference:string;type:string}) =>
+    seriesEvidence(vehicle,part.reference+" "+part.type)!=="conflict");
   const failures = [...direct.failures,...fallback.failures];
   for (const {merchant,reason} of failures) console.warn("CarParts merchant",merchant,reason);
   const payload = {
     products, results:web.results, references, web_status:web.status,
     merchant_status:merchantClaim==="reserved"?(failures.length?"partial":"searched"):merchantClaim,
     merchant_failures:failures,
+    rapid_parts:rapidParts, rapid_status:rapid.status,
     provider:"mwmbl", license:"CC BY-NC-SA 4.0"
   };
   const checked = new Date();
-  const hasResults = products.length || web.results.length || references.length;
-  const minutes = products.length ? 240 : hasResults ? 60 : failures.length || web.status!=="live" ? 5 : 20;
-  // Keep short negative results to avoid repeating a source query on every click.
-  try {
-    await database("shared_parts_research",{on_conflict:"query_hash"},[{
-      query_hash:key,payload,checked_at:checked.toISOString(),
-      expires_at:new Date(+checked+minutes*60000).toISOString()
-    }]);
-  } catch { console.warn("CarParts search cache write failed"); }
+  const hasResults = products.length || web.results.length || references.length || rapidParts.length;
+  const rapidUnavailable = ["access","quota","cooldown","unavailable"].includes(rapid.status);
+  const minutes = products.length ? 240 : rapidUnavailable ? 2 : hasResults ? 60
+    : failures.length || web.status!=="live" ? 5 : 20;
+  await saveResearch(key,payload,minutes,checked);
   return {...payload,status:hasResults?"live":"empty",fetched_at:checked.toISOString()};
 }
 
@@ -160,10 +208,7 @@ Deno.serve(async (request:Request)=>{
   if (request.method!=="POST") return json({error:"Method not allowed"},405);
   try {
     if (!publishableKeys().includes(request.headers.get("apikey")||"")) return json({error:"Invalid publishable key"},401);
-    const raw = await request.text();
-    if (raw.length>1200) return json({error:"Too large"},413);
-    let p;
-    try { p = JSON.parse(raw); } catch { return json({error:"Invalid JSON"},400); }
+    const p = await readJson(request,4000);
     if (!p || typeof p!=="object" || Array.isArray(p) || Object.keys(p).some(key=>!fields.has(key))) {
       return json({error:"Invalid input"},422);
     }
@@ -178,9 +223,10 @@ Deno.serve(async (request:Request)=>{
       year:p.year,engine:normalize(p.engine||""),variant:normalize(p.variant||"")
     };
     const term = normalize(p.part), category = normalize(p.category||"");
-    const key = await searchKey(vehicle,term,category);
+    const key = await hashKey(["products-v4",vehicle,term,category]);
     return json(await research(vehicle,term,category,key));
   } catch (error) {
+    if (error instanceof JsonBodyError) return json({error:error.message},error.status);
     console.error("CarParts research",error instanceof Error ? error.message : "unknown");
     return json({status:"error",products:[],results:[],references:[]},503);
   }
