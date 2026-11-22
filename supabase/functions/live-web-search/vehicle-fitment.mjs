@@ -10,7 +10,10 @@ export function partNumber(value) {
 const catalogueSeries = {
   "audi/a1": {"8X":["A1 (2010)","A1 (2014)"], "GB":["A1 (2018)","A1 (2022)"]},
   "audi/a3": {"8V":[]},
+  "audi/a4": {"B8 Avant":["A4 Avant (2008)","A4 Avant (2012)"]},
+  "alpina/d3": {"F30":[],"F31":[]},
   "bmw/3er": {"F30":["3 Series Sedan (2011)","3 Series Sedan (2015)"], "F31":["3 Series Touring (2012)","3 Series Touring (2015)"]},
+  "bmw/i3": {"I01":["i3 (2013)","i3 (2017)"]},
   "dacia/logan": {
     "Logan I":["Logan (2004)","Logan (2008)","Logan I (LS)"],
     "Logan II":["Logan (2012)","Logan (2016)","Logan MCV II"],
@@ -27,9 +30,13 @@ const catalogueSeries = {
   "nissan/qashqai": {"J10":["Qashqai I","Qashqai (2007)","Qashqai (2010)"], "J11":["Qashqai II","Qashqai (2013)","Qashqai (2014)","Qashqai (2017)"], "J12":["Qashqai III","Qashqai (2021)","Qashqai (2024)"]},
   "opel/corsa": {"Corsa D":["Corsa (2006)","Corsa (2011)"], "Corsa E":["Corsa (2014)","Corsa (2015)"], "Corsa F":["Corsa (2019)","Corsa (2023)"]},
   "opel/astra": {"Astra K":[]},
-  "porsche/911": {"997.1":[], "997.2":[]},
+  "opel/mokka": {"Mokka A":["Mokka (2012)"]},
+  "porsche/911": {"997.1":[], "997.2":[], "991.1":[]},
+  "porsche/macan": {"95B":["Macan (2014)"]},
+  "porsche/cayenne": {"92A":["Cayenne (2010)","Cayenne (2014)"]},
   "mini/cooper": {"R56":[]},
   "smart/fortwo": {"451 Coupé":[], "451 Cabrio":[]},
+  "smart/forfour": {"453":["forfour (2014)","forfour (2019)"]},
   "renault/clio": {"Clio III":["Clio 3","Clio (2005)","Clio (2009)"], "Clio IV":["Clio 4","Clio (2012)","Clio (2016)"], "Clio V":["Clio 5","Clio (2019)","Clio (2023)"]},
   "toyota/yaris": {"Yaris II":["XP90"], "Yaris III":["Yaris 3","XP130","Yaris (2011)","Yaris (2014)","Yaris (2017)"], "Yaris IV":["XP210","Yaris (2020)"]},
   "volkswagen/golf": {
@@ -39,6 +46,7 @@ const catalogueSeries = {
     "Golf VIII":["Golf 8","Golf Mk8","CD1"]
   },
   "volkswagen/polo": {"Polo IV":["Polo 4","9N"], "Polo V":["Polo 5","6R","6C","6R1","6C1","Polo (2009)","Polo (2014)"], "Polo VI":["Polo 6","AW1","Polo (2017)","Polo (2021)"]},
+  "volkswagen/passat": {"B8":["Passat (2014)","Passat (2019)","Passat Variant (2014)","Passat Variant (2019)"]},
   "volkswagen/tiguan": {"Tiguan I":["Tiguan 1","5N","Tiguan (2007)","Tiguan (2011)"], "Tiguan II":["Tiguan 2","AD1","AX1","Tiguan (2016)","Tiguan (2020)"]},
   "volkswagen/touran": {"1T1":["Touran (2003)"], "1T2":["Touran (2006)"], "1T3":["Touran (2010)"], "5T":["Touran (2015)","5T1"]}
 };
@@ -120,11 +128,24 @@ export function hasPartNumber(text, number) {
 const categories = {
   "bremsbelage":["bremsbelage","bremsbelag","bremsklotze","brake pads","brake pad"],
   "bremsscheiben":["bremsscheiben","bremsscheibe","brake discs","brake disc","brake rotors","brake rotor"],
+  "bremssattel":["bremssattel","bremssatteln","bremszange","bremszangen","brake caliper","brake calipers"],
+  "bremsschlauch":["bremsschlauch","bremsschlauche","brake hose","brake hoses"],
+  "querlenker":["querlenker","achslenker","lenker","wishbone","control arm"],
+  "traggelenk":["traggelenk","traggelenke","fuhrungsgelenk","ball joint"],
+  "koppelstange":["koppelstange","koppelstangen","stabilisatorstrebe","stabilizer link"],
+  "axialgelenk":["axialgelenk","inneres spurstangengelenk","inner tie rod"],
+  "spurstangenkopf":["spurstangenkopf","spurstangenkopfe","spurkopf","tie rod end"],
+  "hauptbremszylinder":["hauptbremszylinder","brake master cylinder"],
+  "kupplungsgeberzylinder":["kupplungsgeberzylinder","kupplungsgeber","geberzylinder","clutch master cylinder"],
+  "kupplungsnehmerzylinder":["kupplungsnehmerzylinder","kupplungsnehmer","nehmerzylinder","clutch slave cylinder"],
+  "zentralausrucker":["zentralausrucker","ausrucklager","central clutch release device"],
+  "bremsbelagverschleisssensor":["bremsbelagverschleisssensor","bremsbelag warnkontakt","warnkontakt","brake pad wear sensor"],
   "olfilter":["olfilter","oelfilter","motorolfilter","oil filter","oilfilter"],
   "kraftstofffilter":["kraftstofffilter","dieselfilter","spritfilter","fuel filter"],
   "luftfilter":["luftfilter","motorluftfilter","air filter"],
   "innenraumfilter":["innenraumfilter","pollenfilter","cabin filter"],
   "zundkerzen":["zundkerzen","zundkerze","spark plugs","spark plug"],
+  "gluhkerzen":["gluhkerzen","gluhkerze","glow plugs","glow plug"],
   "stossdampfer":["stossdampfer","shock absorber"],
   "scheibenwischer":["scheibenwischer","windshield wipers","wiper blades"]
 };
@@ -134,7 +155,7 @@ export function matchesPosition(term, ...labels) {
   const found = words(labels.join(" "));
   for (const synonyms of [
     /\b(vorn|vorne|vorder|vorderachse|front)\b/, /\b(hinten|hinter|hinterachse|rear)\b/,
-    /\b(links|left)\b/, /\b(rechts|right)\b/
+    /\b(links|left)\b/, /\b(rechts|right)\b/, /\b(oben|upper)\b/, /\b(unten|lower)\b/
   ]) {
     if (synonyms.test(wanted) && !synonyms.test(found)) return false;
   }
@@ -151,6 +172,12 @@ export function matchesPartText(text, term, category = "") {
 }
 
 export function matchesPart(row, term, category = "") {
+  const equipment = words(term).match(/\b(pr|rpo|poc)(?: code| nummer)? ([a-z0-9]{3})\b/);
+  if (equipment) {
+    const notes = String(row.fitment?.notes ?? "");
+    const applicable = notes.match(new RegExp("\\b" + equipment[1] + "-Codes?: ([A-Z0-9, ]+)\\.", "i"));
+    if (!applicable || !words(applicable[1]).split(" ").includes(equipment[2])) return false;
+  }
   const key = partNumber(term);
   if (key.length >= 4 && /\d/.test(key) &&
       [row.manufacturer_part_number, ...(row.oe || [])].some(number => partNumber(number) === key)) return true;

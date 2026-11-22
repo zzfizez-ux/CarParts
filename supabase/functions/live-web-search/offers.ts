@@ -9,6 +9,7 @@ const stores: Record<string,string> = {
   "www.kfzteile24.de":"kfzteile24", "www.kfzparts24.de":"KfzParts24",
   "www.motointegrator.de":"Motointegrator", "www.autoteiledirekt.de":"Autoteile Direkt",
   "www.filter-technik.de":"Filter-Technik",
+  "www.x1-autoteile.de":"X1 Autoteile", "autoteile-bielefeld.com":"Autoteile Bielefeld",
   "www.pkwteile.de":"PKWteile", "www.mister-auto.de":"Mister-Auto", "www.daparto.de":"Daparto"
 };
 const articlePages: Record<string,string[]> = {
@@ -141,8 +142,8 @@ async function product(source:Page, vehicle:Vehicle, term:string, category:strin
   const sku = String(item?.mpn || item?.sku || metadata(doc,"mpn") || metadata(doc,"sku") || "");
   const identity = [name,sku,decodeURI(url.pathname)].join(" ");
   const evidence = seriesEvidence(vehicle,identity);
-  if (evidence==="conflict" || !matchesPosition(term,name)) return null;
   const article = source.article;
+  if (evidence==="conflict" || (!article && !matchesPosition(term,name))) return null;
   if (article) {
     if (!hasPartNumber(identity,article.manufacturer_part_number)) return null;
     // A retailer may use a different SKU. The manufacturer and article number must still agree.

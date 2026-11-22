@@ -14,7 +14,10 @@ const allowedCategories=new Set([
  "Spurstangenkopf","Radlager","Kupplung","Schwungrad","Getriebeöl","Motoröl",
  "Dichtungen","Scheibenwischer","Scheinwerfer","Rückleuchten","Außenspiegel",
  "Klimakompressor","Lambdasonde","Luftmassenmesser","Turbolader","AGR-Ventil",
- "Katalysator","Partikelfilter","Auspuff","Einspritzdüsen","Zündspulen","Riemenspanner"
+ "Katalysator","Partikelfilter","Auspuff","Einspritzdüsen","Zündspulen","Riemenspanner",
+ "Bremsschlauch","Hauptbremszylinder","Kupplungsgeberzylinder","Kupplungsnehmerzylinder",
+ "Zentralausrücker","Bremsbelagverschleißsensor","Traggelenk","Getriebefilter","Koppelstange",
+ "Axialgelenk","Fahrzeugtür","Türaußenhaut","Scheinwerferhalter","Kompressor-Ansaugfilter"
 ]);
 function keyMatch(k:string){
  try{const p=JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}");

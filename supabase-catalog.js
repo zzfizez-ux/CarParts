@@ -1,5 +1,5 @@
-import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=33";
-import {seriesKey} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=33";
+import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=34";
+import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=34";
 
 // CarParts public vehicle catalogue — safe publishable key, read-only RLS-protected tables.
 // Do not put secret/service_role keys in browser code.
@@ -55,16 +55,20 @@ async function findVerifiedParts(vehicle,term){
  const engines=await getEngines(vehicle.make,vehicle.model,vehicle.year,vehicle.series);
  const selected=await catalogueParts(readTable,engines,vehicle,term,researchCategory(term));
  if(!selected.length)return [];
- const filter="part_id=in.("+[...new Set(selected.map(p=>p.id))].join(",")+")";
+ const ids=[...new Set(selected.map(p=>p.id))];
  const freshSince=new Date(Date.now()-7*24*60*60*1000).toISOString();
- const results=await Promise.allSettled([
-  read("part_images?select=part_id,image_url,alt_text,source_url&"+
-    filter+"&verified_for_display=eq.true&limit=100"),
-  read("part_offers?select=part_id,merchant_name,price_amount,currency,availability,observed_at,product_url,source_url&"+
+ const images=[],offers=[];
+ for(let start=0;start<ids.length;start+=100){
+  const filter="part_id=in.("+ids.slice(start,start+100).join(",")+")";
+  const [imageRows,offerRows]=await Promise.allSettled([
+   read("part_images?select=part_id,image_url,alt_text,source_url&"+
+    filter+"&verified_for_display=eq.true&limit=1000"),
+   read("part_offers?select=part_id,merchant_name,price_amount,currency,availability,observed_at,product_url,source_url&"+
     filter+"&verification_status=eq.verified&observed_at=gte."+encodeURIComponent(freshSince)+"&order=price_amount.asc&limit=1000")
- ]);
- const images=results[0].status==="fulfilled"?results[0].value:[];
- const offers=results[1].status==="fulfilled"?results[1].value:[];
+  ]);
+  if(imageRows.status==="fulfilled")images.push(...imageRows.value);
+  if(offerRows.status==="fulfilled")offers.push(...offerRows.value);
+ }
  return selected.map(p=>({
   ...p,images:images.filter(x=>x.part_id===p.id),
   offers:offers.filter(x=>x.part_id===p.id)
@@ -108,23 +112,30 @@ const researchCategories=[
  "Radlager","Kupplung","Schwungrad","Getriebeöl","Motoröl","Dichtungen",
  "Scheibenwischer","Scheinwerfer","Rückleuchten","Außenspiegel","Klimakompressor",
  "Lambdasonde","Luftmassenmesser","Turbolader","AGR-Ventil","Katalysator",
- "Partikelfilter","Auspuff","Einspritzdüsen","Zündspulen","Riemenspanner"
+ "Partikelfilter","Auspuff","Einspritzdüsen","Zündspulen","Riemenspanner",
+ "Bremsschlauch","Hauptbremszylinder","Kupplungsgeberzylinder","Kupplungsnehmerzylinder",
+ "Zentralausrücker","Bremsbelagverschleißsensor","Traggelenk","Getriebefilter","Koppelstange",
+ "Axialgelenk","Fahrzeugtür","Türaußenhaut","Scheinwerferhalter","Kompressor-Ansaugfilter"
 ];
 function researchCategory(term){
- const t=String(term||"").trim().toLocaleLowerCase("de-DE");
+ const t=words(term);
  const aliases={
-  "brake pads":"Bremsbeläge","brake pad":"Bremsbeläge","bremsklötze":"Bremsbeläge",
-  "bremsbelag":"Bremsbeläge","bremsbeläge vorne":"Bremsbeläge",
-  "bremsbeläge hinten":"Bremsbeläge","brake discs":"Bremsscheiben",
+  "brake pads":"Bremsbeläge","brake pad":"Bremsbeläge","bremsklotze":"Bremsbeläge",
+  "bremsbelag":"Bremsbeläge","bremsscheibe":"Bremsscheiben","brake discs":"Bremsscheiben",
   "brake rotors":"Bremsscheiben","oil filter":"Ölfilter","oilfilter":"Ölfilter",
   "oelfilter":"Ölfilter","dieselfilter":"Kraftstofffilter","fuel filter":"Kraftstofffilter",
   "air filter":"Luftfilter","cabin filter":"Innenraumfilter","spark plugs":"Zündkerzen",
-  "headlight":"Scheinwerfer","windshield wipers":"Scheibenwischer"
+  "zundkerze":"Zündkerzen","gluhkerze":"Glühkerzen","headlight":"Scheinwerfer",
+  "windshield wipers":"Scheibenwischer","lenker":"Querlenker","achslenker":"Querlenker",
+  "control arm":"Querlenker","bremsschlauche":"Bremsschlauch","brake hose":"Bremsschlauch",
+  "traggelenke":"Traggelenk","fuhrungsgelenk":"Traggelenk","warnkontakt":"Bremsbelagverschleißsensor",
+  "geberzylinder":"Kupplungsgeberzylinder","nehmerzylinder":"Kupplungsnehmerzylinder",
+  "tuer":"Fahrzeugtür","tur":"Fahrzeugtür","tueraussenhaut":"Türaußenhaut",
+  "koppelstangen":"Koppelstange","spurstangenkopfe":"Spurstangenkopf"
  };
  const synonym=Object.keys(aliases).find(name=>t===name||t.startsWith(name+" "));
  if(synonym)return aliases[synonym];
- return researchCategories.find(c=>c.toLocaleLowerCase("de-DE")===t)||
-  researchCategories.find(c=>t.startsWith(c.toLocaleLowerCase("de-DE")+" "))||null;
+ return researchCategories.find(c=>t===words(c)||t.startsWith(words(c)+" "))||null;
 }
 async function researchParts(vehicle,term){
  const category=researchCategory(term);

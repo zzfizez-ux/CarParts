@@ -1,4 +1,4 @@
-import {catalogueSeriesNames, seriesKey as keyForSeries} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=33";
+import {catalogueSeriesNames, seriesKey as keyForSeries} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=34";
 
 const $=id=>document.getElementById(id);
 
@@ -12,6 +12,15 @@ export function years(start,end){
 
 // Common chassis codes are available immediately, including when the source is offline.
 const localSeries = {
+  "Borgward": {"Isabella": "Isabella:1954-1962"},
+  "DKW": {"F12": "F12:1963-1965"},
+  "Isdera": {"Imperator 108i": "Imperator 108i:1984-1995"},
+  "MAN": {"TGE": "TGE Kasten:2017-"},
+  "Maybach": {"57": "W240:2002-2012", "62": "V240:2002-2012"},
+  "NSU": {"Ro 80": "Ro 80:1967-1977"},
+  "Trabant": {"601": "601:1964-1990", "1.1": "1.1:1990-1991"},
+  "Wartburg": {"1.3": "1.3:1988-1991"},
+  "Wiesmann": {"Roadster": "MF3:1993-2014"},
   "Mercedes-Benz": {
     "S-Klasse": "W116:1972-1980,W126:1979-1991,W140:1991-1998,V140:1991-1998,W220:1998-2005,W221:2005-2013,W222:2013-2020,W223:2020-",
     "E-Klasse": "W124:1993-1995,W210:1995-2002,W211:2002-2009,W212:2009-2016,W213:2016-2023,W214:2023-",

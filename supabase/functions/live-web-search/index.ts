@@ -174,7 +174,7 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
   const references = [...conditional,...(reviewed.status==="fulfilled" ? reviewed.value : [])];
   const direct = merchantClaim==="reserved" ? await searchOffers(vehicle,term,category,articles)
     : {products:[],failures:[]};
-  const rapidTask = direct.products.length
+  const rapidTask = direct.products.length || foundParts.some(part=>part.match==="exact")
     ? Promise.resolve({status:"skipped",parts:[]}) : autoPartsFinder(vehicle,term,category);
   const web = direct.products.length ? {status:"skipped",results:[]} : await webResearch(key,vehicle,term,category);
   const fallback = merchantClaim==="reserved" && !direct.products.length && web.results.length
@@ -222,7 +222,7 @@ Deno.serve(async (request:Request)=>{
       year:p.year,engine:normalize(p.engine||""),variant:normalize(p.variant||"")
     };
     const term = normalize(p.part), category = normalize(p.category||"");
-    const key = await hashKey(["products-v5",vehicle,term,category]);
+    const key = await hashKey(["products-v6",vehicle,term,category]);
     return json(await research(vehicle,term,category,key));
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);

@@ -1,6 +1,6 @@
-import "./supabase-catalog.js?v=33";
-import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=33";
-import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=33";
+import "./supabase-catalog.js?v=34";
+import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=34";
+import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=34";
 
 const API="https://vpic.nhtsa.dot.gov/api/vehicles";
 const CATALOG_DEMO=false;
@@ -256,7 +256,8 @@ function refreshVinComparison(){
 }
 function vehicleLabel(vehicle){
  const {make,model,series}=vehicle;
- const generation=series?.toLowerCase().startsWith(model.toLowerCase()+" ")?series:[model,series].filter(Boolean).join(" ");
+ const modelKey=model.toLowerCase(),seriesKey=series?.toLowerCase();
+ const generation=seriesKey===modelKey||seriesKey?.startsWith(modelKey+" ")?series:[model,series].filter(Boolean).join(" ");
  return make+" "+generation;
 }
 function vehicleChanged(){
@@ -366,7 +367,7 @@ function catalogOfferList(offers) {
    return '<li><a href="'+esc(offer.product_url)+'" target="_blank" rel="noopener noreferrer">'+
     '<span>'+esc(offer.merchant_name)+'</span><b>'+esc(price)+'</b></a>'+
     (when?'<small>Stand '+esc(when)+'</small>':'')+'</li>';
-  }).join('')+'</ul><span>Versandkosten beim Händler prüfen.</span></div>';
+  }).join('')+'</ul><span>Stückzahl und Versandkosten beim Händler prüfen.</span></div>';
 }
 function renderSupabaseCards(rows,liveProducts=[]){
  $("resultsTitle").textContent="Ersatzteile für "+vehicleLabel(state.vehicle);
@@ -391,7 +392,7 @@ function renderSupabaseCards(rows,liveProducts=[]){
    '" target="_blank" rel="noopener noreferrer">Bildquelle ↗</a>':"";
   return '<article class="catalog-item">'+
    '<div class="catalog-item-visual">'+image+'<span>'+imageBadge+'</span></div>'+
-   '<div class="catalog-item-body"><span class="catalog-item-status">'+(state.vehicle.series?'Motoranwendung belegt · Baureihe im Beleg prüfen':'Herstelleranwendung belegt · Bedingungen prüfen')+'</span>'+
+   '<div class="catalog-item-body"><span class="catalog-item-status">Herstelleranwendung · Ausführung prüfen</span>'+
    '<h3>'+esc(p.part_name)+'</h3><p class="catalog-item-maker">'+esc(p.manufacturer)+
    ' · Art.-Nr. '+esc(p.manufacturer_part_number)+'</p>'+
    '<p class="catalog-item-engine">Ausführung: '+esc(p.engine)+'</p>'+
@@ -750,6 +751,55 @@ try{
 }catch(e){if(requestId!==catalogRequest)return false;setCatalogStatus("error");$("resultsGrid").innerHTML='<div class="empty-results">The catalog could not be reached. No substitute or demo results are shown.</div>';return false}
 }
 function renderResults(){renderResultsInternal($("partSearch").value.trim())}
+async function browseCatalogue(){
+ const vehicle=state.vehicle;
+ if(!vehicle?.engine){show("Wähle dein Fahrzeug und den genauen Motor aus den Herstellerangaben.");return;}
+ const vin=window.CarPartsVIN.check($("vin").value);
+ if(vin.vin&&["invalid","mismatch","checking"].includes(vinResult.status)){
+  show("Bitte korrigiere zuerst die VIN oder die Fahrzeugauswahl.");
+  $("vinStatus").scrollIntoView({behavior:"smooth",block:"center"});
+  return;
+ }
+ const request=++catalogRequest;
+ const grid=$("resultsGrid");
+ $("sharedResearch").replaceChildren();
+ $("resultsTitle").textContent="Teile im CarParts-Katalog für "+vehicleLabel(vehicle);
+ grid.innerHTML='<div class="empty-results">Lade gespeicherte Teile…</div>';
+ setCatalogStatus("loading");
+ $("parts").scrollIntoView({behavior:"smooth"});
+ try{
+  const rows=await window.CarPartsDB.findVerifiedParts(vehicle,"");
+  if(request!==catalogRequest||vehicle!==state.vehicle)return;
+  if(!rows.length){
+   grid.innerHTML='<div class="empty-results">Für diese Ausführung sind noch keine geprüften Artikel eingetragen.</div>';
+   setCatalogStatus("empty");
+   return;
+  }
+  const filter=document.createElement("label");
+  filter.className="catalog-browse-filter";
+  filter.append("Teilegruppe");
+  const select=document.createElement("select");
+  select.add(new Option("Alle gespeicherten Teile ("+rows.length+")",""));
+  const categories=new Map();
+  for(const row of rows)categories.set(row.category,(categories.get(row.category)||0)+1);
+  for(const [category,count] of [...categories].sort(([a],[b])=>a.localeCompare(b,"de"))){
+   select.add(new Option(category+" ("+count+")",category));
+  }
+  filter.append(select);
+  const paint=()=>{
+   const restoreFocus=document.activeElement===select;
+   renderSupabaseCards(select.value?rows.filter(row=>row.category===select.value):rows);
+   grid.prepend(filter);
+   if(restoreFocus)select.focus();
+  };
+  select.onchange=paint;
+  paint();
+ }catch{
+  if(request!==catalogRequest||vehicle!==state.vehicle)return;
+  grid.innerHTML='<div class="empty-results">Der Teilekatalog ist gerade nicht erreichbar. Bitte versuche es erneut.</div>';
+  setCatalogStatus("error");
+ }
+}
 async function search(){
  const q=$("partSearch").value.trim();
  if(q.length>80){show("Bitte kürze den Suchbegriff auf höchstens 80 Zeichen.");return;}
@@ -811,6 +861,7 @@ function markVinUnchecked(){
 }
 $("vin").addEventListener("input",markVinUnchecked);
 $("searchBtn").onclick=search;$("partSearch").addEventListener("keydown",e=>{if(e.key==="Enter")search()});document.querySelectorAll(".quick-tags button").forEach(b=>b.onclick=()=>{$("partSearch").value=b.dataset.part;search()});
+$("browseCatalogueBtn").onclick=browseCatalogue;
 document.querySelectorAll(".quality-toggle button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".quality-toggle button").forEach(x=>x.classList.remove("active"));b.classList.add("active");state.mode=b.dataset.mode;const q=$("partSearch").value.trim();if(q&&state.vehicle)renderLiveResults(q);else renderResults()});
 $("themeBtn").onclick=()=>{document.body.classList.toggle("dark");storePreference("cp-dark",document.body.classList.contains("dark"));$("themeBtn").firstChild.textContent=document.body.classList.contains("dark")?"☀ ":"☾ ";$("themeBtn").lastChild.textContent=state.lang==="de"?(document.body.classList.contains("dark")?"Hell":"Dunkel"):(document.body.classList.contains("dark")?"Light":"Dark")};
 if(preference("cp-dark")==="true"){document.body.classList.add("dark");$("themeBtn").firstChild.textContent="☀ "}

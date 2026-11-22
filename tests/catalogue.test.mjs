@@ -62,3 +62,23 @@ test("catalogue lookup reaches later pages and respects the imported application
   assert.deepEqual(found.map(row=>row.fitment.id),[103]);
   assert.equal(calls[1].id,"gt.100");
 });
+
+test("an explicit brake equipment code narrows the correct axle",()=>{
+  const row={part_name:"Bremsscheibe vorne",category:"Bremsscheiben",fitment:{notes:"PR-Codes: 1ZF, 1ZE. 276 mm."}};
+  assert.equal(matchesPart(row,"Bremsscheibe vorne PR 1ZF","Bremsscheiben"),true);
+  assert.equal(matchesPart(row,"Bremsscheibe hinten PR 1ZF","Bremsscheiben"),false);
+  assert.equal(matchesPart(row,"Bremsscheibe vorne PR 1LV","Bremsscheiben"),false);
+});
+
+test("browsing returns the selected engine's full verified list",async()=>{
+  const profile={make:"Volkswagen",model:"Golf",series:"Golf VII",year:2015,engine:"2.0 TDI CRBC"};
+  const engine={id:1,designation:profile.engine,engine_code:"CRBC"};
+  const rows=[
+    {id:1,engine_id:1,parts:{id:4,part_name:"Querlenker vorne links",category:"Querlenker",manufacturer_part_number:"AB1234"}},
+    {id:2,engine_id:1,parts:{id:5,part_name:"Ölfilter",category:"Ölfilter",manufacturer_part_number:"CD5678"}}
+  ];
+  const read=async()=>rows;
+  assert.deepEqual((await catalogueParts(read,[engine],profile,"","")).map(row=>row.id),[4,5]);
+  assert.deepEqual((await catalogueParts(read,[engine],profile,"Lenker vorne links","Querlenker")).map(row=>row.id),[4]);
+  assert.deepEqual(await catalogueParts(read,[engine],{...profile,engine:"CRBC"},"",""),[]);
+});

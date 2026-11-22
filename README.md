@@ -8,6 +8,8 @@ Die Website läuft auf GitHub Pages. Der Fahrzeugkatalog, die Herstelleranwendun
 
 Die Auswahl verwendet Marke, Modell, Baureihe, Baujahr und Motor. Dokumentierte Motoren sind in `car_engines.series_keys` einer oder mehreren Baureihen zugeordnet. Eine Artikelnummer wie `PU 8014` und `PU8014` wird gleich behandelt. Hinterlegte OE-Referenzen sind ebenfalls suchbar. Die Artikelkarte zeigt die Herstellerquelle und die Bedingungen der Anwendung.
 
+Mit **Gespeicherte Teile anzeigen** lassen sich die belegten Artikel für die gewählte Motoranwendung nach Teilegruppe öffnen. Die Ansicht liest den eigenen Katalog. Bei einem bekannten Ausstattungsmerkmal ist beispielsweise die Suche `Bremsscheibe vorne PR 1ZF` möglich. Dann werden die hinterlegten PR-Angaben für die gesuchte Achse berücksichtigt.
+
 `live-web-search` sucht zuerst nach Händlerprodukten für dokumentierte Teilenummern und weiteren eindeutigen Baureihen-Treffern. CarParts liest Artikelname, EUR-Preis und Produktbild aus der Produktseite. Fehlen Händlerprodukte, kann Mwmbl weitere Händlerseiten liefern. Der sichtbare Preis enthält einen Abrufzeitpunkt. Einbauposition, Motorcode, OE-Nummer und Ausstattungsbedingungen stehen bei der jeweiligen Quelle.
 
 Auf der Artikelkarte stehen gespeicherte Preisbeobachtungen und zu derselben Teilenummer verifizierte Live-Angebote gemeinsam. CarParts sortiert die Preise je Währung und verlinkt jedes Angebot einzeln. Gespeicherte Preise erscheinen bis zu sieben Tage nach der Erfassung mit dem jeweiligen Abrufdatum. Bilder kommen aus freigegebenen Bilddatensätzen oder dem zugeordneten, aktuellen Händlerangebot.
@@ -20,7 +22,7 @@ Angebote werden vier Stunden in `shared_parts_research` wiederverwendet. Quellen
 
 ### Auto Parts Finder
 
-Fehlt ein direkt belegtes Händlerangebot, kann `live-web-search` für ausgewählte Teilekategorien zusätzlich Auto Parts Finder abfragen. Der Dienst erhält das Modell, den Motor, das Modelljahr und die Teilekategorie. CarParts liest `compatible_parts` als Teilehinweise. Bei Bremsen muss die Teilenummer außerdem zu einer belegten Herstelleranwendung der gewählten Motorisierung passen. Der Händler bestätigt die Währung, und der Hersteller bestätigt Baureihe, Einbauposition und Ausstattung.
+Wenn für die ausgewählte Teilekategorie weder ein direkt belegtes Händlerangebot noch eine exakte Kataloganwendung vorliegt, kann `live-web-search` zusätzlich Auto Parts Finder abfragen. Der Dienst erhält das Modell, den Motor, das Modelljahr und die Teilekategorie. CarParts liest `compatible_parts` als Teilehinweise. Bei Bremsen muss die Teilenummer außerdem zu einer belegten Herstelleranwendung der gewählten Motorisierung passen. Der Händler bestätigt die Währung, und der Hersteller bestätigt Baureihe, Einbauposition und Ausstattung.
 
 Die RapidAPI-Anwendung benötigt ein Abonnement für **Auto Parts Finder**. Der Schlüssel wird im Supabase-Projekt als Edge Function Secret `RAPIDAPI_AUTO_PARTS_KEY` hinterlegt. CarParts speichert die Hinweise bis zu 24 Stunden und begrenzt neue Aufrufe entsprechend der Basic-Menge auf 50 pro 31 Tage.
 
@@ -39,6 +41,10 @@ Die RapidAPI-Anwendung benötigt ein Abonnement für **Auto Parts Finder**. Der 
 
 Der [Startbestand für acht Fahrzeugmarken](catalogue/de-passenger-cars-2026-11.json) enthält einzeln überprüfte Herstelleranwendungen mit Quellen und die Preisbeobachtungen vom 22. November 2026. Er dient als Vorlage für weitere Datenlieferungen.
 
+Die Daten für [Bremsen und Kupplung](catalogue/de-brakes-and-clutch-2026-11.json) und [Lenkung, Wartung und Klassiker](catalogue/de-steering-service-classics-2026-11.json) stammen aus der Recherche einzelner Fahrzeuganwendungen und öffentlich einsehbarer Herstellerquellen. Die JSON-Dateien enthalten die verlinkten Belege und die eingeschränkten Baureihen, Baujahre, Positionen und Ausstattungsmerkmale pro Artikel. Hersteller, Teilenummer und Fahrzeuganwendung bilden die Identität für den Import.
+
+Für ein neues Projekt ergänzt [catalogue_german_models.sql](supabase/sql/catalogue_german_models.sql) die Fahrzeugmodelle der beiden Recherchedateien im vorhandenen Fahrzeugkatalog.
+
 ```sh
 node tools/import-reviewed-parts.cjs catalogue/de-passenger-cars-2026-11.json
 node tools/import-reviewed-parts.cjs catalogue/de-passenger-cars-2026-11.json --apply
@@ -48,9 +54,7 @@ Der erste Befehl validiert die Datei. Der zweite schreibt die Daten in atomaren 
 
 - Jede Zeile enthält den CarParts-Marke-/Modellnamen, die konkrete Motorbezeichnung, Baureihenschlüssel, Anwendungsjahre, Teilehersteller, Artikelnummer und eine Herstellerquelle. `engine_year_from` und `engine_year_to` beschreiben optional das weitere Produktionsfenster des Fahrzeugs. Für die Artikelsuche gilt das Anwendungsfenster.
 - `oe_numbers` enthält die Originalreferenzen des Herstellers. `offers` enthält einzelne Händlerproduktlinks, beobachteten Preis, Währung, Datum und Quelle. `images` enthält das konkrete Produktfoto, seine Quelle und die Freigabe für die Anzeige.
-- Für große Datenlieferungen wird ein freigegebener Fahrzeug-, Artikel- und Verknüpfungsexport auf dieses Format abgebildet. TecDoc Data Package bietet strukturierte Aftermarket-Daten. Originalteilkataloge und Händlerfeeds ergänzen Herstellerteile und laufende Marktpreise.
-
-[TecDoc-Datenpakete](https://www.tecalliance.net/products) · [LexCom Originalteilkataloge](https://www.lexcom.de/home/en/what-we-do.html) · [Awin Produktfeeds](https://help.awin.com/developers/docs/product-feed-publisher-guide-intro)
+- Suche in öffentlich einsehbaren Anwendungen zuerst nach Baureihe und Motor, dann nach der Teilenummer. Prüfe die OE-Referenz, wenn mehrere Teile mit derselben Bezeichnung gelistet werden. Ein gefundener API-Hinweis kann zur weiteren Recherche beitragen. Der Import übernimmt für den Katalog die geprüfte Herstelleranwendung.
 
 ## Konto und E-Mails
 

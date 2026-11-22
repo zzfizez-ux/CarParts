@@ -39,7 +39,7 @@ export async function catalogueParts(read, engines, vehicle, term, category, all
         ...part, oe:(part.oe_numbers||[]).map(ref=>ref.oe_number), fitment,
         engine:engine.designation, engine_code:engine.engine_code, match:engine.match
       };
-      if (matchesPart(row,term,category)) matches.push(row);
+      if (!term || matchesPart(row,term,category)) matches.push(row);
     }
     if (applications.length < Number(filters.limit)) return matches;
     filters.id = "gt."+applications.at(-1).id;
