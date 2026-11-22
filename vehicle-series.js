@@ -1,3 +1,15 @@
+import {catalogueSeriesNames, seriesKey as keyForSeries} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=27";
+
+const $=id=>document.getElementById(id);
+
+export function years(start,end){
+ const currentYear=new Date().getFullYear();
+ const newest=Math.min(end||currentYear,currentYear);
+ const oldest=start||1900;
+ $("year").replaceChildren(new Option("Baujahr wählen / Select year",""),
+  ...Array.from({length:Math.max(0,newest-oldest+1)},(_,i)=>new Option(newest-i,newest-i)));
+}
+
 // Common chassis codes are available immediately, including when the source is offline.
 const localSeries = {
   "Mercedes-Benz": {
@@ -22,12 +34,12 @@ const sourceIndex = window.CarPartsModelIndex;
 const bundledGroups = new Set(['cupra', 'dacia', 'jaguar', 'jeep', 'land-rover', 'lexus', 'mini', 'saab', 'smart', 'tesla']);
 const seriesCache = new Map();
 const sourceVersion = 'ad1d97654d7ac50b393bfeafad3b8b21f5f15657';
-function displayModel(make, name) {
+export function displayModel(make, name) {
   if (make === 'Mercedes-Benz') return name.replace(/^MERCEDES BENZ /i,'').replace(/-Class\b/g,'-Klasse').replace(/ and predecessors$/,'');
   if (make === 'BMW') return name.replace(/^(\d) Series\b/,'$1er');
   return name;
 }
-function knownSeries(make, model) {
+export function knownSeries(make, model) {
   const rows = localSeries[make]?.[model];
   return rows ? rows.split(',').map(record => {
     const [name, range] = record.split(':');
@@ -36,7 +48,7 @@ function knownSeries(make, model) {
   }) : [];
 }
 // W140 sales designations changed in 1993. Restrict suggestions by production year.
-function seriesEngines(make, model, code, year) {
+export function seriesEngines(make, model, code, year) {
   if (make === 'Mercedes-Benz' && model === 'S-Klasse' && code === 'W140') {
     const designations = [
       ['300 SE',1991,1993],['400 SE',1991,1993],['500 SE',1991,1993],['600 SE',1991,1993],
@@ -64,7 +76,10 @@ function loadBrandSeries(make) {
 
 let seriesRows = [];
 let seriesRequest = 0;
-function selectedSeries() {
+export function availableSeries() {
+  return seriesRows.map(row=>row.name);
+}
+export function selectedSeries() {
   return $('series').value === '__other' ? $('customSeries').value.trim() : $('series').value;
 }
 function paintSeries(preferred, pending) {
@@ -86,17 +101,22 @@ function paintSeries(preferred, pending) {
   }
   $('customSeries').hidden = select.value !== '__other';
 }
-function updateSeriesYears(preferredYear) {
+export function updateSeriesYears(preferredYear) {
   const selected = seriesRows.find(row => row.name === $('series').value);
   years(selected?.start, selected?.end);
   $('year').value = preferredYear || '';
 }
-async function loadSeries(preferred = '', preferredYear = '') {
+export async function loadSeries(preferred = '', preferredYear = '') {
   const make = $('make').value, model = $('model').value;
   const request = ++seriesRequest;
-  seriesRows = knownSeries(make, model);
+  const local = knownSeries(make, model);
+  const supplemental = catalogueSeriesNames(make,model)
+    .filter(name=>!local.some(row=>row.name===name))
+    .map(name=>({name,start:null,end:null}));
+  // Existing selections with curated ranges retain those ranges.
+  seriesRows = local.length ? local : supplemental;
   $('customSeries').value = '';
-  const lookup = !!model && !seriesRows.length && !!sourceIndex[make];
+  const lookup = !!model && !local.length && !!sourceIndex[make];
   paintSeries(preferred, lookup);
   updateSeriesYears(preferredYear);
   if (!lookup) return;
@@ -110,7 +130,9 @@ async function loadSeries(preferred = '', preferredYear = '') {
       name:row.name, start:row.yearStart, end:row.yearEnd,
       engines:(row.engines || []).map(engine => engine.label).filter(Boolean)
     }));
-    seriesRows = [...new Map(rows.map(row => [row.name,row])).values()];
+    const known = new Set(rows.map(row=>keyForSeries(make,model,row.name)));
+    seriesRows = [...new Map(rows.map(row=>[row.name,row])).values(),
+      ...supplemental.filter(row=>!known.has(keyForSeries(make,model,row.name)))];
   } catch { /* Manual entry remains available offline. */ }
   if (request !== seriesRequest) return;
   const chosen = selectedSeries(), manual = $('series').value === '__other';
@@ -118,4 +140,6 @@ async function loadSeries(preferred = '', preferredYear = '') {
   paintSeries(chosen, false);
   if (manual && !chosen) { $('series').value = '__other'; $('customSeries').hidden = false; }
   updateSeriesYears(year);
+  if(chosen&&!preferred) $("series").dispatchEvent(new Event("seriesloaded"));
 }
+

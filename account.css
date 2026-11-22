@@ -9,4 +9,24 @@
 #accountDialog [data-go]{text-decoration:underline;padding:.5rem .5rem .5rem 0}
 #accountDialog [role=status]{margin:.75rem 0;font-size:.95rem}
 #accountDialog .primary-btn{width:100%;justify-content:center}
-@media(max-width:650px){.nav{flex-wrap:wrap;height:auto}.nav-tools{flex-wrap:wrap}}
+/* The account action is the rightmost control at every screen width. */
+.nav .nav-tools{margin-left:auto}
+.nav .nav-links{margin-inline:auto}
+.nav #accountButton{display:inline-flex;white-space:nowrap;flex:none;margin-left:.7rem;padding:.62rem .9rem}
+.nav #garageBtn{display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap}
+#garageCount{padding:.1rem .35rem;border-radius:.35rem;background:var(--surface);font-size:.8em}
+#garageCount[hidden]{display:none}
+#saveGarageBtn{flex:none;white-space:nowrap}
+#saveGarageBtn:disabled{opacity:.55;cursor:default}
+@media(max-width:600px){
+ .nav #themeBtn span{display:none}
+ .nav #garageBtn{padding:.5rem .6rem}
+ .vehicle-confirm{flex-wrap:wrap}
+}
+@media(max-width:440px){
+ .nav{display:grid;grid-template-columns:1fr auto;gap:.45rem .75rem;height:auto;padding-block:.65rem}
+ .nav .brand{grid-row:1;grid-column:1}
+ .nav #accountButton{grid-row:1;grid-column:2;justify-self:end;margin-left:0}
+ .nav .nav-tools{grid-row:2;grid-column:1/-1;justify-self:end;margin-left:0}
+}
+

@@ -17,6 +17,9 @@ for(const [i,r] of records.entries()){
  if(!Number.isInteger(r.year_from)||!Number.isInteger(r.year_to)||r.year_from<1886||
  r.year_to<r.year_from||r.year_to>2100)throw Error("Record "+i+": invalid production years");
  if(r.source_type==="licensed_feed"&&!r.license_basis)throw Error("Record "+i+": missing license statement");
+ if(r.series_keys!==undefined&&(!Array.isArray(r.series_keys)||!r.series_keys.length||
+  r.series_keys.some(key=>typeof key!=="string"||!/^[a-z0-9]+(?: [a-z0-9]+)*$/.test(key))))
+  throw Error("Record "+i+": series_keys must contain catalogue generation keys");
  if(r.image_url||r.price||r.offer)throw Error("Record "+i+": images and offers need separate review");
 }
 console.log("Validated "+records.length+" reviewed vehicle-to-part links");
@@ -46,7 +49,8 @@ async function main(){
   let engine=await find("car_engines",{model_id:"eq."+model.id,designation:"eq."+r.designation});
   if(!engine)engine=(await api("car_engines","POST",{},[{model_id:model.id,
    designation:r.designation,engine_code:r.engine_code,year_from:r.year_from,
-   year_to:r.year_to,fuel_type:r.fuel_type||null}]))[0];
+   year_to:r.year_to,fuel_type:r.fuel_type||null,series_keys:r.series_keys||[]}]))[0];
+  else if(r.series_keys)await api("car_engines","PATCH",{id:"eq."+engine.id},{series_keys:r.series_keys});
   const part=(await api("parts","POST",{on_conflict:"manufacturer,manufacturer_part_number"},[{
    manufacturer:r.manufacturer,part_name:r.part_name,
    manufacturer_part_number:r.manufacturer_part_number,category:r.category,

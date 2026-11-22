@@ -1,3 +1,5 @@
+import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=27";
+
 // CarParts public vehicle catalogue — safe publishable key, read-only RLS-protected tables.
 // Do not put secret/service_role keys in browser code.
 (function(){
@@ -34,58 +36,26 @@ async function modelRows(make){
 async function getModels(make){
  return (await modelRows(make)).map(r=>r.name).filter(x=>typeof x==="string"&&x.length>0);
 }
-async function getEngines(make,model,year){
- if(!make||!model)return [];
- const models=await modelRows(make);
- const match=models.find(m=>m.name===model);
- if(!match)return [];
- const rows=await read("car_engines?select=id,designation,engine_code,year_from,year_to&model_id=eq."+encodeURIComponent(match.id)+"&order=designation.asc&limit=250");
- return rows.filter(r=>!year||(
-  (!r.year_from||Number(year)>=r.year_from)&&(!r.year_to||Number(year)<=r.year_to)
- ));
+function readTable(table,filter){
+ return read(table+"?"+new URLSearchParams(filter));
 }
-function matchesQuery(part,term){
- const q=String(term||"").trim().toLocaleLowerCase("de-DE");
- if(!q)return true;
- const corpus=[part.part_name,part.manufacturer,part.manufacturer_part_number,part.category]
-  .join(" ").toLocaleLowerCase("de-DE");
- if(corpus.includes(q))return true;
- // Match German and English search names without claiming compatibility.
- const aliases={
-  "oil filter":"ölfilter","oilfilter":"ölfilter","oelfilter":"ölfilter",
-  "motorölfilter":"ölfilter","fuel filter":"kraftstofffilter",
-  "fuel filters":"kraftstofffilter","dieselfilter":"kraftstofffilter",
-  "spritfilter":"kraftstofffilter","air filter":"luftfilter",
-  "airfilter":"luftfilter","engine air filter":"luftfilter",
-  "motorluftfilter":"luftfilter","cabin filter":"innenraumfilter",
-  "pollenfilter":"innenraumfilter","brake pads":"bremsbeläge",
-  "brake discs":"bremsscheiben","spark plugs":"zündkerzen",
-  "headlight":"scheinwerfer","windshield wipers":"scheibenwischer"
- };
- const normalized=aliases[q]||q;
- if(corpus.includes(normalized))return true;
- // Product IDs may be written with or without spaces and punctuation.
- const compact=x=>x.replace(/[\\s\\/._-]/g,"");
- return compact(q).length>=5&&compact(corpus).includes(compact(q));
+
+const engineRequests=new Map();
+async function getEngines(make,model,year,series){
+ if(!make||!model||!year||!series)return [];
+ const cacheKey=JSON.stringify([make,model,year,series]);
+ if(!engineRequests.has(cacheKey)){
+  engineRequests.set(cacheKey,catalogueEngines(readTable,{make,model,year,series})
+   .catch(error=>{engineRequests.delete(cacheKey);throw error}));
+ }
+ return engineRequests.get(cacheKey);
 }
+
 async function findVerifiedParts(vehicle,term){
- const engines=await getEngines(vehicle.make,vehicle.model,vehicle.year);
- // A generic engine choice (e.g. "2.0 TDI") must NEVER imply exact fitment.
- const exact=engines.find(e=>e.designation===vehicle.engine);
- if(!exact)return [];
- const fits=await read("part_fitments?select=part_id,source_url,notes&engine_id=eq."+
-  encodeURIComponent(exact.id)+"&status=eq.verified&limit=100");
- if(!fits.length)return [];
- const ids=[...new Set(fits.map(f=>f.part_id).filter(Number.isInteger))];
- if(!ids.length)return [];
- const rows=await read("parts?select=id,manufacturer,part_name,manufacturer_part_number,category,source_url,verification_status"+
-  "&verification_status=eq.verified&id=in.("+ids.join(",")+")&limit=100");
- const selected=rows.filter(p=>matchesQuery(p,term));
+ const engines=await getEngines(vehicle.make,vehicle.model,vehicle.year,vehicle.series);
+ const selected=await catalogueParts(readTable,engines,vehicle,term,researchCategory(term));
  if(!selected.length)return [];
- const selectedIds=selected.map(p=>p.id);
- const filter="part_id=in.("+selectedIds.join(",")+")";
- // Media only has public read access when separately reviewed for reuse.
- // Offers are sourced merchant listings, not automatic fitment confirmations.
+ const filter="part_id=in.("+[...new Set(selected.map(p=>p.id))].join(",")+")";
  const results=await Promise.allSettled([
   read("part_images?select=part_id,image_url,alt_text,source_url&"+
     filter+"&verified_for_display=eq.true&limit=100"),
@@ -96,21 +66,14 @@ async function findVerifiedParts(vehicle,term){
  const offers=results[1].status==="fulfilled"?results[1].value:[];
  const freshThreshold=Date.now()-7*24*60*60*1000;
  return selected.map(p=>({
-  ...p,
-  fitment:fits.find(f=>f.part_id===p.id),
-  engine:exact.designation,
-  images:images.filter(x=>x.part_id===p.id),
-  offers:offers.filter(x=>x.part_id===p.id&&
-    Number.isFinite(Date.parse(x.observed_at))&&Date.parse(x.observed_at)>=freshThreshold)
+  ...p,images:images.filter(x=>x.part_id===p.id),
+  offers:offers.filter(x=>x.part_id===p.id&&Date.parse(x.observed_at)>=freshThreshold)
  }));
-
 }
-async function getCoverage(make,model,year){
- const engines=await getEngines(make,model,year);
+async function getCoverage(make,model,year,series){
+ const engines=await getEngines(make,model,year,series);
  if(!engines.length)return {documentedEngines:0,verifiedArticles:0};
- const ids=engines.map(e=>e.id).filter(Number.isInteger);
- if(!ids.length)return {documentedEngines:0,verifiedArticles:0};
- const rows=await read("part_fitments?select=part_id&engine_id=in.("+ids.join(",")+")&status=eq.verified&limit=1000");
+ const rows=await read("part_fitments?select=part_id&engine_id=in.("+engines.map(e=>e.id).join(",")+")&status=eq.verified&limit=1000");
  return {documentedEngines:engines.length,verifiedArticles:new Set(rows.map(x=>x.part_id)).size};
 }
 async function discoverOilRefs(vehicle){
@@ -153,7 +116,8 @@ function researchCategory(term){
   "air filter":"Luftfilter","cabin filter":"Innenraumfilter","spark plugs":"Zündkerzen",
   "headlight":"Scheinwerfer","windshield wipers":"Scheibenwischer"
  };
- if(aliases[t])return aliases[t];
+ const synonym=Object.keys(aliases).find(name=>t===name||t.startsWith(name+" "));
+ if(synonym)return aliases[synonym];
  return researchCategories.find(c=>c.toLocaleLowerCase("de-DE")===t)||
   researchCategories.find(c=>t.startsWith(c.toLocaleLowerCase("de-DE")+" "))||null;
 }
@@ -177,7 +141,7 @@ async function searchLiveWeb(vehicle,term){
  };
  const res=await fetch(base+"/functions/v1/live-web-search",{
   method:"POST",headers:{"apikey":key,"Content-Type":"application/json"},
-  body:JSON.stringify(request),signal:AbortSignal.timeout(26000)
+  body:JSON.stringify(request),signal:AbortSignal.timeout(40000)
  });
  if(!res.ok)throw new Error("Live web search "+res.status);
  const data=await res.json();
@@ -213,4 +177,5 @@ async function findDiagnosticParts(term,make){
 }
 window.CarPartsDB={getBrands,getModels,getEngines,findVerifiedParts,getCoverage,discoverOilRefs,researchParts,researchCategory,searchLiveWeb,getRegistryEvidence,findDiagnosticParts,diagnosticCode};
 })();
+
 

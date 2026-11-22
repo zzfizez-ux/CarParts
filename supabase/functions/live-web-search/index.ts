@@ -1,160 +1,195 @@
-import {searchOffers,webOffers} from "./offers.ts";
-// CarParts keyless web discovery: public Mwmbl JSON API, respecting its noncommercial CC BY-NC-SA license.
-// 1,000 free anonymous queries/month at 1 req/s per provider IP; our daily limit is stricter.
-// Show only directly relevant short references with source attribution; never mislabel as fitted parts.
-// No VIN, IP, free-form user text or personal identifiers are saved.
-const ORIGIN="https://zzfizez-ux.github.io";
-const BASE="https://umhzxsryqhwzxrmkbmwp.supabase.co/rest/v1/";
-const DOMAINS=[
- "autodoc.de","atp-autoteile.de","kfzteile24.de","motointegrator.de",
- "mister-auto.de","daparto.de","pkwteile.de","autoteile-markt.de",
- "autoteiledirekt.de","ebay.de"
-];
+// Source-backed search. Price and fitment evidence come from their respective sources.
+import {catalogueEngines, catalogueParts} from "./catalogue.mjs";
+import {merchantUrl, offersFromWeb, searchOffers} from "./offers.ts";
+import type {Article, Vehicle} from "./offers.ts";
+import {matchesPartText, seriesEvidence, words} from "./vehicle-fitment.mjs";
 
-const headers={
- "Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store",
- "Access-Control-Allow-Origin":ORIGIN,
- "Access-Control-Allow-Methods":"POST, OPTIONS",
- "Access-Control-Allow-Headers":"content-type,apikey","Vary":"Origin",
+const origin = "https://zzfizez-ux.github.io";
+const headers = {
+  "Content-Type":"application/json; charset=utf-8",
+  "Cache-Control":"no-store",
+  "Access-Control-Allow-Origin":origin,
+  "Access-Control-Allow-Methods":"POST, OPTIONS",
+  "Access-Control-Allow-Headers":"content-type,apikey",
+  Vary:"Origin"
 };
-const json=(obj:unknown,status=200)=>new Response(JSON.stringify(obj),{headers,status});
-const pubkeys=()=>{
- try{const o=JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}");
- return Object.values(o).filter((v):v is string=>typeof v==="string");}catch{return []}
-};
-const secret=()=>{
- try{const k=JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}");
- if(typeof k.default==="string")return k.default;}catch{/* legacy key */}
- return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
-};
-async function db(table:string,method:"GET"|"POST",filters:Record<string,string>,body?:unknown){
- const u=new URL(BASE+table);
- Object.entries(filters).forEach(([k,v])=>u.searchParams.set(k,v));
- const key=secret();if(!key)throw Error("DB secret missing");
- const r=await fetch(u,{method,headers:{apikey:key,Accept:"application/json",
-  "Content-Type":"application/json",
-  Prefer:"return=representation,resolution=merge-duplicates"},
-  body:method==="POST"?JSON.stringify(body):undefined,
-  signal:AbortSignal.timeout(6000)});
- if(!r.ok)throw Error(table+" "+r.status);
- return await r.json();
+const json = (body:unknown,status=200)=>new Response(JSON.stringify(body),{headers,status});
+const publishableKeys = () => Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}"));
+const serviceKey = () => JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default ||
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const fields = new Set(["make","model","year","engine","series","variant","part","category"]);
+
+async function database(table:string, filter:Record<string,string>, body?:unknown) {
+  const key = serviceKey();
+  if (!key) throw new Error("service_key");
+  const url = new URL("/rest/v1/"+table,Deno.env.get("SUPABASE_URL") || "https://umhzxsryqhwzxrmkbmwp.supabase.co");
+  url.search = new URLSearchParams(filter).toString();
+  const response = await fetch(url,{
+    method:body===undefined?"GET":"POST",
+    headers:{apikey:key,"Content-Type":"application/json",Accept:"application/json",
+      Prefer:"return=representation,resolution=merge-duplicates"},
+    body:body===undefined?undefined:JSON.stringify(body),
+    signal:AbortSignal.timeout(4000)
+  });
+  if (!response.ok) throw new Error(table+" "+response.status);
+  return await response.json();
 }
-const clean=(s:string,n:number)=>s.replace(/[\r\n\t]+/g," ").replace(/\s+/g," ").trim().slice(0,n);
-function hostAllowed(s:string){
- try{
-  const u=new URL(s);
-  return u.protocol==="https:"&&DOMAINS.some(d=>u.hostname===d||u.hostname.endsWith("."+d));
- }catch{return false}
+
+function validText(value:unknown,max:number,required=false):value is string {
+  return typeof value==="string" && value.length<=max && (!required||!!value.trim()) &&
+    /^[\p{L}\p{N}\p{M} &'’.,+()#:/_–—-]*$/u.test(value) &&
+    !/\b[A-HJ-NPR-Z0-9]{17}\b/i.test(value);
 }
-function formatted(results:unknown, make:string, model:string, part:string){
- if(!Array.isArray(results))return [];
- const out:any[]=[],seen=new Set<string>();
- const lc=(x:string)=>x.toLocaleLowerCase("de-DE");
- const partLc=lc(part);
- const concepts=partLc.includes("brems")
-  ? ["brems","brake","pad","brembo"]
-  : partLc.includes("filter")?["filter","öl","oil","mann","wix"]:
-    [partLc,partLc.slice(0,Math.min(5,partLc.length))];
- for(const item of results){
-  if(!item||typeof item!=="object")continue;
-  const x=item as Record<string,unknown>;
-  if(typeof x.url!=="string"||!hostAllowed(x.url)||seen.has(x.url))continue;
-  if(typeof x.title!=="string"||x.title.length<6)continue;
-  const u=new URL(x.url);
-  const text=lc([x.title,typeof x.content==="string"?x.content:"",u.pathname].join(" "));
-  // A model name alone is not a product hit. Match the part and at least the vehicle make.
-  if(!text.includes(lc(make))||!concepts.some(c=>text.includes(c)))continue;
-  // Don't present mismatched models as evidence for the selected model.
-  const modelLc=lc(model);
-  const modelMatches=text.includes(modelLc)||(modelLc==="3er"&&/3er|3.series|320d|318d/.test(text));
-  if(!modelMatches)continue;
-  seen.add(x.url);
-  out.push({title:clean(x.title,125),url:u.href,
-   snippet:typeof x.content==="string"?clean(x.content,125):"",
-   merchant:u.hostname.replace(/^www\./,""),
-   price:null,image:null,fitment_verified:false});
-  if(out.length>=10)break;
- }
- return out;
+
+function normalize(value:string) {
+  return value.normalize("NFKC").trim().replace(/\s+/g," ");
 }
-async function hash(s:string){
- const data=new TextEncoder().encode(s);
- const digest=await crypto.subtle.digest("SHA-256",data);
- return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,"0")).join("");
+
+async function searchKey(vehicle:Vehicle, term:string, category:string) {
+  const encoded = new TextEncoder().encode(JSON.stringify(["products-v3",vehicle,term,category]).toLowerCase());
+  const digest = await crypto.subtle.digest("SHA-256",encoded);
+  return Array.from(new Uint8Array(digest), byte=>byte.toString(16).padStart(2,"0")).join("");
 }
-const normalize=(s:string)=>s.normalize("NFKC").trim().replace(/\s+/g," ");
-function validField(value:unknown,max:number,required=false):value is string{
- return typeof value==="string" && value.length<=max && (!required||!!value.trim()) &&
-  /^[\p{L}\p{N}\p{M} &'’.,+()#:/_–—-]*$/u.test(value) &&
-  !/\b[A-HJ-NPR-Z0-9]{17}\b/i.test(value);
+
+async function savedResearch(key:string) {
+  const rows = await database("shared_parts_research",{
+    select:"payload,checked_at",query_hash:"eq."+key,expires_at:"gt."+new Date().toISOString(),limit:"1"
+  });
+  return rows[0] ? {...rows[0].payload,status:"cached",fetched_at:rows[0].checked_at} : null;
 }
-async function readResult(key:string){
- const rows=await db("shared_parts_research","GET",{select:"payload,checked_at",
-  query_hash:"eq."+key,expires_at:"gt."+new Date().toISOString(),limit:"1"});
- return rows[0]?{...rows[0].payload,status:"cached",fetched_at:rows[0].checked_at}:null;
+
+async function manufacturerReferences(vehicle:Vehicle, category:string) {
+  if (!category) return [];
+  const rows = await database("research_part_candidates",{
+    select:"manufacturer,manufacturer_part_number,part_name,source_vehicle_variant,fitment_conditions,source_url",
+    make:"eq."+vehicle.make,model:"eq."+vehicle.model,category:"eq."+category,fitment_status:"eq.research_only",
+    and:"(or(year_from.is.null,year_from.lte."+vehicle.year+"),or(year_to.is.null,year_to.gte."+vehicle.year+"))",
+    order:"manufacturer.asc,manufacturer_part_number.asc",limit:"20"
+  });
+  return rows.filter((row:{source_vehicle_variant:string})=>seriesEvidence(vehicle,row.source_vehicle_variant)!=="conflict");
 }
-Deno.serve(async(req:Request)=>{
- if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
- if(req.method!=="POST")return json({error:"Method not allowed"},405);
- if(req.headers.get("origin")!==ORIGIN)return json({error:"Origin not permitted"},403);
- if(!pubkeys().includes(req.headers.get("apikey")||""))return json({error:"Invalid publishable key"},401);
- try{
-  const raw=await req.text();
-  if(raw.length>1200)return json({error:"Too large"},413);
-  let p;try{p=JSON.parse(raw)}catch{return json({error:"Invalid JSON"},400)}
-  if(!p||typeof p!=="object"||Array.isArray(p)||Object.keys(p).some(k=>
-   !["make","model","year","part","engine","series","variant","category"].includes(k)))return json({error:"Invalid input"},422);
-  const {year}=p;
-  if(!validField(p.make,90,true)||!validField(p.model,140,true)||!validField(p.part,80,true)||
-   !Number.isInteger(year)||year<1885||year>new Date().getUTCFullYear()+1||
-   !validField(p.engine??"",160)||!validField(p.series??"",160)||!validField(p.variant??"",100)||
-   !validField(p.category??"",80))return json({error:"Invalid vehicle/part"},422);
-  const [make,model,series,engine,variant,part,category]=
-   [p.make,p.model,p.series||"",p.engine||"",p.variant||"",p.part,p.category||""].map(normalize);
-  const key=await hash(JSON.stringify(["products-v1",make,model,series,year,engine,variant,part,category]).toLowerCase());
-  const saved=await readResult(key);
-  if(saved)return json(saved);
-  const references=category?await db("research_part_candidates","GET",{
-   select:"manufacturer,manufacturer_part_number,part_name,source_vehicle_variant,fitment_conditions,source_url,year_from,year_to",
-   make:"eq."+make,model:"eq."+model,category:"eq."+category,
-   and:"(or(year_from.is.null,year_from.lte."+year+"),or(year_to.is.null,year_to.gte."+year+"))",
-   order:"manufacturer.asc,manufacturer_part_number.asc",limit:"20"
-  }):[];
-  const claim=await db("rpc/reserve_parts_web_lookup","POST",{},{key_hash:key});
-  if(claim==="busy"){
-   for(const delay of [500,1000,2000,3000,5000]){
-    await new Promise(resolve=>setTimeout(resolve,delay));
-    const hit=await readResult(key);if(hit)return json(hit);
-   }
-   return json({status:"busy",results:[],references});
-  }
-  let results:ReturnType<typeof formatted>=[],web_status="quota";
-  const productTask=claim==="reserved"?searchOffers({make,model,series,year,engine,variant},part,category,references[0]?.manufacturer_part_number).catch(()=>[]):Promise.resolve([]);
-  if(claim==="reserved"){
-   const query=[make,model,series,year,engine,variant,part].filter(Boolean).join(" ");
-   const url="https://api.mwmbl.org/api/v2/search/?q="+encodeURIComponent(query);
-   try{
-    const r=await fetch(url,{headers:{Accept:"application/json"},signal:AbortSignal.timeout(12000)});
-    web_status=r.status===429?"quota":"provider_error";
-    if(r.ok){
-     const data=await r.json();
-     if(Array.isArray(data.results)){results=formatted(data.results,make,model,part);web_status="live"}
+
+async function webResearch(key:string, vehicle:Vehicle, term:string, category:string) {
+  const claim = await database("rpc/reserve_parts_web_lookup",{},{key_hash:key});
+  if (claim!=="reserved") return {status:claim,results:[]};
+  const phrase = [vehicle.make,vehicle.model,vehicle.series,vehicle.year,vehicle.engine,vehicle.variant,term]
+    .filter(Boolean).join(" ");
+  const provider = "https://api.mwmbl.org/api/v2/search/?q="+encodeURIComponent(phrase);
+  try {
+    const response = await fetch(provider,{headers:{Accept:"application/json"},signal:AbortSignal.timeout(6500)});
+    if (!response.ok) return {status:response.status===429?"quota":"provider_error",results:[]};
+    const data = await response.json();
+    if (!Array.isArray(data.results)) return {status:"provider_error",results:[]};
+    const links = new Map();
+    for (const row of data.results) {
+      const link = typeof row?.url==="string" && merchantUrl(row.url);
+      if (!link || typeof row.title!=="string" || links.has(link.href)) continue;
+      const snippet = typeof row.content==="string" ? row.content.slice(0,140) : "";
+      const description = [row.title,snippet,link.pathname].join(" ");
+      const evidence = seriesEvidence(vehicle,description);
+      const modelWord = words(vehicle.model);
+      const text = words(description);
+      if (!matchesPartText(description,term,category) || evidence==="conflict" ||
+          (evidence!=="match" && !(" "+text+" ").includes(" "+modelWord+" "))) continue;
+      links.set(link.href,{title:row.title.slice(0,140),snippet,url:link.href,merchant:link.hostname});
+      if (links.size===8) break;
     }
-   }catch{web_status="provider_error"}
+    return {status:"live",results:[...links.values()]};
+  } catch { return {status:"provider_error",results:[]}; }
+}
+
+async function research(vehicle:Vehicle, term:string, category:string, key:string) {
+  const cached = await savedResearch(key);
+  if (cached) return cached;
+  const merchantClaim = await database("rpc/reserve_parts_merchant_lookup",{},{key_hash:key});
+  if (merchantClaim==="busy") {
+    for (const delay of [400,800,1500,2500]) {
+      await new Promise(resolve=>setTimeout(resolve,delay));
+      const hit = await savedResearch(key);
+      if (hit) return hit;
+    }
+    return {status:"busy",products:[],references:[],results:[]};
   }
-  const direct=await productTask;
-  const products=direct.length?direct:await webOffers(results);
-  const payload={products,results,references,web_status,provider:"mwmbl",license:"CC BY-NC-SA 4.0",
-   fitment_verified:false,prices_verified:false};
-  const checked=new Date();
-  if(web_status!=="live"&&!references.length&&!products.length)return json({...payload,status:web_status});
-  const hours=products.length?4:results.length?22:references.length?22:1;
-  await db("shared_parts_research","POST",{on_conflict:"query_hash"},[{
-   query_hash:key,payload,checked_at:checked.toISOString(),expires_at:new Date(+checked+hours*3600000).toISOString()
-  }]);
-  return json({...payload,status:"live",stored:true,fetched_at:checked.toISOString()});
- }catch(e){
-  console.error("CarParts shared research",e instanceof Error?e.message:"unknown");
-  return json({status:"error",results:[],references:[]},503);
- }
+
+  const [reviewed, catalogue] = await Promise.allSettled([
+    manufacturerReferences(vehicle,category),
+    catalogueEngines(database,vehicle).then(engines=>catalogueParts(database,engines,vehicle,term,category,true))
+  ]);
+  if (reviewed.status==="rejected" || catalogue.status==="rejected") {
+    console.warn("CarParts source lookup unavailable", reviewed.status, catalogue.status);
+  }
+  const applications = catalogue.status==="fulfilled" ? catalogue.value : [];
+  const foundParts = [...new Map(applications.map(p=>[p.id,p])).values()];
+  const oldOffers = merchantClaim==="reserved" && foundParts.length ? await database("part_offers",{
+    select:"part_id,product_url",part_id:"in.("+foundParts.map(p=>p.id).join(",")+")",
+    verification_status:"eq.verified",limit:"40"
+  }).catch(()=>[]) : [];
+  const articles:Article[] = foundParts.map(row=>({
+    manufacturer:row.manufacturer, manufacturer_part_number:row.manufacturer_part_number,
+    source_url:row.fitment.source_url || row.source_url,
+    condition:row.fitment.notes || row.engine,
+    urls:oldOffers.filter((offer:{part_id:number})=>offer.part_id===row.id).map((offer:{product_url:string})=>offer.product_url)
+  }));
+  const conditional = foundParts.filter(p=>p.match==="conditional").map(p=>({
+    manufacturer:p.manufacturer,manufacturer_part_number:p.manufacturer_part_number,part_name:p.part_name,
+    source_vehicle_variant:p.engine,fitment_conditions:p.fitment.notes,source_url:p.fitment.source_url
+  }));
+  const references = [...conditional,...(reviewed.status==="fulfilled" ? reviewed.value : [])];
+  const direct = merchantClaim==="reserved" ? await searchOffers(vehicle,term,category,articles)
+    : {products:[],failures:[]};
+  const web = direct.products.length ? {status:"skipped",results:[]} : await webResearch(key,vehicle,term,category);
+  const fallback = merchantClaim==="reserved" && !direct.products.length && web.results.length
+    ? await offersFromWeb(web.results,vehicle,term,category) : {products:[],failures:[]};
+  const products = direct.products.length ? direct.products : fallback.products;
+  const failures = [...direct.failures,...fallback.failures];
+  for (const {merchant,reason} of failures) console.warn("CarParts merchant",merchant,reason);
+  const payload = {
+    products, results:web.results, references, web_status:web.status,
+    merchant_status:merchantClaim==="reserved"?(failures.length?"partial":"searched"):merchantClaim,
+    merchant_failures:failures,
+    provider:"mwmbl", license:"CC BY-NC-SA 4.0"
+  };
+  const checked = new Date();
+  const hasResults = products.length || web.results.length || references.length;
+  const minutes = products.length ? 240 : hasResults ? 60 : failures.length || web.status!=="live" ? 5 : 20;
+  // Keep short negative results to avoid repeating a source query on every click.
+  try {
+    await database("shared_parts_research",{on_conflict:"query_hash"},[{
+      query_hash:key,payload,checked_at:checked.toISOString(),
+      expires_at:new Date(+checked+minutes*60000).toISOString()
+    }]);
+  } catch { console.warn("CarParts search cache write failed"); }
+  return {...payload,status:hasResults?"live":"empty",fetched_at:checked.toISOString()};
+}
+
+Deno.serve(async (request:Request)=>{
+  if (request.method==="OPTIONS") return new Response(null,{status:204,headers});
+  if (request.method!=="POST") return json({error:"Method not allowed"},405);
+  if (request.headers.get("origin")!==origin) return json({error:"Origin not permitted"},403);
+  try {
+    if (!publishableKeys().includes(request.headers.get("apikey")||"")) return json({error:"Invalid publishable key"},401);
+    const raw = await request.text();
+    if (raw.length>1200) return json({error:"Too large"},413);
+    let p;
+    try { p = JSON.parse(raw); } catch { return json({error:"Invalid JSON"},400); }
+    if (!p || typeof p!=="object" || Array.isArray(p) || Object.keys(p).some(key=>!fields.has(key))) {
+      return json({error:"Invalid input"},422);
+    }
+    if (!validText(p.make,90,true) || !validText(p.model,140,true) || !validText(p.part,80,true) ||
+        !Number.isInteger(p.year) || p.year<1885 || p.year>new Date().getUTCFullYear()+1 ||
+        !validText(p.engine??"",160) || !validText(p.series??"",160) ||
+        !validText(p.variant??"",100) || !validText(p.category??"",80)) {
+      return json({error:"Invalid vehicle/part"},422);
+    }
+    const vehicle = {
+      make:normalize(p.make),model:normalize(p.model),series:normalize(p.series||""),
+      year:p.year,engine:normalize(p.engine||""),variant:normalize(p.variant||"")
+    };
+    const term = normalize(p.part), category = normalize(p.category||"");
+    const key = await searchKey(vehicle,term,category);
+    return json(await research(vehicle,term,category,key));
+  } catch (error) {
+    console.error("CarParts research",error instanceof Error ? error.message : "unknown");
+    return json({status:"error",products:[],results:[],references:[]},503);
+  }
 });
