@@ -18,7 +18,7 @@ Angebote werden vier Stunden in `shared_parts_research` wiederverwendet. Quellen
 
 ### Auto Parts Finder
 
-Fehlt ein direkt belegtes Händlerangebot, kann `live-web-search` für ausgewählte Teilekategorien zusätzlich Auto Parts Finder abfragen. Der Dienst erhält das Modell, den Motor, das Modelljahr und die Teilekategorie. CarParts zeigt die Ergebnisse als Teilehinweise. Der Händler bestätigt die Währung, und der Hersteller bestätigt Baureihe, Einbauposition und Ausstattung.
+Fehlt ein direkt belegtes Händlerangebot, kann `live-web-search` für ausgewählte Teilekategorien zusätzlich Auto Parts Finder abfragen. Der Dienst erhält das Modell, den Motor, das Modelljahr und die Teilekategorie. CarParts liest `compatible_parts` als Teilehinweise. Bei Bremsen muss die Teilenummer außerdem zu einer belegten Herstelleranwendung der gewählten Motorisierung passen. Der Händler bestätigt die Währung, und der Hersteller bestätigt Baureihe, Einbauposition und Ausstattung.
 
 Die RapidAPI-Anwendung benötigt ein Abonnement für **Auto Parts Finder**. Der Schlüssel wird im Supabase-Projekt als Edge Function Secret `RAPIDAPI_AUTO_PARTS_KEY` hinterlegt. CarParts speichert die Hinweise bis zu 24 Stunden und begrenzt neue Aufrufe entsprechend der Basic-Menge auf 50 pro 31 Tage.
 

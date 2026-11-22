@@ -592,6 +592,7 @@ function merchantNotice(data){
  if(data.merchant_status==="quota")return "Das Tageslimit für Händlerabfragen ist erreicht.";
  if(data.merchant_status==="cooldown")return "Neue Händlerabfragen für dieses Teil sind in wenigen Minuten verfügbar.";
  if(data.merchant_failures?.length)return "Einige Händlerdaten waren gerade nicht abrufbar.";
+ if(!data.products?.length&&data.rapid_status==="fitment_unconfirmed")return "Für den Teilehinweis fehlt eine Bestätigung für die gewählte Fahrzeugausführung.";
  if(!data.products?.length&&["access","unavailable"].includes(data.rapid_status))return "Auto Parts Finder ist vorübergehend nicht verfügbar.";
  if(!data.products?.length&&data.rapid_status==="quota")return "Das Abfragelimit von Auto Parts Finder ist erreicht.";
  if(data.web_status==="quota"&&!data.products?.length)return "Das Tageslimit der Websuche ist erreicht.";

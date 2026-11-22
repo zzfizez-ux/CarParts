@@ -1,5 +1,5 @@
 import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
-import {words} from "./vehicle-fitment.mjs";
+import {hasPartNumber, seriesEvidence, words} from "./vehicle-fitment.mjs";
 
 const host = "auto-parts-finder1.p.rapidapi.com";
 const endpoint = "https://" + host + "/get_parts";
@@ -27,6 +27,7 @@ const positions = [
 ];
 const knownSources = new Set([
   "mister-auto.com", "www.mister-auto.com", "mister-auto.de", "www.mister-auto.de",
+  "auto-doc.fr", "www.auto-doc.fr",
   "rockauto.com", "www.rockauto.com", "www.autodoc.de", "www.atp-autoteile.de",
   "www.motointegrator.de", "www.kfzteile24.de", "www.daparto.de",
   "levoil.de", "shop.autoersatzteile-frankfurt.de"
@@ -49,7 +50,8 @@ export function rapidQuery(vehicle, term, category) {
 function httpsUrl(value) {
   if (typeof value !== "string" || value.length > 600) return null;
   try {
-    const url = new URL(value);
+    const hostOrUrl = value.trim();
+    const url = new URL(knownSources.has(hostOrUrl.toLowerCase()) ? "https://" + hostOrUrl : hostOrUrl);
     return url.protocol === "https:" && !url.username && !url.password && !url.port &&
       knownSources.has(url.hostname) ? url : null;
   } catch {
@@ -62,7 +64,7 @@ function hasWords(haystack, needle) {
 }
 
 export function rapidReferences(data, category, term) {
-  const rows = Array.isArray(data) ? data : data?.parts ?? data?.results ?? data?.data;
+  const rows = Array.isArray(data) ? data : data?.compatible_parts ?? data?.parts ?? data?.results ?? data?.data;
   if (!Array.isArray(rows)) throw new Error("Unexpected Auto Parts Finder response");
   const typeKey = words(category);
   const names = (categories[typeKey] || []).concat(typeKey);
@@ -95,12 +97,22 @@ export function rapidReferences(data, category, term) {
   return [...parts.values()];
 }
 
+export function rapidPartsForVehicle(parts, vehicle, category, applications) {
+  const brakes = ["bremsbelage", "bremsscheiben"].includes(words(category));
+  return parts.filter(part => {
+    if (seriesEvidence(vehicle, part.reference + " " + part.type) === "conflict") return false;
+    // Provider records alone do not establish a brake part's axle or vehicle application.
+    return !brakes || applications.some(application => application.match === "exact" &&
+      hasPartNumber(part.reference, application.manufacturer_part_number));
+  });
+}
+
 export async function lookupRapidParts(query, category, term, key, request = (url, options) => fetch(url, options)) {
   let http;
   try {
     const response = await request(endpoint, {
       method: "POST",
-      headers: {"Content-Type": "application/json", "X-RapidAPI-Host": host, "X-RapidAPI-Key": key},
+      headers: {"Content-Type": "application/json", "Accept": "application/json", "x-rapidapi-host": host, "x-rapidapi-key": key},
       body: JSON.stringify(query),
       redirect: "manual",
       signal: AbortSignal.timeout(32000)

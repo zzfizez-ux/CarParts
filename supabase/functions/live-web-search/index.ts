@@ -5,7 +5,7 @@ import type {Article, Vehicle} from "./offers.ts";
 import {matchesPartText, seriesEvidence, words} from "./vehicle-fitment.mjs";
 import {siteRequest} from "../_shared/site-config.mjs";
 import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
-import {lookupRapidParts, rapidQuery} from "./rapid-parts.mjs";
+import {lookupRapidParts, rapidPartsForVehicle, rapidQuery} from "./rapid-parts.mjs";
 
 const publishableKeys = () => Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}"));
 const serviceKey = () => JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default ||
@@ -181,15 +181,14 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
     ? await offersFromWeb(web.results,vehicle,term,category) : {products:[],failures:[]};
   const products = direct.products.length ? direct.products : fallback.products;
   const rapid = await rapidTask;
-  const rapidParts = rapid.parts.filter((part:{reference:string;type:string}) =>
-    seriesEvidence(vehicle,part.reference+" "+part.type)!=="conflict");
+  const rapidParts = rapidPartsForVehicle(rapid.parts,vehicle,category,foundParts);
   const failures = [...direct.failures,...fallback.failures];
   for (const {merchant,reason} of failures) console.warn("CarParts merchant",merchant,reason);
   const payload = {
     products, results:web.results, references, web_status:web.status,
     merchant_status:merchantClaim==="reserved"?(failures.length?"partial":"searched"):merchantClaim,
     merchant_failures:failures,
-    rapid_parts:rapidParts, rapid_status:rapid.status,
+    rapid_parts:rapidParts, rapid_status:rapid.parts.length&&!rapidParts.length?"fitment_unconfirmed":rapid.status,
     provider:"mwmbl", license:"CC BY-NC-SA 4.0"
   };
   const checked = new Date();

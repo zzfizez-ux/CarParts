@@ -1,7 +1,7 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {JsonBodyError, readJson} from "../supabase/functions/_shared/read-json.mjs";
-import {lookupRapidParts, rapidQuery, rapidReferences} from "../supabase/functions/live-web-search/rapid-parts.mjs";
+import {lookupRapidParts, rapidPartsForVehicle, rapidQuery, rapidReferences} from "../supabase/functions/live-web-search/rapid-parts.mjs";
 
 const golf = {make: "Volkswagen", model: "Golf", engine: "Golf VII 2.0 TDI 150 PS (CRBC)", year: 2019, series: "Golf VII"};
 const query = {model: "Golf", engine: "2.0 TDI", year: "2019", category: "rear brake pads"};
@@ -27,12 +27,24 @@ test("only matching part categories and positions are kept, with no inferred cur
 test("a vendor subscription denial is reported without returning its response", async () => {
   const output = await lookupRapidParts(query, "Bremsbeläge", "Bremsbeläge hinten", "test-key", async (url, options) => {
     assert.equal(url, "https://auto-parts-finder1.p.rapidapi.com/get_parts");
-    assert.equal(options.headers["X-RapidAPI-Key"], "test-key");
+    assert.equal(options.headers["x-rapidapi-key"], "test-key");
     assert.equal(options.redirect, "manual");
     assert.deepEqual(JSON.parse(options.body), query);
     return Response.json({message: "You are not subscribed to this API."}, {status: 403});
   });
   assert.deepEqual(output, {status: "access", parts: [], http: 403});
+});
+
+test("the live compatible_parts envelope is parsed and bare merchant domains are linked", async () => {
+  const result = await lookupRapidParts(query, "Bremsbeläge", "Bremsbeläge hinten", "test-key",
+    async () => Response.json({compatible_parts: [
+      {ref: "trw gdb2138", type: "brake pad", price: "25.00", source: "auto-doc.fr"}
+    ]}));
+  assert.deepEqual(result, {status: "ready", parts: [
+    {reference: "trw gdb2138", type: "brake pad", price: 25, currency: null,
+      url: "https://auto-doc.fr/", image: ""}
+  ]});
+  assert.deepEqual(rapidPartsForVehicle(result.parts, golf, "Bremsbeläge", []), []);
 });
 
 test("a RapidAPI error in a successful HTTP envelope preserves the access status", async () => {
