@@ -8,13 +8,15 @@
  const primary = form.querySelector('[type=submit]');
  const modes = {
   login:['Anmelden','Anmelden'], signup:['Konto erstellen','Registrieren'],
-  recover:['Passwort vergessen','Code anfordern'], verify:['E-Mail-Code eingeben','Code prüfen'],
+  recover:['Passwort vergessen','E-Mail anfordern'], sent:['Postfach prüfen',''],
+  verify:['E-Mail-Code eingeben','Code prüfen'],
   reset:['Neues Passwort wählen','Passwort speichern'], account:['Mein Konto','Abmelden']
  };
  let mode='login', user=null, busy=false, client, recoveryVerified=false;
  function show(modeName,message=''){
   mode=modeName;
   title.textContent=modes[mode][0]; primary.textContent=modes[mode][1];
+  primary.hidden=mode==='sent';
   status.textContent=message;
   for(const [field,visible] of [[email,['login','signup','recover','verify'].includes(mode)],
     [password,['login','signup','reset'].includes(mode)],[code,mode==='verify']]){
@@ -45,7 +47,7 @@
   }
   history.replaceState(history.state,'',page.href);
   if(invalidFragment||invalidQuery){
-   show('recover','Der Link ist ungültig oder abgelaufen. Fordere einen neuen Code an.');
+   show('recover','Der Link ist ungültig oder abgelaufen. Fordere eine neue E-Mail an.');
   }else{
    show('verify');
   }
@@ -58,7 +60,7 @@
   if(mode==='verify'){
    if(error.code==='otp_expired'||error.status===400||error.status===403){
     code.value='';
-    return 'Der Code ist ungültig oder abgelaufen. Du kannst einen neuen anfordern.';
+    return 'Der Code ist ungültig oder abgelaufen. Fordere bei Bedarf eine neue E-Mail an.';
    }
    return 'Der Code konnte gerade nicht geprüft werden. Bitte versuche es erneut.';
   }
@@ -88,7 +90,7 @@
  }
  let ready=init().catch(()=>null);
  form.onsubmit=async event=>{
-  event.preventDefault();if(busy)return;
+  event.preventDefault();if(busy||mode==='sent')return;
   busy=true;primary.disabled=true;status.textContent='Bitte warten …';
   const action=mode;
   try{
@@ -109,7 +111,7 @@
    }else if(action==='recover'){
     const {error}=await client.auth.resetPasswordForEmail(address,{redirectTo:redirect});
     if(error)throw error;
-    show('verify','Wenn zu dieser E-Mail-Adresse ein Konto besteht, schicken wir dir einen Einmalcode.');
+    show('sent','Wenn zu dieser Adresse ein Konto besteht, erhältst du eine E-Mail. Öffne den Link darin. Enthält die E-Mail einen Einmalcode, kannst du ihn hier eingeben.');
    }else if(action==='verify'){
     const {data,error}=await client.auth.verifyOtp({email:address,token:code.value.trim(),type:'recovery'});
     if(error)throw error;
@@ -118,7 +120,7 @@
     show('reset');
    }else if(action==='reset'){
     if(!recoveryVerified){
-     show('recover','Fordere einen Code an, um ein neues Passwort zu wählen.');
+     show('recover','Fordere eine E-Mail an, um ein neues Passwort zu wählen.');
      return;
     }
     const {error}=await client.auth.updateUser({password:password.value});if(error)throw error;

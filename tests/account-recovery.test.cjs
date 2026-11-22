@@ -18,12 +18,13 @@ function fixture(href, verifyOtp = async () => ({data: {session: recoverySession
   const primary = node();
   const account = node();
   const recoveryButton = {...node(), dataset: {go: "recover"}};
+  const codeButton = {...node(), dataset: {go: "verify"}};
   const form = {elements: fields, querySelector: () => primary};
   const dialogs = {form, h2: title, "[role=status]": status, "[data-close]": node(), "[data-identity]": node()};
   const dialog = {
     open: false,
     querySelector: selector => dialogs[selector],
-    querySelectorAll: selector => selector === "[data-go]" ? [recoveryButton] : [],
+    querySelectorAll: selector => selector === "[data-go]" ? [recoveryButton, codeButton] : [],
     addEventListener() {},
     showModal() { this.open = true; },
     close() { this.open = false; }
@@ -45,7 +46,7 @@ function fixture(href, verifyOtp = async () => ({data: {session: recoverySession
   });
 
   return {
-    fields, title, status, account, recoveryButton, dialog, calls,
+    fields, title, status, account, recoveryButton, codeButton, primary, dialog, calls,
     submit: () => form.onsubmit({preventDefault() {}}),
     authEvent: (event, session) => verifiedUserListener(event, session)
   };
@@ -89,7 +90,7 @@ test("Supabase's expired-link redirect opens recovery and removes its error frag
   const page = fixture(site + "?lang=de#error=access_denied&error_code=otp_expired&error_description=example");
   assert.equal(page.calls[0], site + "?lang=de");
   assert.equal(page.title.textContent, "Passwort vergessen");
-  assert.match(page.status.textContent, /neuen Code/);
+  assert.match(page.status.textContent, /eine neue E-Mail/);
   assert.equal(page.dialog.open, true);
 });
 
@@ -100,7 +101,12 @@ test("a reset request points back to the site's root directory", async () => {
   page.fields.email.value = testUser.email;
   await page.submit();
   assert.deepEqual(page.calls[0], {email: testUser.email, redirectTo: base});
+  assert.equal(page.title.textContent, "Postfach prüfen");
+  assert.equal(page.primary.hidden, true);
+  assert.match(page.status.textContent, /Öffne den Link/);
+  page.codeButton.onclick();
   assert.equal(page.title.textContent, "E-Mail-Code eingeben");
+  assert.equal(page.primary.hidden, false);
 });
 
 test("a valid direct Supabase recovery session still opens the new password form", async () => {
