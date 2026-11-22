@@ -26,7 +26,11 @@ Angebote werden vier Stunden in `shared_parts_research` wiederverwendet. Quellen
 
 ## Konto und E-Mails
 
-Die Anmeldung über Supabase Auth ist oben rechts erreichbar. Der Browser behält die Sitzung und erneuert sie während der Nutzung. Für Kundenmails benötigt das Supabase-Projekt einen bestätigten Absender und einen eingerichteten SMTP-Dienst. Die Rücksetzvorlage [recovery.html](supabase/templates/recovery.html) enthält den Einmalcode und den Rücksetzlink. In Supabase Auth gehört die CarParts-URL in die Liste erlaubter Rücksprung-URLs.
+Die Anmeldung über Supabase Auth ist oben rechts erreichbar. Der Browser behält die Sitzung und erneuert sie während der Nutzung. Für Kundenmails benötigt das Supabase-Projekt einen bestätigten Absender und einen eingerichteten SMTP-Dienst.
+
+Für die GitHub-Pages-Website in Supabase **Authentication → URL Configuration** die Adresse `https://zzfizez-ux.github.io/CarParts/` als **Site URL** und als **Redirect URL** eintragen. Bereits verwendete weitere Redirect URLs in der Liste lassen.
+
+Unter **Authentication → Emails → Reset password** den Betreff **Passwort für dein CarParts-Konto zurücksetzen** und den HTML-Inhalt aus [recovery.html](supabase/templates/recovery.html) speichern. Die Mail zeigt den Einmalcode. Der Button öffnet das Codeformular auf der konfigurierten Website, sodass das Öffnen der Mail oder des Links den Code nicht verbraucht. Dort die E-Mail-Adresse und den Code eingeben und ein neues Passwort wählen.
 
 Die Edge Function `login-notification` sendet die Benachrichtigung nach verifiziertem Passwortlogin über Resend. Dafür werden `RESEND_API_KEY` und `CARPARTS_MAIL_FROM` als serverseitige Funktionsvariablen hinterlegt. Ein Testkonto mit zustellbarer Adresse dient zur Abnahme von Registrierung, Sitzungswiederherstellung, Anmeldebenachrichtigung und Passwort-Reset.
 

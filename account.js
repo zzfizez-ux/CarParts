@@ -11,12 +11,12 @@
   recover:['Passwort vergessen','Code anfordern'], verify:['E-Mail-Code eingeben','Code prüfen'],
   reset:['Neues Passwort wählen','Passwort speichern'], account:['Mein Konto','Abmelden']
  };
- let mode='login', user=null, busy=false, client;
+ let mode='login', user=null, busy=false, client, recoveryVerified=false;
  function show(modeName,message=''){
   mode=modeName;
   title.textContent=modes[mode][0]; primary.textContent=modes[mode][1];
   status.textContent=message;
-  for(const [field,visible] of [[email,['login','signup','recover'].includes(mode)],
+  for(const [field,visible] of [[email,['login','signup','recover','verify'].includes(mode)],
     [password,['login','signup','reset'].includes(mode)],[code,mode==='verify']]){
    field.disabled=!visible;field.closest('label').hidden=!visible;
   }
@@ -27,14 +27,41 @@
   dialog.querySelector('[data-identity]').textContent=mode==='account'?user?.email||'':'';
  }
  function open(){if(!dialog.open)dialog.showModal()}
- button.onclick=()=>{show(user?'account':'login');open()};
+ button.onclick=()=>{show(recoveryVerified?'reset':user?'account':'login');open()};
  dialog.querySelector('[data-close]').onclick=()=>dialog.close();
  dialog.addEventListener('close',()=>{password.value='';code.value=''});
  dialog.querySelectorAll('[data-go]').forEach(el=>el.onclick=()=>{if(!busy)show(el.dataset.go)});
+
+ const page=new URL(location.href);
+ const fromCodeLink=page.searchParams.get('account')==='recovery';
+ const fragment=new URLSearchParams(page.hash.slice(1));
+ const invalidFragment=fragment.get('error_code')==='otp_expired';
+ const invalidQuery=page.searchParams.get('error_code')==='otp_expired';
+ if(fromCodeLink||invalidFragment||invalidQuery){
+  if(fromCodeLink)page.searchParams.delete('account');
+  if(invalidFragment)page.hash='';
+  if(invalidQuery){
+   for(const key of ['error','error_code','error_description','sb'])page.searchParams.delete(key);
+  }
+  history.replaceState(history.state,'',page.href);
+  if(invalidFragment||invalidQuery){
+   show('recover','Der Link ist ungültig oder abgelaufen. Fordere einen neuen Code an.');
+  }else{
+   show('verify');
+  }
+  open();
+ }
+
  function failure(error){
   if(error.status===429)return 'Zu viele Versuche. Bitte warte einen Moment.';
   if(error.code==='email_not_confirmed')return 'Bitte bestätige zuerst deine E-Mail-Adresse.';
-  if(mode==='verify')return 'Der Code ist ungültig oder abgelaufen. Du kannst einen neuen anfordern.';
+  if(mode==='verify'){
+   if(error.code==='otp_expired'||error.status===400||error.status===403){
+    code.value='';
+    return 'Der Code ist ungültig oder abgelaufen. Du kannst einen neuen anfordern.';
+   }
+   return 'Der Code konnte gerade nicht geprüft werden. Bitte versuche es erneut.';
+  }
   if(mode==='login')return 'Anmeldung fehlgeschlagen. Prüfe E-Mail-Adresse und Passwort.';
   return 'Der Vorgang konnte nicht abgeschlossen werden. '+(error.message||'Bitte versuche es erneut.');
  }
@@ -47,8 +74,14 @@
   client.auth.onAuthStateChange((event,session)=>{
    user=session?.user||null;
    button.textContent=user?'Mein Konto':'Anmelden';
-   if(event==='PASSWORD_RECOVERY'){show('reset');open()}
-   else if(event==='SIGNED_OUT'&&dialog.open){show('login')}
+   if(event==='PASSWORD_RECOVERY'&&user){
+    recoveryVerified=true;
+    show('reset');
+    open();
+   }else if(event==='SIGNED_OUT'){
+    recoveryVerified=false;
+    if(dialog.open)show('login');
+   }
    else if(!busy&&dialog.open&&user&&mode==='login')show('account');
   });
   return client;
@@ -76,12 +109,20 @@
    }else if(action==='recover'){
     const {error}=await client.auth.resetPasswordForEmail(address,{redirectTo:redirect});
     if(error)throw error;
-    show('verify','Wenn ein Konto zu dieser Adresse existiert, erhältst du eine E-Mail. Gib den Code hier ein oder öffne den Link in der Nachricht.');
+    show('verify','Wenn zu dieser E-Mail-Adresse ein Konto besteht, schicken wir dir einen Einmalcode.');
    }else if(action==='verify'){
-    const {error}=await client.auth.verifyOtp({email:address,token:code.value.trim(),type:'recovery'});
-    if(error)throw error;show('reset');
+    const {data,error}=await client.auth.verifyOtp({email:address,token:code.value.trim(),type:'recovery'});
+    if(error)throw error;
+    if(!data?.session?.user)throw Error('Keine bestätigte Sitzung.');
+    recoveryVerified=true;
+    show('reset');
    }else if(action==='reset'){
+    if(!recoveryVerified){
+     show('recover','Fordere einen Code an, um ein neues Passwort zu wählen.');
+     return;
+    }
     const {error}=await client.auth.updateUser({password:password.value});if(error)throw error;
+    recoveryVerified=false;
     show('account','Dein neues Passwort wurde gespeichert.');
    }else{
     const {error}=await client.auth.signOut({scope:'local'});if(error)throw error;
