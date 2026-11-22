@@ -35,6 +35,12 @@ test("a vendor subscription denial is reported without returning its response", 
   assert.deepEqual(output, {status: "access", parts: [], http: 403});
 });
 
+test("a RapidAPI error in a successful HTTP envelope preserves the access status", async () => {
+  const result = await lookupRapidParts(query, "Bremsbeläge", "Bremsbeläge hinten", "test-key",
+    async () => new Response('{"message":"You are not subscribed to this API."}', {status: 200}));
+  assert.deepEqual(result, {status: "access", parts: [], http: 200});
+});
+
 test("the bounded JSON reader checks byte length and accepts UTF-8", async () => {
   assert.deepEqual(await readJson(Response.json({word: "Ölfilter"}), 100), {word: "Ölfilter"});
   await assert.rejects(readJson(Response.json({word: "Ölfilter"}), 6),

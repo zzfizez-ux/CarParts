@@ -5,9 +5,11 @@ export class JsonBodyError extends Error {
   }
 }
 
-export async function readJson(message, maxBytes) {
+export async function readJson(message, maxBytes, {requireContentType = true} = {}) {
   const type = message.headers.get("content-type")?.split(";")[0].trim().toLowerCase();
-  if (type !== "application/json") throw new JsonBodyError(415, "Expected application/json");
+  if (requireContentType && type !== "application/json") {
+    throw new JsonBodyError(415, "Expected application/json");
+  }
   if (Number(message.headers.get("content-length")) > maxBytes) {
     throw new JsonBodyError(413, "Request body too large");
   }

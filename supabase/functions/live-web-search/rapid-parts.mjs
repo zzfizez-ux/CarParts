@@ -1,4 +1,4 @@
-import {readJson} from "../_shared/read-json.mjs";
+import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
 import {words} from "./vehicle-fitment.mjs";
 
 const host = "auto-parts-finder1.p.rapidapi.com";
@@ -62,7 +62,7 @@ function hasWords(haystack, needle) {
 }
 
 export function rapidReferences(data, category, term) {
-  const rows = Array.isArray(data) ? data : data?.parts;
+  const rows = Array.isArray(data) ? data : data?.parts ?? data?.results ?? data?.data;
   if (!Array.isArray(rows)) throw new Error("Unexpected Auto Parts Finder response");
   const typeKey = words(category);
   const names = (categories[typeKey] || []).concat(typeKey);
@@ -110,11 +110,17 @@ export async function lookupRapidParts(query, category, term, key, request = (ur
       void response.body?.cancel().catch(() => {});
       return {status: http === 429 ? "quota" : http === 401 || http === 403 ? "access" : "unavailable", parts: [], http};
     }
-    const parts = rapidReferences(await readJson(response, 180000), category, term);
+    const data = await readJson(response, 180000, {requireContentType: false});
+    if (typeof data?.message === "string" &&
+        /not subscribed to this api|invalid api key/i.test(data.message)) {
+      return {status: "access", parts: [], http};
+    }
+    const parts = rapidReferences(data, category, term);
     return {status: parts.length ? "ready" : "empty", parts};
   } catch (error) {
     const message = String(error?.message ?? "");
-    const reason = http ? "invalid_response"
+    const reason = error instanceof JsonBodyError ? "response_json_" + error.status
+      : http ? "invalid_response"
       : /dns|network|connect|certificate/i.test(message) ? "network"
       : error?.name === "TimeoutError" ? "timeout"
       : /invalid header/i.test(message) ? "invalid_header" : "transport";
