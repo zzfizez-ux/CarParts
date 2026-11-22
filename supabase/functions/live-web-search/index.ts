@@ -79,7 +79,7 @@ async function autoPartsFinder(vehicle:Vehicle, term:string, category:string) {
     if (result.status==="ready" || result.status==="empty") {
       await saveResearch(key,{rapid_parts:result.parts},result.parts.length?1440:60);
     } else {
-      console.warn("Auto Parts Finder",result.status,result.http ?? "");
+      console.warn("Auto Parts Finder",result.status,result.http ?? "",result.reason ?? "");
       if (result.status==="access") {
         await database("rpc/mark_parts_rapidapi_access_denied",{},{key_hash:key})
           .catch(()=>console.warn("Auto Parts Finder allowance adjustment failed"));

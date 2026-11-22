@@ -95,23 +95,29 @@ export function rapidReferences(data, category, term) {
   return [...parts.values()];
 }
 
-export async function lookupRapidParts(query, category, term, key, request = fetch) {
+export async function lookupRapidParts(query, category, term, key, request = (url, options) => fetch(url, options)) {
+  let http;
   try {
     const response = await request(endpoint, {
       method: "POST",
       headers: {"Content-Type": "application/json", "X-RapidAPI-Host": host, "X-RapidAPI-Key": key},
       body: JSON.stringify(query),
-      redirect: "error",
+      redirect: "manual",
       signal: AbortSignal.timeout(32000)
     });
+    http = response.status;
     if (!response.ok) {
-      await response.body?.cancel().catch(() => {});
-      const status = response.status;
-      return {status: status === 429 ? "quota" : status === 401 || status === 403 ? "access" : "unavailable", parts: [], http: status};
+      void response.body?.cancel().catch(() => {});
+      return {status: http === 429 ? "quota" : http === 401 || http === 403 ? "access" : "unavailable", parts: [], http};
     }
     const parts = rapidReferences(await readJson(response, 180000), category, term);
     return {status: parts.length ? "ready" : "empty", parts};
-  } catch {
-    return {status: "unavailable", parts: []};
+  } catch (error) {
+    const message = String(error?.message ?? "");
+    const reason = http ? "invalid_response"
+      : /dns|network|connect|certificate/i.test(message) ? "network"
+      : error?.name === "TimeoutError" ? "timeout"
+      : /invalid header/i.test(message) ? "invalid_header" : "transport";
+    return {status: "unavailable", parts: [], http, reason};
   }
 }

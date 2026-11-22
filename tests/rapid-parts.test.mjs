@@ -28,7 +28,7 @@ test("a vendor subscription denial is reported without returning its response", 
   const output = await lookupRapidParts(query, "Bremsbeläge", "Bremsbeläge hinten", "test-key", async (url, options) => {
     assert.equal(url, "https://auto-parts-finder1.p.rapidapi.com/get_parts");
     assert.equal(options.headers["X-RapidAPI-Key"], "test-key");
-    assert.equal(options.redirect, "error");
+    assert.equal(options.redirect, "manual");
     assert.deepEqual(JSON.parse(options.body), query);
     return Response.json({message: "You are not subscribed to this API."}, {status: 403});
   });
