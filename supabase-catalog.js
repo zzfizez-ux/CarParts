@@ -1,5 +1,5 @@
-import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=35";
-import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=35";
+import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=36";
+import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=36";
 
 // CarParts public vehicle catalogue — safe publishable key, read-only RLS-protected tables.
 // Do not put secret/service_role keys in browser code.
@@ -63,7 +63,7 @@ async function findVerifiedParts(vehicle,term){
   const [imageRows,offerRows]=await Promise.allSettled([
    read("part_images?select=part_id,image_url,alt_text,source_url&"+
     filter+"&verified_for_display=eq.true&limit=1000"),
-   read("part_offers?select=part_id,merchant_name,price_amount,currency,availability,observed_at,product_url,source_url&"+
+   read("part_offers?select=part_id,merchant_name,price_amount,currency,availability,observed_at,product_url,source_url,image_url&"+
     filter+"&verification_status=eq.verified&observed_at=gte."+encodeURIComponent(freshSince)+"&order=price_amount.asc&limit=1000")
   ]);
   if(imageRows.status==="fulfilled")images.push(...imageRows.value);

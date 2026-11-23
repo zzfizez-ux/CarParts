@@ -107,12 +107,12 @@ begin
         raise exception 'Invalid observation for %', asset->>'product_url';
       end if;
       insert into public.part_offers as offer(part_id, merchant_name, product_url, price_amount, currency,
-        availability, observed_at, source_url, verification_status)
+        availability, observed_at, source_url, verification_status, image_url)
         values (article_id, asset->>'merchant_name', asset->>'product_url', (asset->>'price_amount')::numeric,
-          asset->>'currency', asset->>'availability', (asset->>'observed_at')::timestamptz, asset->>'source_url', 'verified')
+          asset->>'currency', asset->>'availability', (asset->>'observed_at')::timestamptz, asset->>'source_url', 'verified', asset->>'image_url')
         on conflict (part_id, merchant_name, product_url) do update set price_amount = excluded.price_amount,
           currency = excluded.currency, availability = excluded.availability, observed_at = excluded.observed_at,
-          source_url = excluded.source_url, verification_status = 'verified'
+          source_url = excluded.source_url, verification_status = 'verified', image_url = excluded.image_url
         where excluded.observed_at >= offer.observed_at;
     end loop;
   end loop;

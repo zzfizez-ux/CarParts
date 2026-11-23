@@ -6,6 +6,7 @@ import {matchesPartText, seriesEvidence, words} from "./vehicle-fitment.mjs";
 import {siteRequest} from "../_shared/site-config.mjs";
 import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
 import {lookupRapidParts, rapidPartsForVehicle, rapidQuery} from "./rapid-parts.mjs";
+import {offerObservations} from "./offer-observations.mjs";
 
 const publishableKeys = () => Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}"));
 const serviceKey = () => JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default ||
@@ -180,6 +181,11 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
   const fallback = merchantClaim==="reserved" && !direct.products.length && web.results.length
     ? await offersFromWeb(web.results,vehicle,term,category) : {products:[],failures:[]};
   const products = direct.products.length ? direct.products : fallback.products;
+  const observations=offerObservations(products);
+  if (observations.length) {
+    await database("rpc/save_catalogue_offer_observations",{},{records:observations})
+      .catch(()=>console.warn("CarParts merchant observations could not be stored"));
+  }
   const rapid = await rapidTask;
   const rapidParts = rapidPartsForVehicle(rapid.parts,vehicle,category,foundParts);
   const failures = [...direct.failures,...fallback.failures];

@@ -1,6 +1,6 @@
-import "./supabase-catalog.js?v=35";
-import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=35";
-import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=35";
+import "./supabase-catalog.js?v=36";
+import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=36";
+import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=36";
 
 const API="https://vpic.nhtsa.dot.gov/api/vehicles";
 const CATALOG_DEMO=false;
@@ -378,17 +378,19 @@ function renderSupabaseCards(rows,liveProducts=[]){
   const products=liveProducts.filter(item=>item.part_id===p.id);
   const storedImage=p.images?.find(x=>validUrl(x.image_url));
   const merchantImage=products.find(item=>validUrl(item.image));
-  const imageUrl=storedImage?.image_url||merchantImage?.image;
+  const savedMerchantImage=(p.offers||[]).find(item=>validUrl(item.image_url)&&validUrl(item.product_url));
+  const imageUrl=storedImage?.image_url||merchantImage?.image||savedMerchantImage?.image_url;
   const image= imageUrl?'<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+
    esc(imageUrl)+'" alt="'+esc(storedImage?.alt_text||merchantImage?.name||p.part_name)+'">':placeholderPartImage(p.category||p.part_name);
-  const imageBadge=storedImage?"Produktbild":merchantImage?"Händlerfoto":"Symbolillustration · kein Produktfoto";
+  const imageBadge=storedImage?"Produktbild":merchantImage||savedMerchantImage?"Händlerfoto":"Symbolillustration · kein Produktfoto";
   const offers=[...(p.offers||[]),...products.map(item=>({
    product_url:item.url,merchant_name:item.merchant,price_amount:item.price,currency:item.currency,observed_at:item.observed_at
   }))];
   const sourceUrl=p.fitment?.source_url||p.source_url;
   const source=validUrl(sourceUrl)?'<a class="catalog-evidence" href="'+esc(sourceUrl)+
    '" target="_blank" rel="noopener noreferrer">Herstellerbeleg ↗</a>':"";
-  const imageSource=storedImage&&validUrl(storedImage.source_url)?'<a href="'+esc(storedImage.source_url)+
+  const imageSourceUrl=storedImage?.source_url||merchantImage?.url||savedMerchantImage?.product_url;
+  const imageSource=validUrl(imageSourceUrl)?'<a href="'+esc(imageSourceUrl)+
    '" target="_blank" rel="noopener noreferrer">Bildquelle ↗</a>':"";
   return '<article class="catalog-item">'+
    '<div class="catalog-item-visual">'+image+'<span>'+imageBadge+'</span></div>'+

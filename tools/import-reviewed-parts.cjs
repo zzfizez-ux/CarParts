@@ -89,6 +89,7 @@ function validate(records) {
         requiredText(offer.merchant_name, "Händlername");
         httpsUrl(offer.product_url, "Händlerprodukt");
         httpsUrl(offer.source_url, "Preisquelle");
+        if (offer.image_url !== undefined) httpsUrl(offer.image_url, "Händlerbildadresse");
         const observation = Date.parse(offer.observed_at);
         if (!Number.isFinite(offer.price_amount) || offer.price_amount <= 0 ||
             !/^[A-Z]{3}$/.test(offer.currency) || !Number.isFinite(observation) || observation > Date.now() + 300000) {
