@@ -1,4 +1,4 @@
-import {catalogueSeriesNames, seriesKey as keyForSeries} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=36";
+import {catalogueSeriesNames, seriesKey as keyForSeries} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=37";
 
 const $=id=>document.getElementById(id);
 
@@ -101,7 +101,9 @@ function paintSeries(preferred, pending) {
     const range = row.start ? ' · '+row.start+'–'+(row.end || '…') : '';
     const chassis = catalogueSeriesNames(make,model).find(name =>
       keyForSeries(make,model,name) === keyForSeries(make,model,row.name));
-    const code = chassis && chassis !== row.name ? ' · '+chassis : '';
+    const chassisLabel = make === 'Volkswagen' && model === 'Polo' ?
+      ({'Polo IV':'Polo IV · 9N','Polo V':'Polo V · 6R/6C','Polo VI':'Polo VI · AW'}[chassis] || chassis) : chassis;
+    const code = chassisLabel && chassisLabel !== row.name ? ' · '+chassisLabel : '';
     options.push(new Option(row.name+code+({W140:" · Limousine",V140:" · Langversion"}[row.name] || "")+range, row.name));
   }
   if (model) options.push(new Option('Andere Baureihe eingeben / Enter series manually', '__other'));

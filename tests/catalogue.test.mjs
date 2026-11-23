@@ -92,6 +92,10 @@ test("new manufacturer applications keep body styles and generations separate",(
   assert.notEqual(seriesKey("Audi","A6","A6 Avant (2014)"),"c7 limousine");
   assert.equal(seriesKey("Audi","Q5","Q5 (2012)"),"8r");
   assert.notEqual(seriesKey("Audi","Q5","Q5 (2020)"),"8r");
+  assert.equal(seriesKey("Volkswagen","Polo","Polo 5 Doors (2009)"),"polo v");
+  assert.equal(seriesKey("Volkswagen","Polo","Polo 3 Doors (2014)"),"polo v");
+  assert.equal(seriesKey("Volkswagen","Polo","Polo 5 Doors (2021)"),"polo vi");
+  assert.notEqual(seriesKey("Volkswagen","Polo","Polo Sedan (2010)"),"polo v");
 });
 
 test("new brake and auxiliary-drive queries retain category and equipment restrictions",()=>{

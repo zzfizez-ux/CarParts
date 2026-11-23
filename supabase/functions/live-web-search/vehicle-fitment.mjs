@@ -51,7 +51,11 @@ const catalogueSeries = {
     "Golf VI":["Golf 6","Golf Mk6","5K1"], "Golf VII":["Golf 7","Golf Mk7","5G1","BA5","BQ1","BE1","BE2"],
     "Golf VIII":["Golf 8","Golf Mk8","CD1"]
   },
-  "volkswagen/polo": {"Polo IV":["Polo 4","9N"], "Polo V":["Polo 5","6R","6C","6R1","6C1","Polo (2009)","Polo (2014)"], "Polo VI":["Polo 6","AW1","Polo (2017)","Polo (2021)"]},
+  "volkswagen/polo": {
+    "Polo IV":["Polo 4","9N","Polo 5 Doors (2001)","Polo 5 Doors (2004)","Polo 5 Doors (2005)","Polo 5 Doors (2006)","Polo 3 Doors (2001)","Polo 3 Doors (2005)"],
+    "Polo V":["Polo 5","6R","6C","6R1","6C1","Polo (2009)","Polo (2014)","Polo 5 Doors (2009)","Polo 5 Doors (2010)","Polo 5 Doors (2014)","Polo 3 Doors (2009)","Polo 3 Doors (2014)"],
+    "Polo VI":["Polo 6","AW1","Polo (2017)","Polo (2021)","Polo 5 Doors (2017)","Polo 5 Doors (2021)"]
+  },
   "volkswagen/passat": {"B8":["Passat (2014)","Passat (2019)","Passat Variant (2014)","Passat Variant (2019)"]},
   "volkswagen/tiguan": {"Tiguan I":["Tiguan 1","5N","Tiguan (2007)","Tiguan (2011)"], "Tiguan II":["Tiguan 2","AD1","AX1","Tiguan (2016)","Tiguan (2020)"]},
   "volkswagen/touran": {"1T1":["Touran (2003)"], "1T2":["Touran (2006)"], "1T3":["Touran (2010)"], "5T":["Touran (2015)","5T1"]}
