@@ -1,5 +1,15 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
+import {readFile} from "node:fs/promises";
+
+test("frontend catalogue imports use the same vehicle-mapping version at every level",async()=>{
+  const frontend=await readFile(new URL("../supabase-catalog.js",import.meta.url),"utf8");
+  const catalogue=await readFile(new URL("../supabase/functions/live-web-search/catalogue.mjs",import.meta.url),"utf8");
+  const direct=frontend.match(/vehicle-fitment\.mjs\?v=(\d+)/)?.[1];
+  const nested=catalogue.match(/vehicle-fitment\.mjs\?v=(\d+)/)?.[1];
+  assert.ok(direct);
+  assert.equal(nested,direct,"old cached chassis mappings must not hide newly imported motors");
+});
 
 test("the website selects complete new brake categories before shorter synonyms",async()=>{
   globalThis.window={CARPARTS_SUPABASE_CONFIG:{url:"https://supabase.example",publishableKey:"public-test-key"}};

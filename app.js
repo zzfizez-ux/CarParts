@@ -1,6 +1,6 @@
-import "./supabase-catalog.js?v=37";
-import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=37";
-import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=37";
+import "./supabase-catalog.js?v=38";
+import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=38";
+import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=38";
 
 const API="https://vpic.nhtsa.dot.gov/api/vehicles";
 const CATALOG_DEMO=false;

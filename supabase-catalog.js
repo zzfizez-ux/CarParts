@@ -1,5 +1,5 @@
-import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=37";
-import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=37";
+import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=38";
+import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=38";
 
 // CarParts public vehicle catalogue — safe publishable key, read-only RLS-protected tables.
 // Do not put secret/service_role keys in browser code.
