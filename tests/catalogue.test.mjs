@@ -1,7 +1,7 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {catalogueEngines, catalogueParts} from "../supabase/functions/live-web-search/catalogue.mjs";
-import {matchesPart, seriesEvidence} from "../supabase/functions/live-web-search/vehicle-fitment.mjs";
+import {matchesPart, seriesEvidence, seriesKey} from "../supabase/functions/live-web-search/vehicle-fitment.mjs";
 
 test("W222 brake discs conflict with W221 of the same model year",()=>{
   const car={make:"Mercedes-Benz",model:"S-Klasse",series:"W221",year:2013,engine:"S 63 AMG"};
@@ -81,4 +81,23 @@ test("browsing returns the selected engine's full verified list",async()=>{
   assert.deepEqual((await catalogueParts(read,[engine],profile,"","")).map(row=>row.id),[4,5]);
   assert.deepEqual((await catalogueParts(read,[engine],profile,"Lenker vorne links","Querlenker")).map(row=>row.id),[4]);
   assert.deepEqual(await catalogueParts(read,[engine],{...profile,engine:"CRBC"},"",""),[]);
+});
+
+test("new manufacturer applications keep body styles and generations separate",()=>{
+  assert.equal(seriesKey("BMW","X3","X3 (2014)"),"f25");
+  assert.equal(seriesKey("BMW","X5","X5 (2010)"),"e70");
+  assert.equal(seriesKey("BMW","1er","1 Series (2011)"),"f20");
+  assert.equal(seriesKey("BMW","1er","1 Series 3 doors (2012)"),"f21");
+  assert.equal(seriesKey("Audi","A6","A6 (2014)"),"c7 limousine");
+  assert.notEqual(seriesKey("Audi","A6","A6 Avant (2014)"),"c7 limousine");
+  assert.equal(seriesKey("Audi","Q5","Q5 (2012)"),"8r");
+  assert.notEqual(seriesKey("Audi","Q5","Q5 (2020)"),"8r");
+});
+
+test("new brake and auxiliary-drive queries retain category and equipment restrictions",()=>{
+  const shoes={part_name:"Bremsbacken hinten",category:"Bremsbacken",fitment:{notes:"PR-Codes: 1KC."}};
+  assert.equal(matchesPart(shoes,"Bremsbacken hinten PR 1KC","Bremsbacken"),true);
+  assert.equal(matchesPart(shoes,"Bremsbacken vorne PR 1KC","Bremsbacken"),false);
+  assert.equal(matchesPart(shoes,"Bremsbacken hinten PR 1KK","Bremsbacken"),false);
+  assert.equal(matchesPart({part_name:"Keilrippenriemensatz",category:"Keilrippenriemen"},"Keilrippenriemensatz"),true);
 });

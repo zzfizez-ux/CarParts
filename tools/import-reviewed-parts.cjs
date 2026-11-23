@@ -42,6 +42,12 @@ function validate(records) {
       for (const field of applicationFields) requiredText(row?.[field], field);
       if (row.designation.length > 160) throw Error("designation darf höchstens 160 Zeichen haben");
       if (row.engine_code != null) requiredText(row.engine_code, "engine_code", 80);
+      // Application group headings can be mistranslated. These product families
+      // were checked against the individual German Brembo product sheets.
+      if (row.manufacturer.toLowerCase() === "brembo" && /^[CM] \d{2} \d{3}$/.test(row.manufacturer_part_number)) {
+        const expected = row.manufacturer_part_number.startsWith("M ") ? "Hauptbremszylinder" : "Kupplungsgeberzylinder";
+        if (row.category !== expected) throw Error("Brembo-Produktart widerspricht dem einzelnen Herstellerproduktblatt: " + expected);
+      }
       if (row.reviewed !== true || !["manufacturer_application", "licensed_feed"].includes(row.source_type)) {
         throw Error("Eine geprüfte Herstelleranwendung oder ein lizenzierter Feed ist erforderlich");
       }
@@ -132,4 +138,5 @@ async function main() {
   }
 }
 
-main().catch(error => { console.error(error.message); process.exitCode = 1; });
+module.exports = {validate};
+if (require.main === module) main().catch(error => { console.error(error.message); process.exitCode = 1; });

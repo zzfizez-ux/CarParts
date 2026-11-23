@@ -1,4 +1,4 @@
-import {catalogueSeriesNames, seriesKey as keyForSeries} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=34";
+import {catalogueSeriesNames, seriesKey as keyForSeries} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=35";
 
 const $=id=>document.getElementById(id);
 
@@ -93,12 +93,16 @@ export function selectedSeries() {
 }
 function paintSeries(preferred, pending) {
   const select = $('series');
+  const make = $('make').value;
   const model = $('model').value;
   const options = [new Option(!model ? 'Zuerst Modell wählen / Select model first' :
     pending ? 'Baureihen werden geladen / Loading series…' : 'Baureihe wählen / Select series', '')];
   for (const row of seriesRows) {
     const range = row.start ? ' · '+row.start+'–'+(row.end || '…') : '';
-    options.push(new Option(row.name+({W140:" · Limousine",V140:" · Langversion"}[row.name] || "")+range, row.name));
+    const chassis = catalogueSeriesNames(make,model).find(name =>
+      keyForSeries(make,model,name) === keyForSeries(make,model,row.name));
+    const code = chassis && chassis !== row.name ? ' · '+chassis : '';
+    options.push(new Option(row.name+code+({W140:" · Limousine",V140:" · Langversion"}[row.name] || "")+range, row.name));
   }
   if (model) options.push(new Option('Andere Baureihe eingeben / Enter series manually', '__other'));
   select.replaceChildren(...options);

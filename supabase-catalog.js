@@ -1,5 +1,5 @@
-import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=34";
-import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=34";
+import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=35";
+import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=35";
 
 // CarParts public vehicle catalogue — safe publishable key, read-only RLS-protected tables.
 // Do not put secret/service_role keys in browser code.
@@ -115,7 +115,8 @@ const researchCategories=[
  "Partikelfilter","Auspuff","Einspritzdüsen","Zündspulen","Riemenspanner",
  "Bremsschlauch","Hauptbremszylinder","Kupplungsgeberzylinder","Kupplungsnehmerzylinder",
  "Zentralausrücker","Bremsbelagverschleißsensor","Traggelenk","Getriebefilter","Koppelstange",
- "Axialgelenk","Fahrzeugtür","Türaußenhaut","Scheinwerferhalter","Kompressor-Ansaugfilter"
+ "Axialgelenk","Fahrzeugtür","Türaußenhaut","Scheinwerferhalter","Kompressor-Ansaugfilter",
+ "Radbremszylinder","Bremstrommeln","Bremsbacken","Bremsbackensatz"
 ];
 function researchCategory(term){
  const t=words(term);
@@ -131,9 +132,13 @@ function researchCategory(term){
   "traggelenke":"Traggelenk","fuhrungsgelenk":"Traggelenk","warnkontakt":"Bremsbelagverschleißsensor",
   "geberzylinder":"Kupplungsgeberzylinder","nehmerzylinder":"Kupplungsnehmerzylinder",
   "tuer":"Fahrzeugtür","tur":"Fahrzeugtür","tueraussenhaut":"Türaußenhaut",
-  "koppelstangen":"Koppelstange","spurstangenkopfe":"Spurstangenkopf"
+  "koppelstangen":"Koppelstange","spurstangenkopfe":"Spurstangenkopf",
+  "bremstrommel":"Bremstrommeln","brake drum":"Bremstrommeln","brake drums":"Bremstrommeln",
+  "bremsbacke":"Bremsbacken","brake shoes":"Bremsbacken","brake shoe":"Bremsbacken",
+  "brake shoe kit":"Bremsbackensatz","brake wheel cylinder":"Radbremszylinder",
+  "keilrippenriemensatz":"Keilrippenriemen"
  };
- const synonym=Object.keys(aliases).find(name=>t===name||t.startsWith(name+" "));
+ const synonym=Object.keys(aliases).sort((a,b)=>b.length-a.length).find(name=>t===name||t.startsWith(name+" "));
  if(synonym)return aliases[synonym];
  return researchCategories.find(c=>t===words(c)||t.startsWith(words(c)+" "))||null;
 }

@@ -11,8 +11,13 @@ const catalogueSeries = {
   "audi/a1": {"8X":["A1 (2010)","A1 (2014)"], "GB":["A1 (2018)","A1 (2022)"]},
   "audi/a3": {"8V":[]},
   "audi/a4": {"B8 Avant":["A4 Avant (2008)","A4 Avant (2012)"]},
+  "audi/a6": {"C7 Limousine":["A6 (2011)","A6 (2014)"]},
+  "audi/q5": {"8R":["Q5 (2008)","Q5 (2012)","Q5 (2016)","8RB"]},
   "alpina/d3": {"F30":[],"F31":[]},
   "bmw/3er": {"F30":["3 Series Sedan (2011)","3 Series Sedan (2015)"], "F31":["3 Series Touring (2012)","3 Series Touring (2015)"]},
+  "bmw/1er": {"F20":["1 Series (2011)","1 Series (2015)","1 Series (2017)"], "F21":["1 Series 3 doors (2012)","1 Series 3 doors (2015)","1 Series 3 doors (2017)"]},
+  "bmw/x3": {"F25":["X3 (2010)","X3 (2014)"]},
+  "bmw/x5": {"E70":["X5 (2007)","X5 (2010)"]},
   "bmw/i3": {"I01":["i3 (2013)","i3 (2017)"]},
   "dacia/logan": {
     "Logan I":["Logan (2004)","Logan (2008)","Logan I (LS)"],
@@ -31,6 +36,7 @@ const catalogueSeries = {
   "opel/corsa": {"Corsa D":["Corsa (2006)","Corsa (2011)"], "Corsa E":["Corsa (2014)","Corsa (2015)"], "Corsa F":["Corsa (2019)","Corsa (2023)"]},
   "opel/astra": {"Astra K":[]},
   "opel/mokka": {"Mokka A":["Mokka (2012)"]},
+  "opel/insignia": {"Insignia A Schrägheck":[]},
   "porsche/911": {"997.1":[], "997.2":[], "991.1":[]},
   "porsche/macan": {"95B":["Macan (2014)"]},
   "porsche/cayenne": {"92A":["Cayenne (2010)","Cayenne (2014)"]},
@@ -136,6 +142,10 @@ const categories = {
   "axialgelenk":["axialgelenk","inneres spurstangengelenk","inner tie rod"],
   "spurstangenkopf":["spurstangenkopf","spurstangenkopfe","spurkopf","tie rod end"],
   "hauptbremszylinder":["hauptbremszylinder","brake master cylinder"],
+  "radbremszylinder":["radbremszylinder","wheel brake cylinder","brake wheel cylinder"],
+  "bremstrommeln":["bremstrommeln","bremstrommel","brake drum","brake drums"],
+  "bremsbacken":["bremsbacken","bremsbacke","brake shoes","brake shoe"],
+  "bremsbackensatz":["bremsbackensatz","bremsbacken satz","brake shoe kit"],
   "kupplungsgeberzylinder":["kupplungsgeberzylinder","kupplungsgeber","geberzylinder","clutch master cylinder"],
   "kupplungsnehmerzylinder":["kupplungsnehmerzylinder","kupplungsnehmer","nehmerzylinder","clutch slave cylinder"],
   "zentralausrucker":["zentralausrucker","ausrucklager","central clutch release device"],
@@ -147,6 +157,7 @@ const categories = {
   "zundkerzen":["zundkerzen","zundkerze","spark plugs","spark plug"],
   "gluhkerzen":["gluhkerzen","gluhkerze","glow plugs","glow plug"],
   "stossdampfer":["stossdampfer","shock absorber"],
+  "keilrippenriemen":["keilrippenriemen","keilrippenriemensatz","multi v belt","multi v belt kit"],
   "scheibenwischer":["scheibenwischer","windshield wipers","wiper blades"]
 };
 

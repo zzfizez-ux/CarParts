@@ -43,6 +43,10 @@ Der [Startbestand für acht Fahrzeugmarken](catalogue/de-passenger-cars-2026-11.
 
 Die Daten für [Bremsen und Kupplung](catalogue/de-brakes-and-clutch-2026-11.json) und [Lenkung, Wartung und Klassiker](catalogue/de-steering-service-classics-2026-11.json) stammen aus der Recherche einzelner Fahrzeuganwendungen und öffentlich einsehbarer Herstellerquellen. Die JSON-Dateien enthalten die verlinkten Belege und die eingeschränkten Baureihen, Baujahre, Positionen und Ausstattungsmerkmale pro Artikel. Hersteller, Teilenummer und Fahrzeuganwendung bilden die Identität für den Import.
 
+Der [weitere Modellbestand](catalogue/de-more-models-2026-11.json) ergänzt Audi A6 C7 Limousine und Q5 8R, BMW 120d F20, X3 F25 und X5 E70, Mercedes A 180 W176 und E 220 CDI W212, Opel Insignia A Schrägheck sowie den Polo V 1.2 TSI. Die Anwendungen wurden nach Motorcode und Leistung gegen Brembo und den MANN-FILTER-Katalog geprüft. Continental ergänzt Koppelstangen für den Golf VII und einen Keilrippenriemensatz mit Fahrgestellnummer-Bedingung für den Insignia. Die Händlerpreise tragen jeweils den tatsächlichen Abrufzeitpunkt; sie sind keine dauerhaften Preiszusagen.
+
+Bei Brembo widersprechen sich teilweise die englischen Gruppenüberschriften und die einzelnen Produktblätter. Die Produktart der Geber- und Nehmerzylinder wurde deshalb zusätzlich anhand der deutschen Produktblätter geprüft. Der Import verhindert, dass Brembo-M-Hauptbremszylinder und Brembo-C-Kupplungsgeberzylinder vertauscht werden. Alle bestehenden Bauteilbedingungen bleiben Teil der jeweiligen Fahrzeuganwendung.
+
 Für ein neues Projekt ergänzt [catalogue_german_models.sql](supabase/sql/catalogue_german_models.sql) die Fahrzeugmodelle der beiden Recherchedateien im vorhandenen Fahrzeugkatalog.
 
 ```sh
