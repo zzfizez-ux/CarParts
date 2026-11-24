@@ -12,7 +12,7 @@ const application={id:11,engine_id:7,series_keys:["golf vii"],source_url:"https:
 const product={"@type":"Product",name:"MANN-FILTER Ölfilter HU 7020 z Golf VII",brand:{name:"MANN-FILTER"},mpn:"HU 7020 z",description:"<b>Ölfiltereinsatz</b> für die dokumentierte Anwendung.",image:"https://levoil.de/hu7020z.jpg",offers:{price:"12.90",priceCurrency:"EUR"}};
 const html=p=>new Response('<html><h1>'+p.name+'</h1><script type="application/ld+json">'+JSON.stringify(p)+'</script></html>',{headers:{"Content-Type":"text/html"}});
 function request(body,key="public-test"){return new Request("https://test.supabase.co/functions/v1/live-web-search",{method:"POST",headers:{apikey:key,Origin:"https://zzfizez-ux.github.io","Content-Type":"application/json"},body:JSON.stringify(body)});}
-function stub({electric=false}={}){
+function stub({electric=false,directUnavailable=false}={}){
  const calls=[];
  globalThis.fetch=async(raw,options={})=>{
   const u=new URL(raw);calls.push(u.href);
@@ -26,10 +26,12 @@ function stub({electric=false}={}){
   }
   if(u.hostname==="google.serper.dev"){
    assert.equal(options.headers["X-API-KEY"],"serper-private-test");
+   if(directUnavailable)return Response.json({organic:[{link:"https://levoil.de/sourced-filter/",title:"MANN-FILTER HU 7020 z Ölfilter",snippet:"Ölfilter HU 7020 z online kaufen"}]});
    return Response.json({organic:[{link:"https://levoil.de/tesla-inverter/",title:"Inverter Tesla Model 3 (2023)",snippet:"Inverter Elektro Long Range"}]});
   }
   if(u.pathname==="/tesla-inverter/")return html({...product,name:"Inverter Tesla Model 3 (2023)",mpn:"INV123",brand:"Tesla",description:"Inverter für Elektroantrieb",image:"https://levoil.de/inverter.jpg"});
-  if(u.pathname.startsWith("/produkt/"))return html(product);
+  if(u.pathname==="/sourced-filter/")return html({...product,name:"MANN-FILTER HU 7020 z Ölfilter"});
+  if(u.pathname.startsWith("/produkt/")&&!directUnavailable)return html(product);
   return new Response('<html></html>',{headers:{"Content-Type":"text/html"}});
  };
  return calls;
@@ -71,4 +73,27 @@ test("invalid answers are rejected before provider calls; a wrong reference cann
  const body=await (await handler(request({...vehicle,details:{oe_number:"WRONG1234"}}))).json();
  assert.equal(body.products.length,0);assert.equal(body.search_plan.status,"needs_source");
  assert.equal(body.web_status,"not_configured");
+});
+
+test("Serper cannot bypass a supplied reference by returning generic search hits",async()=>{
+ env.SERPER_API_KEY="serper-private-test";stub({electric:true});
+ const body=await (await handler(request({...vehicle,make:"Tesla",model:"Model 3",series:"Model 3 (2023)",year:2024,engine:"Elektro Long Range",part:"Inverter",category:"Inverter",details:{oe_number:"FALSCH1234"}}))).json();
+ assert.equal(body.web_status,"live");assert.deepEqual(body.results,[]);assert.deepEqual(body.products,[]);
+ assert.equal(body.search_plan.status,"needs_source");delete env.SERPER_API_KEY;
+});
+
+test("conflicting position answers return 422 before any database or provider request",async()=>{
+ const calls=stub();
+ const response=await handler(request({...vehicle,part:"Bremsscheiben vorne",category:"Bremsscheiben",details:{axle:"rear"}}));
+ assert.equal(response.status,422);assert.equal(calls.length,0);
+});
+
+test("Serper discovers a retailer by reviewed article number even if the title lacks the vehicle",async()=>{
+ env.SERPER_API_KEY="serper-private-test";stub({directUnavailable:true});
+ const body=await (await handler(request({...vehicle,details:{oe_number:"03N115562"}}))).json();
+ assert.equal(body.web_status,"live");assert.equal(body.provider,"serper");
+ assert.equal(body.products.length,1);assert.equal(body.products[0].url,"https://levoil.de/sourced-filter/");
+ assert.equal(body.products[0].fitment_status,"reference_match");
+ assert.equal(body.products[0].price,12.9);assert.ok(body.products[0].image);assert.ok(body.products[0].description);
+ delete env.SERPER_API_KEY;
 });

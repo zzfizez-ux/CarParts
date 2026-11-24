@@ -1,4 +1,4 @@
-import {effectiveVehicle, filterApplications, searchTerm, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=40";
+import {effectiveVehicle, filterApplications, searchTerm, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=41";
 import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=40";
 import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=40";
 

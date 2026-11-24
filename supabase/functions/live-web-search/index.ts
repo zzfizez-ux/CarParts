@@ -2,10 +2,10 @@
 import {catalogueEngines, catalogueParts} from "./catalogue.mjs";
 import {offersFromWeb, searchOffers} from "./offers.ts";
 import type {Article, Vehicle} from "./offers.ts";
-import {matchesPartText, seriesEvidence, words} from "./vehicle-fitment.mjs";
+import {hasPartNumber, matchesPartText, seriesEvidence, words} from "./vehicle-fitment.mjs";
 import {siteRequest} from "../_shared/site-config.mjs";
 import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
-import {effectiveVehicle, filterApplications, searchPlan, searchTerm, validateSearchDetails} from "./search-guide.mjs";
+import {effectiveVehicle, filterApplications, filterProducts, matchesRequestedReference, searchPlan, searchTerm, validateSearchDetails} from "./search-guide.mjs";
 import {lookupSerper, partsQuery, safeSourceUrl} from "./search-providers.mjs";
 import {offerObservations} from "./offer-observations.mjs";
 
@@ -84,11 +84,15 @@ async function manufacturerReferences(vehicle:Vehicle, category:string) {
   return rows.filter((row:{source_vehicle_variant:string})=>seriesEvidence(vehicle,row.source_vehicle_variant)!=="conflict");
 }
 
-async function webResearch(key:string, vehicle:Vehicle, term:string, category:string, details:any) {
+async function webResearch(key:string, vehicle:Vehicle, term:string, category:string, details:any, applications:any[]) {
   if(!Deno.env.get("SERPER_API_KEY")) return {status:"not_configured",provider:"none",results:[]};
   const claim = await database("rpc/reserve_parts_web_lookup",{},{key_hash:key});
   if (claim!=="reserved") return {status:claim,provider:Deno.env.get("SERPER_API_KEY") ? "serper" : "none",results:[]};
-  const web = await lookupSerper(partsQuery(vehicle,[term,details.oe_number,details.equipment_code].filter(Boolean).join(" ")),Deno.env.get("SERPER_API_KEY"));
+  const reference=details.oe_number || applications[0]?.manufacturer_part_number;
+  const phrase=reference
+    ? [term,reference,applications[0]?.manufacturer,vehicle.make,vehicle.model].filter(Boolean).join(" ")
+    : partsQuery(vehicle,term);
+  const web = await lookupSerper(phrase+" Ersatzteil kaufen -site:ebay.de -site:ebay.com",Deno.env.get("SERPER_API_KEY"));
   if (web.status!=="live") return web;
   try {
     const links = new Map();
@@ -98,10 +102,11 @@ async function webResearch(key:string, vehicle:Vehicle, term:string, category:st
       const snippet = typeof row.content==="string" ? row.content.slice(0,140) : "";
       const description = [row.title,snippet,link.pathname].join(" ");
       const evidence = seriesEvidence(vehicle,description);
+      const knownReference=applications.some(part=>hasPartNumber(description,part.manufacturer_part_number));
       const modelWord = words(vehicle.model);
       const text = words(description);
-      if (!matchesPartText(description,term,category) || evidence==="conflict" ||
-          (evidence!=="match" && !(" "+text+" ").includes(" "+modelWord+" "))) continue;
+      if (!matchesRequestedReference(description,details.oe_number,applications) || (!knownReference && !matchesPartText(description,term,category)) || evidence==="conflict" ||
+          (evidence!=="match" && !knownReference && !(" "+text+" ").includes(" "+modelWord+" "))) continue;
       links.set(link.href,{title:row.title.slice(0,140),snippet,url:link.href,merchant:link.hostname});
       if (links.size===8) break;
     }
@@ -150,10 +155,10 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
   const references = [...conditional,...(reviewed.status==="fulfilled" ? reviewed.value : [])];
   const direct = merchantClaim==="reserved" ? await searchOffers(vehicle,term,category,articles)
     : {products:[],failures:[]};
-  const web = direct.products.length ? {status:"skipped",provider:"",results:[]} : await webResearch(key,vehicle,term,category,details);
+  const web = direct.products.length ? {status:"skipped",provider:"",results:[]} : await webResearch(key,vehicle,term,category,details,foundParts);
   const fallback = merchantClaim==="reserved" && !direct.products.length && web.results.length
     ? await offersFromWeb(web.results,vehicle,term,category,articles) : {products:[],failures:[]};
-  const products = (direct.products.length ? direct.products : fallback.products).map(product=>({
+  const products = filterProducts(direct.products.length ? direct.products : fallback.products,foundParts,term,details).map(product=>({
     ...product,fitment_status:foundParts.find(part=>part.id===product.part_id)?.assessment.status || "unconfirmed"
   }));
   const observations=offerObservations(products);
@@ -202,8 +207,10 @@ Deno.serve(async (request:Request)=>{
       make:normalize(p.make),model:normalize(p.model),series:normalize(p.series||""),
       year:p.year,engine:normalize(p.engine||""),variant:normalize(p.variant||"")
     },details);
-    const term = searchTerm(normalize(p.part),details), category = normalize(p.category||"");
-    const key = await hashKey(["guided-v1",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details]);
+    let term;
+    try {term=searchTerm(normalize(p.part),details);}catch(error){return json({error:(error as Error).message},422);}
+    const category = normalize(p.category||"");
+    const key = await hashKey(["guided-v2",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details]);
     return json(await research(vehicle,term,category,key,details));
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);

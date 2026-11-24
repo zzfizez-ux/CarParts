@@ -1,6 +1,6 @@
-import {effectiveVehicle, searchPlan, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=40";
+import {effectiveVehicle, searchPlan, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=41";
 import {renderSearchGuide} from "./search-guide-ui.js?v=40";
-import "./supabase-catalog.js?v=40";
+import "./supabase-catalog.js?v=41";
 import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=38";
 import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=40";
 
@@ -697,6 +697,9 @@ async function renderSupabaseResults(term,requestId){
  const engines=await db.getEngines(current.make,current.model,current.year,current.series).catch(()=>[]);
  if(requestId!==catalogRequest)return false;
  const preflight=searchPlan(current,term,db.researchCategory(term)||"",searchDetails,engines,[],{preflight:true});
+ if(preflight.status==="conflict"){
+  showSearchGuide(preflight,term);grid.replaceChildren();setCatalogStatus("error");return false;
+ }
  if(preflight.questions.length&&!skipPreflight){
   grid.innerHTML='<div class="empty-results">Ergänze die bekannten Angaben oben, damit wir die richtige Ausführung suchen können.</div>';
   showSearchGuide(preflight,term,true);setCatalogStatus("research");return true;

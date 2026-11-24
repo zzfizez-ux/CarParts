@@ -1,4 +1,4 @@
-import {partNumber, seriesEvidence, words} from "./vehicle-fitment.mjs?v=40";
+import {hasPartNumber, partNumber, seriesEvidence, words} from "./vehicle-fitment.mjs?v=40";
 
 const limits = {engine:160, oe_number:40, axle:10, side:10, equipment_code:3};
 const enums = {axle:["front","rear"], side:["left","right"]};
@@ -35,7 +35,36 @@ export function selectedDetails(term,details={}) {
   const selected=position(term);
   return {...details,axle:details.axle||selected.axle,side:details.side||selected.side};
 }
+export function requestConflicts(term,details={}) {
+  const text=words(term),conflicts=[];
+  const axes={front:/\b(vorne|vorn|vorderachse|front)\b/.test(text),rear:/\b(hinten|hinterachse|rear)\b/.test(text)};
+  const sides={left:/\b(links|left)\b/.test(text),right:/\b(rechts|right)\b/.test(text)};
+  if ((axes.front&&axes.rear) || (details.axle==="front"&&axes.rear) || (details.axle==="rear"&&axes.front)) conflicts.push("axle");
+  if ((sides.left&&sides.right) || (details.side==="left"&&sides.right) || (details.side==="right"&&sides.left)) conflicts.push("side");
+  return conflicts;
+}
+
+// An explicit reference must be visible in the source, or linked through a reviewed cross-reference.
+export function matchesRequestedReference(text,requested,applications=[]) {
+  if (!requested) return true;
+  if (hasPartNumber(text,requested)) return true;
+  const key=partNumber(requested);
+  return applications.some(row=>[row.manufacturer_part_number,...(row.oe||[])].some(number=>partNumber(number)===key) &&
+    hasPartNumber(text,row.manufacturer_part_number));
+}
+
+export function filterProducts(products,applications,term,details={}) {
+  if(requestConflicts(term,details).length)return [];
+  return products.filter(product=>{
+    if(requestConflicts(searchTerm(term,details)+" "+product.name).length)return false;
+    const matched=applications.filter(row=>row.id===product.part_id && product.evidence==="manufacturer");
+    const identity=[product.name,product.sku,product.description,product.url].filter(Boolean).join(" ");
+    return matchesRequestedReference(identity,details.oe_number,matched);
+  });
+}
+
 export function searchTerm(term,details={}) {
+  if(requestConflicts(term,details).length)throw new Error("Einbaupositionen widersprechen sich. Bitte Suchbegriff und Zusatzangaben korrigieren.");
   const inferred=position(term);
   const extras=[];
   if (details.axle && !inferred.axle) extras.push(details.axle==="front"?"vorne":"hinten");
@@ -51,7 +80,7 @@ export function equipmentCodes(notes) {
 export function assessApplication(row,vehicle,term,details={}) {
   const selected=selectedDetails(term,details),notes=String(row.fitment?.notes||""),codes=equipmentCodes(notes);
   const actual=position(row.part_name);
-  const conflicts=[];
+  const conflicts=requestConflicts(term,details);
   if (selected.axle && actual.axle && selected.axle!==actual.axle) conflicts.push("axle");
   if (selected.side && actual.side && selected.side!==actual.side) conflicts.push("side");
   if (selected.equipment_code && codes.length && !codes.includes(selected.equipment_code)) conflicts.push("equipment_code");
@@ -81,6 +110,7 @@ export function filterApplications(rows,vehicle,term,details={}) {
 }
 
 export function searchPlan(vehicle,term,category,details={},engines=[],applications=[],{preflight=false}={}) {
+  if(requestConflicts(term,details).length)return {status:"conflict",questions:[],matched_parts:[],message:"Einbaupositionen widersprechen sich. Bitte Suchbegriff und Zusatzangaben korrigieren."};
   const selected=selectedDetails(term,details),type=words(category||term),questions=[];
   const ask=(key,label,help,options=[])=>questions.push({key,label,help,options,max_length:limits[key]});
   const engine=String(details.engine||vehicle.engine||"");
