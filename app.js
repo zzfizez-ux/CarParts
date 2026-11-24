@@ -1,6 +1,6 @@
-import {effectiveVehicle, searchPlan, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=41";
+import {effectiveVehicle, searchPlan, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=42";
 import {renderSearchGuide} from "./search-guide-ui.js?v=40";
-import "./supabase-catalog.js?v=41";
+import "./supabase-catalog.js?v=42";
 import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=38";
 import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=40";
 

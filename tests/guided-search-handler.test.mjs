@@ -12,7 +12,7 @@ const application={id:11,engine_id:7,series_keys:["golf vii"],source_url:"https:
 const product={"@type":"Product",name:"MANN-FILTER Ölfilter HU 7020 z Golf VII",brand:{name:"MANN-FILTER"},mpn:"HU 7020 z",description:"<b>Ölfiltereinsatz</b> für die dokumentierte Anwendung.",image:"https://levoil.de/hu7020z.jpg",offers:{price:"12.90",priceCurrency:"EUR"}};
 const html=p=>new Response('<html><h1>'+p.name+'</h1><script type="application/ld+json">'+JSON.stringify(p)+'</script></html>',{headers:{"Content-Type":"text/html"}});
 function request(body,key="public-test"){return new Request("https://test.supabase.co/functions/v1/live-web-search",{method:"POST",headers:{apikey:key,Origin:"https://zzfizez-ux.github.io","Content-Type":"application/json"},body:JSON.stringify(body)});}
-function stub({electric=false,directUnavailable=false}={}){
+function stub({electric=false,directUnavailable=false,equipmentCase=false}={}){
  const calls=[];
  globalThis.fetch=async(raw,options={})=>{
   const u=new URL(raw);calls.push(u.href);
@@ -21,12 +21,12 @@ function stub({electric=false,directUnavailable=false}={}){
    const table=u.pathname.split("/rest/v1/")[1];
    if(table?.startsWith("rpc/reserve"))return Response.json("reserved");
    if(table==="car_engines")return Response.json(electric?[]:[engine]);
-   if(table==="part_fitments")return Response.json(electric?[]:[application]);
+   if(table==="part_fitments")return Response.json(electric?[]:[equipmentCase?{...application,notes:"PR-Codes: 1ZE."}:application]);
    return Response.json([]);
   }
   if(u.hostname==="google.serper.dev"){
    assert.equal(options.headers["X-API-KEY"],"serper-private-test");
-   if(directUnavailable)return Response.json({organic:[{link:"https://levoil.de/sourced-filter/",title:"MANN-FILTER HU 7020 z Ölfilter",snippet:"Ölfilter HU 7020 z online kaufen"}]});
+   if(directUnavailable||equipmentCase)return Response.json({organic:[{link:"https://levoil.de/sourced-filter/",title:"MANN-FILTER HU 7020 z Ölfilter",snippet:"Ölfilter HU 7020 z online kaufen"}]});
    return Response.json({organic:[{link:"https://levoil.de/tesla-inverter/",title:"Inverter Tesla Model 3 (2023)",snippet:"Inverter Elektro Long Range"}]});
   }
   if(u.pathname==="/tesla-inverter/")return html({...product,name:"Inverter Tesla Model 3 (2023)",mpn:"INV123",brand:"Tesla",description:"Inverter für Elektroantrieb",image:"https://levoil.de/inverter.jpg"});
@@ -96,4 +96,12 @@ test("Serper discovers a retailer by reviewed article number even if the title l
  assert.equal(body.products[0].fitment_status,"reference_match");
  assert.equal(body.products[0].price,12.9);assert.ok(body.products[0].image);assert.ok(body.products[0].description);
  delete env.SERPER_API_KEY;
+});
+
+
+test("a known PR-code conflict excludes matching article references from Serper too",async()=>{
+ env.SERPER_API_KEY="serper-private-test";stub({equipmentCase:true});
+ const body=await (await handler(request({...vehicle,details:{oe_number:"HU7020Z",equipment_code:"ZZZ"}}))).json();
+ assert.equal(body.web_status,"live");assert.deepEqual(body.products,[]);assert.deepEqual(body.results,[]);
+ assert.equal(body.search_plan.status,"needs_source");delete env.SERPER_API_KEY;
 });

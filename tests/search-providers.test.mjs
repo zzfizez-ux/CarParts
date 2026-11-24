@@ -121,3 +121,11 @@ test("Serper reports empty credits and missing keys without additional provider 
   assert.deepEqual(await lookupSerper("test","key",request),{status:"quota",provider:"serper",results:[]});assert.equal(calls,1);
   assert.equal((await lookupSerper("test","key",async()=>Response.json({error:"no results envelope"}))).status,"provider_error");
 });
+
+
+test("research sources exclude search-engine session redirects and eBay listings",async()=>{
+ const {researchSourceUrl}=await import("../supabase/functions/live-web-search/search-providers.mjs");
+ assert.equal(researchSourceUrl("https://www.google.com/goto?url=opaque&gsessionid=session"),null);
+ assert.equal(researchSourceUrl("https://www.ebay.de/itm/123456789"),null);
+ assert.equal(researchSourceUrl("https://levoil.de/produkt/filter/").hostname,"levoil.de");
+});

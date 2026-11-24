@@ -5,8 +5,8 @@ import type {Article, Vehicle} from "./offers.ts";
 import {hasPartNumber, matchesPartText, seriesEvidence, words} from "./vehicle-fitment.mjs";
 import {siteRequest} from "../_shared/site-config.mjs";
 import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
-import {effectiveVehicle, filterApplications, filterProducts, matchesRequestedReference, searchPlan, searchTerm, validateSearchDetails} from "./search-guide.mjs";
-import {lookupSerper, partsQuery, safeSourceUrl} from "./search-providers.mjs";
+import {conflictsWithApplications, effectiveVehicle, filterApplications, filterProducts, matchesRequestedReference, searchPlan, searchTerm, validateSearchDetails} from "./search-guide.mjs";
+import {lookupSerper, partsQuery, researchSourceUrl} from "./search-providers.mjs";
 import {offerObservations} from "./offer-observations.mjs";
 
 const publishableKeys = () => Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}"));
@@ -84,7 +84,7 @@ async function manufacturerReferences(vehicle:Vehicle, category:string) {
   return rows.filter((row:{source_vehicle_variant:string})=>seriesEvidence(vehicle,row.source_vehicle_variant)!=="conflict");
 }
 
-async function webResearch(key:string, vehicle:Vehicle, term:string, category:string, details:any, applications:any[]) {
+async function webResearch(key:string, vehicle:Vehicle, term:string, category:string, details:any, applications:any[], excluded:any[]) {
   if(!Deno.env.get("SERPER_API_KEY")) return {status:"not_configured",provider:"none",results:[]};
   const claim = await database("rpc/reserve_parts_web_lookup",{},{key_hash:key});
   if (claim!=="reserved") return {status:claim,provider:Deno.env.get("SERPER_API_KEY") ? "serper" : "none",results:[]};
@@ -97,10 +97,11 @@ async function webResearch(key:string, vehicle:Vehicle, term:string, category:st
   try {
     const links = new Map();
     for (const row of web.results) {
-      const link = typeof row?.url==="string" && safeSourceUrl(row.url);
+      const link = typeof row?.url==="string" && researchSourceUrl(row.url);
       if (!link || typeof row.title!=="string" || links.has(link.href)) continue;
       const snippet = typeof row.content==="string" ? row.content.slice(0,140) : "";
       const description = [row.title,snippet,link.pathname].join(" ");
+      if(conflictsWithApplications(description,excluded))continue;
       const evidence = seriesEvidence(vehicle,description);
       const knownReference=applications.some(part=>hasPartNumber(description,part.manufacturer_part_number));
       const modelWord = words(vehicle.model);
@@ -137,6 +138,7 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
   }
   const applications = catalogue.status==="fulfilled" ? catalogue.value : [];
   const foundParts = [...new Map(filterApplications(applications,vehicle,term,details).map(p=>[p.id,p])).values()];
+  const excluded=applications.filter(part=>!foundParts.some(accepted=>accepted.id===part.id));
   const plan = searchPlan(vehicle,term,category,details,engines,applications);
   const oldOffers = merchantClaim==="reserved" && foundParts.length ? await database("part_offers",{
     select:"part_id,product_url",part_id:"in.("+foundParts.map(p=>p.id).join(",")+")",
@@ -155,10 +157,10 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
   const references = [...conditional,...(reviewed.status==="fulfilled" ? reviewed.value : [])];
   const direct = merchantClaim==="reserved" ? await searchOffers(vehicle,term,category,articles)
     : {products:[],failures:[]};
-  const web = direct.products.length ? {status:"skipped",provider:"",results:[]} : await webResearch(key,vehicle,term,category,details,foundParts);
+  const web = direct.products.length ? {status:"skipped",provider:"",results:[]} : await webResearch(key,vehicle,term,category,details,foundParts,excluded);
   const fallback = merchantClaim==="reserved" && !direct.products.length && web.results.length
     ? await offersFromWeb(web.results,vehicle,term,category,articles) : {products:[],failures:[]};
-  const products = filterProducts(direct.products.length ? direct.products : fallback.products,foundParts,term,details).map(product=>({
+  const products = filterProducts(direct.products.length ? direct.products : fallback.products,foundParts,term,details,excluded).map(product=>({
     ...product,fitment_status:foundParts.find(part=>part.id===product.part_id)?.assessment.status || "unconfirmed"
   }));
   const observations=offerObservations(products);
@@ -210,7 +212,7 @@ Deno.serve(async (request:Request)=>{
     let term;
     try {term=searchTerm(normalize(p.part),details);}catch(error){return json({error:(error as Error).message},422);}
     const category = normalize(p.category||"");
-    const key = await hashKey(["guided-v2",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details]);
+    const key = await hashKey(["guided-v3",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details]);
     return json(await research(vehicle,term,category,key,details));
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);

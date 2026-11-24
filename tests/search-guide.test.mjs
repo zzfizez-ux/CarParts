@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {assessApplication,effectiveVehicle,filterApplications,filterProducts,matchesRequestedReference,requestConflicts,searchPlan,searchTerm,validateSearchDetails} from "../supabase/functions/live-web-search/search-guide.mjs";
+import {assessApplication,effectiveVehicle,conflictsWithApplications,filterApplications,filterProducts,matchesRequestedReference,requestConflicts,searchPlan,searchTerm,validateSearchDetails} from "../supabase/functions/live-web-search/search-guide.mjs";
 import {matchesPartText} from "../supabase/functions/live-web-search/vehicle-fitment.mjs";
 const vehicle={make:"Volkswagen",model:"Golf",series:"Golf VII",year:2015,engine:"Golf VII 2.0 TDI 150 PS (CRBC)"};
 const row={id:1,match:"exact",engine:vehicle.engine,part_name:"Bremsscheibe vorne",manufacturer_part_number:"09.9145.11",oe:["5Q0 615 301"],fitment:{source_url:"https://www.bremboparts.com/application",notes:"PR-Codes: 1ZE, 1ZP. System und Ausführung prüfen."}};
@@ -68,4 +68,12 @@ test("explicit references require direct evidence or a reviewed cross-reference"
  assert.equal(filterProducts([product],[row],"Bremsscheiben vorne",{oe_number:"5Q0615301"}).length,1);
  assert.deepEqual(filterProducts([product],[],"Bremsscheiben vorne",{oe_number:"5Q0615301"}),[]);
  assert.deepEqual(filterProducts([{...product,name:"Brembo Bremsscheibe hinten"}],[row],"Bremsscheiben vorne",{oe_number:"5Q0615301"}),[]);
+});
+
+
+test("known excluded applications cannot return through merchant or web references",()=>{
+ assert.ok(conflictsWithApplications("Brembo 09.9145.11 Bremsscheibe kaufen",[row]));
+ assert.ok(!conflictsWithApplications("Brembo 09.9145.14 Bremsscheibe kaufen",[row]));
+ const product={name:"Brembo 09.9145.11 Bremsscheibe vorne",sku:"09.9145.11",evidence:"merchant"};
+ assert.deepEqual(filterProducts([product],[],"Bremsscheiben vorne",{oe_number:"09.9145.11"},[row]),[]);
 });
