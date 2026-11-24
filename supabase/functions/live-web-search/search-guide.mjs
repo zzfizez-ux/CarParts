@@ -53,13 +53,17 @@ export function matchesRequestedReference(text,requested,applications=[]) {
     hasPartNumber(text,row.manufacturer_part_number));
 }
 
-export function filterProducts(products,applications,term,details={}) {
+export function conflictsWithApplications(text,excluded=[]) {
+  return excluded.some(row=>[row.manufacturer_part_number,...(row.oe||[])].some(number=>hasPartNumber(text,number)));
+}
+
+export function filterProducts(products,applications,term,details={},excluded=[]) {
   if(requestConflicts(term,details).length)return [];
   return products.filter(product=>{
     if(requestConflicts(searchTerm(term,details)+" "+product.name).length)return false;
     const matched=applications.filter(row=>row.id===product.part_id && product.evidence==="manufacturer");
     const identity=[product.name,product.sku,product.description,product.url].filter(Boolean).join(" ");
-    return matchesRequestedReference(identity,details.oe_number,matched);
+    return !conflictsWithApplications(identity,excluded) && matchesRequestedReference(identity,details.oe_number,matched);
   });
 }
 

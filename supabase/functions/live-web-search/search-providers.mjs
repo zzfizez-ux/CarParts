@@ -14,6 +14,13 @@ export function safeSourceUrl(raw) {
   } catch { return null; }
 }
 
+// Search-engine redirect/session links and eBay listings are not retailer sources in this flow.
+export function researchSourceUrl(raw) {
+  const url=safeSourceUrl(raw);
+  if(!url || /(^|\.)(google|ebay)\.[a-z.]+$/i.test(url.hostname))return null;
+  return url;
+}
+
 export function externalSearches(vehicle, term) {
   const query = partsQuery(vehicle, term, 200);
   const ebay = new URL("https://www.ebay.de/sch/i.html");
