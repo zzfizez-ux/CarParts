@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {assessApplication,effectiveVehicle,filterApplications,searchPlan,searchTerm,validateSearchDetails} from "../supabase/functions/live-web-search/search-guide.mjs";
+import {assessApplication,effectiveVehicle,filterApplications,filterProducts,matchesRequestedReference,requestConflicts,searchPlan,searchTerm,validateSearchDetails} from "../supabase/functions/live-web-search/search-guide.mjs";
 import {matchesPartText} from "../supabase/functions/live-web-search/vehicle-fitment.mjs";
 const vehicle={make:"Volkswagen",model:"Golf",series:"Golf VII",year:2015,engine:"Golf VII 2.0 TDI 150 PS (CRBC)"};
 const row={id:1,match:"exact",engine:vehicle.engine,part_name:"Bremsscheibe vorne",manufacturer_part_number:"09.9145.11",oe:["5Q0 615 301"],fitment:{source_url:"https://www.bremboparts.com/application",notes:"PR-Codes: 1ZE, 1ZP. System und Ausführung prüfen."}};
@@ -49,4 +49,23 @@ test("untrusted details reject unknown keys, VINs, invalid codes, excessive inpu
  for(const details of [null,[],{vin:"test"},{engine:"x".repeat(161)},{axle:"middle"},{oe_number:"abc"},{equipment_code:"1ZE,1ZP"},{engine:"WVWZZZ1KZAW000001"},{oe_number:"<script>1234"}])
   assert.throws(()=>validateSearchDetails(details));
  assert.deepEqual(validateSearchDetails(undefined),{});
+});
+
+test("contradictory positions cannot be silently overwritten by answers",()=>{
+ for(const [term,details] of [["Bremsscheiben vorne",{axle:"rear"}],["Spiegel links",{side:"right"}],["Bremsscheiben vorne hinten",{}]]){
+  assert.ok(requestConflicts(term,details).length);
+  assert.throws(()=>searchTerm(term,details));
+  assert.equal(searchPlan(vehicle,term,"",details,[],[],{preflight:true}).status,"conflict");
+  assert.deepEqual(filterApplications([row],vehicle,term,details),[]);
+ }
+});
+
+test("explicit references require direct evidence or a reviewed cross-reference",()=>{
+ assert.ok(matchesRequestedReference("Brembo 09.9145.11","5Q0615301",[row]));
+ assert.ok(!matchesRequestedReference("Ölfilter Golf VII günstig","FALSCH1234",[]));
+ assert.ok(!matchesRequestedReference("Brembo 09.9145.11","FALSCH1234",[row]));
+ const product={name:"Brembo Bremsscheibe vorne",sku:"09.9145.11",part_id:1,evidence:"manufacturer"};
+ assert.equal(filterProducts([product],[row],"Bremsscheiben vorne",{oe_number:"5Q0615301"}).length,1);
+ assert.deepEqual(filterProducts([product],[],"Bremsscheiben vorne",{oe_number:"5Q0615301"}),[]);
+ assert.deepEqual(filterProducts([{...product,name:"Brembo Bremsscheibe hinten"}],[row],"Bremsscheiben vorne",{oe_number:"5Q0615301"}),[]);
 });
