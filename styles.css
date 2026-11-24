@@ -312,3 +312,14 @@ body.dark .diagnostic-overview{background:#1b2834;border-color:#786238}
 body.dark .diagnostic-label{background:#453719;color:#ffdf9c}
 body.dark .diagnostic-hint{background:#1b2834;border-color:#435265}
 @media(max-width:760px){.diagnostic-hint-list{grid-template-columns:1fr}.diagnostic-overview{padding:16px}}
+
+.search-guide{margin:20px 0;padding:24px;border:1px solid #c9a653;border-radius:14px;background:#171e25;color:#f3f4f6}
+.search-guide[hidden]{display:none}
+.search-guide h3{margin:0 0 10px}.search-guide p{line-height:1.6;color:#d1d5db}
+.search-guide-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-top:18px}
+.search-guide-form label{display:flex;flex-direction:column;gap:8px;min-width:0;font-weight:600}
+.search-guide-form small{font-weight:400;color:#c3cbd4;line-height:1.5}
+.search-guide-form input,.search-guide-form select{width:100%;box-sizing:border-box;padding:12px;border:1px solid #64748b;border-radius:8px;background:#fff;color:#14212b;font:inherit}
+.search-guide-form [role="status"],.search-guide-form button{grid-column:1/-1}
+.search-guide-skip{margin-top:16px;border:0;background:transparent;color:#f4d28c;text-decoration:underline;cursor:pointer;padding:8px 0;font:inherit}
+.catalog-item-description{line-height:1.6;white-space:normal;overflow-wrap:anywhere}

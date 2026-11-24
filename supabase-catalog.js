@@ -1,5 +1,6 @@
-import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=38";
-import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=38";
+import {effectiveVehicle, filterApplications, searchTerm, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=40";
+import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=40";
+import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=40";
 
 // CarParts public vehicle catalogue — safe publishable key, read-only RLS-protected tables.
 // Do not put secret/service_role keys in browser code.
@@ -51,9 +52,12 @@ async function getEngines(make,model,year,series){
  return engineRequests.get(cacheKey);
 }
 
-async function findVerifiedParts(vehicle,term){
+async function findVerifiedParts(vehicle,term,details={}){
+ details=validateSearchDetails(details);
+ vehicle=effectiveVehicle(vehicle,details);
+ term=searchTerm(term,details);
  const engines=await getEngines(vehicle.make,vehicle.model,vehicle.year,vehicle.series);
- const selected=await catalogueParts(readTable,engines,vehicle,term,researchCategory(term));
+ const selected=filterApplications(await catalogueParts(readTable,engines,vehicle,term,researchCategory(term),true),vehicle,term,details);
  if(!selected.length)return [];
  const ids=[...new Set(selected.map(p=>p.id))];
  const freshSince=new Date(Date.now()-7*24*60*60*1000).toISOString();
@@ -161,10 +165,10 @@ async function researchParts(vehicle,term){
  if(!result||!Array.isArray(result.rows))throw new Error("Research response invalid");
  return result;
 }
-async function searchLiveWeb(vehicle,term){
+async function searchLiveWeb(vehicle,term,details={}){
  const request={
   make:vehicle.make,model:vehicle.model,series:vehicle.series||"",year:Number(vehicle.year),
-  engine:vehicle.engine||"",variant:vehicle.variant||"",part:term.trim(),category:researchCategory(term)||""
+  engine:vehicle.engine||"",variant:vehicle.variant||"",part:term.trim(),category:researchCategory(term)||"",details:validateSearchDetails(details)
  };
  const res=await fetch(base+"/functions/v1/live-web-search",{
   method:"POST",headers:{"apikey":key,"Content-Type":"application/json"},

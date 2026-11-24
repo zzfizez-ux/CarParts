@@ -36,7 +36,7 @@ type Page = {url:string; article?:Article; reviewed222?:boolean};
 type SourceFailure = {merchant:string; reason:string};
 type Product = {
   name:string; price:number; currency:string; image:string; url:string; merchant:string;
-  part_id?:number; sku:string; condition:string; source_url:string; evidence:string; observed_at:string
+  description:string; part_id?:number; sku:string; condition:string; source_url:string; evidence:string; observed_at:string
 };
 
 function httpsUrl(raw:string, base?:string) {
@@ -154,14 +154,14 @@ async function product(source:Page, vehicle:Vehicle, term:string, category:strin
     if (!/\b(w222|v222)\b/.test(words(identity))) return null;
   } else {
     if (evidence!=="match" || !matchesPartText(name,term,category)) return null;
-    // Safety-relevant products need a reviewed application or explicit sourced vehicle mapping.
-    if (/brems|brake|querlenker|lenkung|spurstang|airbag/.test(words([term,category,name].join(" ")))) return null;
+    // These remain unconfirmed merchant candidates, including safety-relevant parts.
   }
 
   const condition = article?.condition || (source.reviewed222
     ? "Händlerzuordnung für die Vorderachse der Baureihe 222. Bremssystem und OE-Nummer am Fahrzeug abgleichen."
     : "Baureihe laut Händlerangebot. Motor, Ausstattung und OE-Nummer am Fahrzeug abgleichen.");
   return {
+    description:String(item?.description || metadata(doc,"description") || name).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,1400),
     name:name.slice(0,200), price, currency, image:photo.href, url:url.href, merchant:stores[url.hostname],
     part_id:article?.part_id,
     sku:(article?.manufacturer_part_number || sku).slice(0,90), condition,
@@ -228,11 +228,15 @@ export async function searchOffers(vehicle:Vehicle, term:string, category:string
   return {products:[...new Map(products.map(item=>[item.url,item])).values()].sort((a,b)=>a.price-b.price),failures};
 }
 
-export async function offersFromWeb(hits:{url:string}[], vehicle:Vehicle, term:string, category:string) {
+export async function offersFromWeb(hits:{url:string}[], vehicle:Vehicle, term:string, category:string, articles:Article[] = []) {
   const failures:SourceFailure[] = [];
   const sources = hits.filter(hit=>merchantUrl(hit.url)).slice(0,3);
   const rows = await Promise.all(sources.map(async hit=>{
-    try { return await product(hit,vehicle,term,category); }
+    try {
+      const text=[(hit as any).title,(hit as any).snippet].join(" ");
+      const article=articles.find(article=>hasPartNumber(text,article.manufacturer_part_number));
+      return await product({...hit,article},vehicle,term,category);
+    }
     catch(error) { recordFailure(failures,hit.url,error); return null; }
   }));
   return {products:rows.filter((row):row is Product=>row!==null).sort((a,b)=>a.price-b.price),failures};

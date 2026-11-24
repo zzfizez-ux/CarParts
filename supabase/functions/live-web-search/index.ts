@@ -5,17 +5,16 @@ import type {Article, Vehicle} from "./offers.ts";
 import {matchesPartText, seriesEvidence, words} from "./vehicle-fitment.mjs";
 import {siteRequest} from "../_shared/site-config.mjs";
 import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
-import {lookupRapidParts, rapidPartsForVehicle, rapidQuery} from "./rapid-parts.mjs";
-import {createEbaySearch, externalSearches, lookupWeb, partsQuery, safeSourceUrl} from "./search-providers.mjs";
+import {effectiveVehicle, filterApplications, searchPlan, searchTerm, validateSearchDetails} from "./search-guide.mjs";
+import {lookupSerper, partsQuery, safeSourceUrl} from "./search-providers.mjs";
 import {offerObservations} from "./offer-observations.mjs";
 
-const searchEbay = createEbaySearch();
 const publishableKeys = () => Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}"));
 const serviceKey = () => JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default ||
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-// Brief operational cache only; Brave results never enter the catalogue or persistent cache.
+// Brief operational cache only; Serper results never enter the catalogue or persistent cache.
 const transientResearch = new Map<string,{payload:any,expires:number}>();
-const fields = new Set(["make","model","year","engine","series","variant","part","category"]);
+const fields = new Set(["make","model","year","engine","series","variant","part","category","details"]);
 
 async function database(table:string, filter:Record<string,string>, body?:unknown) {
   const key = serviceKey();
@@ -61,7 +60,7 @@ async function savedResearch(key:string) {
 }
 
 async function saveResearch(key:string, payload:any, minutes:number, checked = new Date()) {
-  if (payload.provider==="brave" && payload.results?.length) {
+  if (payload.provider==="serper" && payload.results?.length) {
     if (transientResearch.size>=100) transientResearch.delete(transientResearch.keys().next().value!);
     transientResearch.set(key,{payload:{...payload,fetched_at:checked.toISOString()},expires:+checked+300000});
     return;
@@ -72,40 +71,6 @@ async function saveResearch(key:string, payload:any, minutes:number, checked = n
       expires_at:new Date(+checked+minutes*60000).toISOString()
     }]);
   } catch { console.warn("CarParts search cache write failed"); }
-}
-
-async function autoPartsFinder(vehicle:Vehicle, term:string, category:string) {
-  const secret = Deno.env.get("RAPIDAPI_AUTO_PARTS_KEY");
-  const query = rapidQuery(vehicle,term,category);
-  if (!secret || !query) return {status:"skipped",parts:[]};
-  try {
-    const key = await hashKey(["auto-parts-finder-v1",vehicle.make,vehicle.series,query]);
-    const stored = await savedResearch(key);
-    if (stored && Array.isArray(stored.rapid_parts)) return {status:"cached",parts:stored.rapid_parts};
-    const pauseKey = await hashKey(["auto-parts-finder-pause-v1"]);
-    const paused = await savedResearch(pauseKey);
-    if (paused) return {status:paused.rapid_status,parts:[]};
-    const claim = await database("rpc/reserve_parts_rapidapi_lookup",{},{key_hash:key});
-    if (claim!=="reserved") return {status:claim,parts:[]};
-
-    const result = await lookupRapidParts(query,category,term,secret);
-    if (result.status==="ready" || result.status==="empty") {
-      await saveResearch(key,{rapid_parts:result.parts},result.parts.length?1440:60);
-    } else {
-      console.warn("Auto Parts Finder",result.status,result.http ?? "",result.reason ?? "");
-      if (result.status==="access") {
-        await database("rpc/mark_parts_rapidapi_access_denied",{},{key_hash:key})
-          .catch(()=>console.warn("Auto Parts Finder allowance adjustment failed"));
-      }
-      if (result.status==="access" || result.status==="quota") {
-        await saveResearch(pauseKey,{rapid_status:result.status},2);
-      }
-    }
-    return result;
-  } catch {
-    console.warn("Auto Parts Finder could not load the private lookup state");
-    return {status:"unavailable",parts:[]};
-  }
 }
 
 async function manufacturerReferences(vehicle:Vehicle, category:string) {
@@ -119,10 +84,11 @@ async function manufacturerReferences(vehicle:Vehicle, category:string) {
   return rows.filter((row:{source_vehicle_variant:string})=>seriesEvidence(vehicle,row.source_vehicle_variant)!=="conflict");
 }
 
-async function webResearch(key:string, vehicle:Vehicle, term:string, category:string) {
+async function webResearch(key:string, vehicle:Vehicle, term:string, category:string, details:any) {
+  if(!Deno.env.get("SERPER_API_KEY")) return {status:"not_configured",provider:"none",results:[]};
   const claim = await database("rpc/reserve_parts_web_lookup",{},{key_hash:key});
-  if (claim!=="reserved") return {status:claim,provider:Deno.env.get("BRAVE_SEARCH_API_KEY") ? "brave" : "mwmbl",results:[]};
-  const web = await lookupWeb(partsQuery(vehicle,term),Deno.env.get("BRAVE_SEARCH_API_KEY"));
+  if (claim!=="reserved") return {status:claim,provider:Deno.env.get("SERPER_API_KEY") ? "serper" : "none",results:[]};
+  const web = await lookupSerper(partsQuery(vehicle,[term,details.oe_number,details.equipment_code].filter(Boolean).join(" ")),Deno.env.get("SERPER_API_KEY"));
   if (web.status!=="live") return web;
   try {
     const links = new Map();
@@ -143,7 +109,7 @@ async function webResearch(key:string, vehicle:Vehicle, term:string, category:st
   } catch { return {status:"provider_error",provider:web.provider,results:[]}; }
 }
 
-async function research(vehicle:Vehicle, term:string, category:string, key:string) {
+async function research(vehicle:Vehicle, term:string, category:string, key:string, details:any) {
   const cached = await savedResearch(key);
   if (cached) return cached;
   const merchantClaim = await database("rpc/reserve_parts_merchant_lookup",{},{key_hash:key});
@@ -156,19 +122,17 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
     return {status:"busy",products:[],references:[],results:[]};
   }
 
-  // eBay shares the atomic merchant allowance (100 new searches/day). Cached searches are free.
-  const ebayTask = merchantClaim==="reserved"
-    ? searchEbay(vehicle,term,category,Deno.env.get("EBAY_CLIENT_ID"),Deno.env.get("EBAY_CLIENT_SECRET"))
-    : Promise.resolve({status:merchantClaim,offers:[]});
+  const engines = await catalogueEngines(database,vehicle).catch(()=>[]);
   const [reviewed, catalogue] = await Promise.allSettled([
     manufacturerReferences(vehicle,category),
-    catalogueEngines(database,vehicle).then(engines=>catalogueParts(database,engines,vehicle,term,category,true))
+    catalogueParts(database,engines,vehicle,term,category,true)
   ]);
   if (reviewed.status==="rejected" || catalogue.status==="rejected") {
     console.warn("CarParts source lookup unavailable", reviewed.status, catalogue.status);
   }
   const applications = catalogue.status==="fulfilled" ? catalogue.value : [];
-  const foundParts = [...new Map(applications.map(p=>[p.id,p])).values()];
+  const foundParts = [...new Map(filterApplications(applications,vehicle,term,details).map(p=>[p.id,p])).values()];
+  const plan = searchPlan(vehicle,term,category,details,engines,applications);
   const oldOffers = merchantClaim==="reserved" && foundParts.length ? await database("part_offers",{
     select:"part_id,product_url",part_id:"in.("+foundParts.map(p=>p.id).join(",")+")",
     verification_status:"eq.verified",limit:"40"
@@ -186,34 +150,30 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
   const references = [...conditional,...(reviewed.status==="fulfilled" ? reviewed.value : [])];
   const direct = merchantClaim==="reserved" ? await searchOffers(vehicle,term,category,articles)
     : {products:[],failures:[]};
-  const rapidTask = direct.products.length || foundParts.some(part=>part.match==="exact")
-    ? Promise.resolve({status:"skipped",parts:[]}) : autoPartsFinder(vehicle,term,category);
-  const web = direct.products.length ? {status:"skipped",provider:"",results:[]} : await webResearch(key,vehicle,term,category);
+  const web = direct.products.length ? {status:"skipped",provider:"",results:[]} : await webResearch(key,vehicle,term,category,details);
   const fallback = merchantClaim==="reserved" && !direct.products.length && web.results.length
-    ? await offersFromWeb(web.results,vehicle,term,category) : {products:[],failures:[]};
-  const products = direct.products.length ? direct.products : fallback.products;
+    ? await offersFromWeb(web.results,vehicle,term,category,articles) : {products:[],failures:[]};
+  const products = (direct.products.length ? direct.products : fallback.products).map(product=>({
+    ...product,fitment_status:foundParts.find(part=>part.id===product.part_id)?.assessment.status || "unconfirmed"
+  }));
   const observations=offerObservations(products);
   if (observations.length) {
     await database("rpc/save_catalogue_offer_observations",{},{records:observations})
       .catch(()=>console.warn("CarParts merchant observations could not be stored"));
   }
-  const [rapid, ebay] = await Promise.all([rapidTask,ebayTask]);
-  const rapidParts = rapidPartsForVehicle(rapid.parts,vehicle,category,foundParts);
   const failures = [...direct.failures,...fallback.failures];
   for (const {merchant,reason} of failures) console.warn("CarParts merchant",merchant,reason);
   const payload = {
-    products, marketplace_offers:ebay.offers, ebay_status:ebay.status,
+    products, search_plan:plan,
     results:web.results, references, web_status:web.status,
     merchant_status:merchantClaim==="reserved"?(failures.length?"partial":"searched"):merchantClaim,
     merchant_failures:failures,
-    rapid_parts:rapidParts, rapid_status:rapid.parts.length&&!rapidParts.length?"fitment_unconfirmed":rapid.status,
-    provider:web.provider || (Deno.env.get("BRAVE_SEARCH_API_KEY") ? "brave" : "mwmbl"),
-    license:Deno.env.get("BRAVE_SEARCH_API_KEY") ? "Brave Search API" : "CC BY-NC-SA 4.0"
+    provider:web.provider || (Deno.env.get("SERPER_API_KEY") ? "serper" : "none"),
+    license:Deno.env.get("SERPER_API_KEY") ? "Serper Search API" : "Hersteller- und Händlerquellen"
   };
   const checked = new Date();
-  const hasResults = products.length || ebay.offers.length || web.results.length || references.length || rapidParts.length;
-  const rapidUnavailable = ["access","quota","cooldown","unavailable"].includes(rapid.status);
-  const minutes = ebay.offers.length ? 15 : products.length ? 240 : rapidUnavailable ? 2 : hasResults ? 60
+  const hasResults = products.length || web.results.length || references.length;
+  const minutes = products.length ? 60 : hasResults ? 30
     : failures.length || web.status!=="live" ? 5 : 20;
   await saveResearch(key,payload,minutes,checked);
   return {...payload,status:hasResults?"live":"empty",fetched_at:checked.toISOString()};
@@ -236,13 +196,15 @@ Deno.serve(async (request:Request)=>{
         !validText(p.variant??"",100) || !validText(p.category??"",80)) {
       return json({error:"Invalid vehicle/part"},422);
     }
-    const vehicle = {
+    let details;
+    try { details = validateSearchDetails(p.details); } catch { return json({error:"Ungültige Zusatzangaben. Bitte Eingaben prüfen."},422); }
+    const vehicle = effectiveVehicle({
       make:normalize(p.make),model:normalize(p.model),series:normalize(p.series||""),
       year:p.year,engine:normalize(p.engine||""),variant:normalize(p.variant||"")
-    };
-    const term = normalize(p.part), category = normalize(p.category||"");
-    const key = await hashKey(["products-v7",Boolean(Deno.env.get("BRAVE_SEARCH_API_KEY")),Boolean(Deno.env.get("EBAY_CLIENT_ID") && Deno.env.get("EBAY_CLIENT_SECRET")),vehicle,term,category]);
-    return json({...await research(vehicle,term,category,key),external_searches:externalSearches(vehicle,term)});
+    },details);
+    const term = searchTerm(normalize(p.part),details), category = normalize(p.category||"");
+    const key = await hashKey(["guided-v1",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details]);
+    return json(await research(vehicle,term,category,key,details));
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);
     console.error("CarParts research",error instanceof Error ? error.message : "unknown");
