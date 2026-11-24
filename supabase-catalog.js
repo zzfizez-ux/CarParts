@@ -116,7 +116,10 @@ const researchCategories=[
  "Bremsschlauch","Hauptbremszylinder","Kupplungsgeberzylinder","Kupplungsnehmerzylinder",
  "Zentralausrücker","Bremsbelagverschleißsensor","Traggelenk","Getriebefilter","Koppelstange",
  "Axialgelenk","Fahrzeugtür","Türaußenhaut","Scheinwerferhalter","Kompressor-Ansaugfilter",
- "Radbremszylinder","Bremstrommeln","Bremsbacken","Bremsbackensatz"
+ "Radbremszylinder","Bremstrommeln","Bremsbacken","Bremsbackensatz",
+ "Antriebswelle","Kardanwelle","Differential","Getriebe","Steuerkette","Ölpumpe","Kraftstoffpumpe",
+ "Inverter","Elektromotor","Hochvoltbatterie","Batteriemodul","Batteriemanagementsystem",
+ "Onboard-Ladegerät","DC-DC-Wandler","Ladebuchse","Ladekabel","Batteriekühlung","Wärmepumpe"
 ];
 function researchCategory(term){
  const t=words(term);
@@ -136,11 +139,14 @@ function researchCategory(term){
   "bremstrommel":"Bremstrommeln","brake drum":"Bremstrommeln","brake drums":"Bremstrommeln",
   "bremsbacke":"Bremsbacken","brake shoes":"Bremsbacken","brake shoe":"Bremsbacken",
   "brake shoe kit":"Bremsbackensatz","brake wheel cylinder":"Radbremszylinder",
-  "keilrippenriemensatz":"Keilrippenriemen"
+  "keilrippenriemensatz":"Keilrippenriemen",
+  "wechselrichter":"Inverter","onboard charger":"Onboard-Ladegerät","onboard ladegerat":"Onboard-Ladegerät",
+  "hochvolt batterie":"Hochvoltbatterie","hv batterie":"Hochvoltbatterie","traction battery":"Hochvoltbatterie",
+  "drive shaft":"Antriebswelle","antriebswellen":"Antriebswelle","e motor":"Elektromotor"
  };
  const synonym=Object.keys(aliases).sort((a,b)=>b.length-a.length).find(name=>t===name||t.startsWith(name+" "));
  if(synonym)return aliases[synonym];
- return researchCategories.find(c=>t===words(c)||t.startsWith(words(c)+" "))||null;
+ return [...researchCategories].sort((a,b)=>b.length-a.length).find(c=>t===words(c)||t.startsWith(words(c)+" "))||null;
 }
 async function researchParts(vehicle,term){
  const category=researchCategory(term);
