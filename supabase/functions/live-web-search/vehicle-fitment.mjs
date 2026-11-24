@@ -180,7 +180,10 @@ export function matchesPosition(term, ...labels) {
 export function matchesPartText(text, term, category = "") {
   const description = words(text);
   const aliases = categories[words(category)] || categories[words(term)] || [];
+  const tokens=words(term).split(" ").filter(token=>!(/^(vorne|vorn|vorderachse|front|hinten|hinterachse|rear|links|left|rechts|right|oben|unten)$/.test(token)));
+  const unordered=tokens.length>0 && tokens.every(token=>phraseIn(description,token));
   return matchesPosition(term, text) && (
+    unordered ||
     phraseIn(description, words(term)) || aliases.some(alias => phraseIn(description, alias)) ||
     (/\d/.test(term) && hasPartNumber(text, term))
   );

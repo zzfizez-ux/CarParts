@@ -99,3 +99,25 @@ test("known conflicting chassis and opposite brake axles never become marketplac
   assert.deepEqual(ebayOffers({itemSummaries:[wrong]},car,"Bremsscheiben vorne","Bremsscheiben"),[]);
   assert.deepEqual(ebayOffers({itemSummaries:[{...wrong,title:"Bremsscheiben hinten Mercedes W221"}]},car,"Bremsscheiben vorne","Bremsscheiben"),[]);
 });
+
+test("Serper uses one standard German request and normalizes organic results",async()=>{
+  const {lookupSerper}=await import("../supabase/functions/live-web-search/search-providers.mjs");
+  let calls=0;
+  const result=await lookupSerper("Golf VII Ölfilter","private-serper",async(url,options)=>{
+    calls++;assert.equal(url,"https://google.serper.dev/search");
+    assert.equal(options.method,"POST");assert.equal(options.headers["X-API-KEY"],"private-serper");
+    assert.deepEqual(JSON.parse(options.body),{q:"Golf VII Ölfilter",gl:"de",hl:"de",num:10});
+    return Response.json({organic:[{title:"Ölfilter",link:"https://levoil.de/produkt/",snippet:"Golf VII"}]});
+  });
+  assert.equal(calls,1);assert.equal(result.provider,"serper");
+  assert.equal(result.results[0].url,"https://levoil.de/produkt/");assert.equal(result.results[0].content,"Golf VII");
+  assert.ok(!JSON.stringify(result).includes("private-serper"));
+});
+
+test("Serper reports empty credits and missing keys without additional provider attempts",async()=>{
+  const {lookupSerper}=await import("../supabase/functions/live-web-search/search-providers.mjs");
+  let calls=0;const request=async()=>{calls++;return new Response("upstream-private-message",{status:402});};
+  assert.equal((await lookupSerper("test",undefined,request)).status,"not_configured");assert.equal(calls,0);
+  assert.deepEqual(await lookupSerper("test","key",request),{status:"quota",provider:"serper",results:[]});assert.equal(calls,1);
+  assert.equal((await lookupSerper("test","key",async()=>Response.json({error:"no results envelope"}))).status,"provider_error");
+});

@@ -4,59 +4,18 @@ Die Website läuft auf GitHub Pages. Der Fahrzeugkatalog, die Herstelleranwendun
 
 [CarParts öffnen](https://zzfizez-ux.github.io/CarParts/)
 
-## Fahrzeug- und Teilesuche
+## Geführte Teilesuche ohne eBay
 
-Die Auswahl verwendet Marke, Modell, Baureihe, Baujahr und Motor. Dokumentierte Motoren sind in `car_engines.series_keys` einer oder mehreren Baureihen zugeordnet. Eine Artikelnummer wie `PU 8014` und `PU8014` wird gleich behandelt. Hinterlegte OE-Referenzen sind ebenfalls suchbar. Die Artikelkarte zeigt die Herstellerquelle und die Bedingungen der Anwendung.
+CarParts nutzt den vorhandenen Herstellerkatalog, Händlerproduktseiten und optional **Serper**. Der Ablauf fragt fehlende Angaben gezielt nach und hält Recherchetreffer von belegten Fahrzeuganwendungen getrennt. eBay, Auto Parts Finder und Mwmbl werden vom aktuellen Such-Endpunkt nicht aufgerufen.
 
-Mit **Gespeicherte Teile anzeigen** lassen sich die belegten Artikel für die gewählte Motoranwendung nach Teilegruppe öffnen. Die Ansicht liest den eigenen Katalog. Bei einem bekannten Ausstattungsmerkmal ist beispielsweise die Suche `Bremsscheibe vorne PR 1ZF` möglich. Dann werden die hinterlegten PR-Angaben für die gesuchte Achse berücksichtigt.
+Die vollständige Struktur, Kostenrechnung und Einrichtung stehen in [docs/TEILESUCHE.md](docs/TEILESUCHE.md). Für die breite Webrecherche wird nur das Supabase-Secret **`SERPER_API_KEY`** benötigt. Ohne dieses Secret bleiben Katalog und Rückfragen nutzbar; neue Serper-Webtreffer sind dann nicht verfügbar.
 
-`live-web-search` sucht zuerst nach Händlerprodukten für dokumentierte Teilenummern und weiteren eindeutigen Baureihen-Treffern. CarParts liest Artikelname, EUR-Preis und Produktbild aus der Produktseite. Fehlen Händlerprodukte, kann Mwmbl weitere Händlerseiten liefern. Der sichtbare Preis enthält einen Abrufzeitpunkt. Einbauposition, Motorcode, OE-Nummer und Ausstattungsbedingungen stehen bei der jeweiligen Quelle.
+```sh
+npm ci
+npm test
+```
 
-Auf der Artikelkarte stehen gespeicherte Preisbeobachtungen und zu derselben Teilenummer verifizierte Live-Angebote gemeinsam. CarParts sortiert die Preise je Währung und verlinkt jedes Angebot einzeln. Gespeicherte Preise erscheinen bis zu sieben Tage nach der Erfassung mit dem jeweiligen Abrufdatum. Bilder kommen aus freigegebenen Bilddatensätzen oder dem zugeordneten, aktuellen Händlerangebot.
-
-Angebote werden vier Stunden in `shared_parts_research` wiederverwendet. Quellen ohne Produktangebot werden eine Stunde gespeichert. Leere Abfragen werden kürzer zwischengespeichert. Die Datenbank zählt direkte Händlerabfragen und Mwmbl-Websuchen getrennt. Die Tagesgrenzen liegen bei 100 Händlerrecherchen und 25 Mwmbl-Recherchen pro UTC-Tag. Im Protokoll erscheinen Händlerdomain und Fehlergrund. Preise und Produktbilder hängen von der Abdeckung und den öffentlich abrufbaren Produktdaten ab.
-
-`research-parts` verwaltet Kategorienachfragen und hinterlegte Herstellerreferenzen. `discover-parts` findet offene Ölfilterreferenzen aus OilSpec Commons. OBD-Suchen lesen die Diagnosehinweise aus `open_diagnostic_parts`. Die VIN-Prüfung nutzt NHTSA vPIC. Fahrzeugfotos mit lesbarer VIN werden per Tesseract im Browser verarbeitet. Die Fahrzeuggarage speichert die Auswahl auf dem aktuellen Gerät.
-
-[MANN-FILTER HU 7020 z für den Golf VII](https://www.mann-filter.com/de-de/katalog/suchergebnisse/produkt.html/hu7020z_mann-filter.html) · [Mwmbl-Bedingungen und Lizenz der Suchergebnisse](https://developer.mwmbl.org/terms/)
-
-### Auto Parts Finder
-
-Wenn für die ausgewählte Teilekategorie weder ein direkt belegtes Händlerangebot noch eine exakte Kataloganwendung vorliegt, kann `live-web-search` zusätzlich Auto Parts Finder abfragen. Der Dienst erhält das Modell, den Motor, das Modelljahr und die Teilekategorie. CarParts liest `compatible_parts` als Teilehinweise. Bei Bremsen muss die Teilenummer außerdem zu einer belegten Herstelleranwendung der gewählten Motorisierung passen. Der Händler bestätigt die Währung, und der Hersteller bestätigt Baureihe, Einbauposition und Ausstattung.
-
-Die RapidAPI-Anwendung benötigt ein Abonnement für **Auto Parts Finder**. Der Schlüssel wird im Supabase-Projekt als Edge Function Secret `RAPIDAPI_AUTO_PARTS_KEY` hinterlegt. CarParts speichert die Hinweise bis zu 24 Stunden und begrenzt neue Aufrufe entsprechend der Basic-Menge auf 50 pro 31 Tage.
-
-[Auto Parts Finder – Endpunkt](https://rapidapi.com/Makh83/api/auto-parts-finder1/playground/Get%20Compatible%20Parts) · [Tarife](https://rapidapi.com/Makh83/api/auto-parts-finder1/pricing)
-
-## Breite Teilesuche: eBay und Brave (Startbudget 50 €)
-
-Die Suche verarbeitet freie Teilebezeichnungen und Teilenummern, auch außerhalb der bisherigen Kataloggruppen: Motor, Bremsen, Antrieb, Karosserie, Innenraum sowie Elektroantrieb, Ladeelektronik und Hochvoltteile. Die Verfügbarkeit hängt von den jeweiligen Angeboten bzw. indexierten Seiten ab. Suchtreffer sind keine vollständige Fahrzeugstückliste und keine bestätigte Passform.
-
-- **eBay Browse API:** liefert Angebote von eBay Deutschland mit EUR-Preis, Zustand, Produktlink und gegebenenfalls Foto. Die Angebote stehen separat unter „eBay-Angebote“. Sie werden nicht als Herstelleranwendung oder geprüfte Katalogartikel gespeichert. Der serverseitige OAuth-Token wird automatisch erneuert.
-- **Brave Search API:** durchsucht das Web nach dem Bauteil zusammen mit Fahrzeug, Baureihe, Jahr und Motor. Ohne Brave-Schlüssel bleibt die bisherige Mwmbl-Suche aktiv. Brave-Suchergebnisse werden ausschließlich für die Anzeige verwendet, kurzzeitig für fünf Minuten im Arbeitsspeicher gehalten und nicht in die dauerhafte Datenbank übernommen.
-- **Direkte eBay-Suche:** steht zusätzlich als ausdrücklich gekennzeichneter Suchlink zur Verfügung, auch wenn die API nicht eingerichtet ist oder ihr Limit erreicht wurde. Der Link ist kein Produktfund.
-
-### 1. Zuerst Brave aktivieren
-
-1. Unter [Brave Search API](https://api-dashboard.search.brave.com/app/plans) ein eigenes Konto anlegen und den Tarif **Search** auswählen. Aktuell: 5 USD pro 1.000 Anfragen, 5 USD monatliches Guthaben; Preise und etwaige Steuern im Anbieter-Dashboard prüfen (Stand 24.11.2026).
-2. Einen Search-API-Schlüssel erstellen.
-3. Im [CarParts-Projekt → Edge Function Secrets](https://supabase.com/dashboard/project/umhzxsryqhwzxrmkbmwp/functions/secrets) ein Secret mit dem Namen **`BRAVE_SEARCH_API_KEY`** und dem Schlüssel als Wert speichern. Nicht in GitHub, Frontend-Dateien oder einen öffentlichen Chat kopieren.
-4. Auf der Website z. B. „Inverter“ für Tesla Model 3 oder „Antriebswelle“ für dein ausgewähltes Fahrzeug suchen. Neue Webtreffer tragen die Quellenangabe „Brave Search“. Wenn der Anbieter keine relevanten Treffer liefert, wird nichts erfunden.
-
-### 2. eBay-Angebote aktivieren
-
-1. Bei [eBay Developers](https://developer.ebay.com/) registrieren und unter **Application Keys** einen **Production**-Schlüsselsatz erstellen.
-2. [Produktionszugriff für die Buy/Browse API](https://developer.ebay.com/api-docs/buy/buy-requirements.html) für die CarParts-Teilesuche beantragen. eBay prüft den Anwendungsfall; eine Freigabe ist nicht garantiert. Sandbox-Schlüssel liefern keine echten Liveangebote. Den Zugang zuerst klären, bevor du hierfür Geld ausgibst.
-3. Im selben Supabase-Secrets-Bereich **`EBAY_CLIENT_ID`** = Production App ID / Client ID und **`EBAY_CLIENT_SECRET`** = Production Cert ID / Client Secret speichern.
-4. Erneut suchen: Bei freigegebenem Zugang und passenden Angeboten erscheint „eBay-Angebote“. Motorcode, OE-Nummer, Baujahr, Einbauposition und Ausstattung beim Verkäufer abgleichen.
-
-Die bereits eingebauten Datenbanklimits bleiben aktiv: **höchstens 25 neue Webabfragen pro UTC-Tag**, **100 neue Händlerrecherchen pro UTC-Tag**. Wiederholungen haben zusätzlich eine Sperrzeit. Das sind höchstens 775 Brave-Abfragen in einem Monat mit 31 Tagen, rechnerisch 3,875 USD vor Guthaben und Steuern beim genannten Tarif. Für den Start ist deshalb kein 50-€-Abo nötig. eBay nennt standardmäßig 5.000 Browse-Abfragen pro Tag; die Produktionsfreigabe und Anbieterbedingungen gelten zusätzlich. Es wurde durch diese Codeänderung kein kostenpflichtiges Abo abgeschlossen.
-
-eBay-Angebote werden höchstens 15 Minuten im Recherchecache gehalten. Brave-Anfragen erzeugen keine automatische zusätzliche Abfrage bei Fehlern. Bestehende RapidAPI-Abfragen behalten ihr separates Limit von 50 pro 31 Tage. Mehr Besucher erfordern später eine bewusste Anpassung der Limits.
-
-[Brave Preise](https://api-dashboard.search.brave.com/app/plans) · [Brave API-Dokumentation](https://api-dashboard.search.brave.com/documentation/services/web-search) · [eBay Browse API](https://developer.ebay.com/develop/api/buy/browse_api) · [eBay Limits](https://developer.ebay.com/develop/api/buy/api_call_limits)
-
-Google Custom Search JSON API ist für neue Kunden geschlossen und wird für Bestandskunden zum 01.01.2027 eingestellt. Für einen neuen CarParts-Anschluss wird sie deshalb nicht verwendet. TecDoc Web Service ist eine mögliche spätere Quelle für strukturierte Fahrzeug-Teile-Zuordnungen; ein passender Preis und die Lizenz für diese Website müssen direkt vereinbart werden. Für 50 € wird hier keine vollständige TecDoc-Lizenz versprochen.
+Node.js 24 oder neuer. Die Tests prüfen unter anderem den tatsächlichen Suchhandler mit kontrollierten Providerantworten, Produktmetadaten, Rückfragen, Referenzabgleich und widersprüchliche Ausstattungen. Sie ersetzen keinen Test der Live-Abdeckung mit einem eigenen Serper-Schlüssel.
 
 ## Betrieb
 

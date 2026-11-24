@@ -1,0 +1,8 @@
+{
+  "name": "carparts",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node --test tests/*.test.*"},
+  "engines": {"node": ">=24"},
+  "devDependencies": {"linkedom": "0.18.12"}
+}

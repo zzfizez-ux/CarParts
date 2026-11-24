@@ -1,6 +1,8 @@
-import "./supabase-catalog.js?v=39";
+import {effectiveVehicle, searchPlan, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=40";
+import {renderSearchGuide} from "./search-guide-ui.js?v=40";
+import "./supabase-catalog.js?v=40";
 import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=38";
-import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=38";
+import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=40";
 
 const API="https://vpic.nhtsa.dot.gov/api/vehicles";
 const CATALOG_DEMO=false;
@@ -261,6 +263,8 @@ function vehicleLabel(vehicle){
  return make+" "+generation;
 }
 function vehicleChanged(){
+ searchDetails={};guideIdentity="";skipPreflight=false;
+ $("searchGuide").replaceChildren();$("searchGuide").hidden=true;
  updatePartsCoverage();updateRegistryEvidence();++catalogRequest;refreshVinComparison();
  const make=$("make").value,model=$("model").value,year=$("year").value,
   engine=chosenEngine(),variant=$("variant").value;
@@ -348,6 +352,15 @@ function renderResultsInternal(term){
  setCatalogStatus("initial");
 }
 let catalogRequest=0;
+let searchDetails={},guideIdentity="",skipPreflight=false;
+function showSearchGuide(plan,term,preflight=false){
+ const container=$("searchGuide");
+ renderSearchGuide(container,plan,searchDetails,async next=>{
+  searchDetails=validateSearchDetails(next);skipPreflight=false;
+  await renderLiveResults(term);
+ },{onSkip:preflight&&plan.status==="needs_details"?async()=>{skipPreflight=true;await renderLiveResults(term);}:undefined});
+}
+
 function catalogOfferList(offers) {
  const byProduct=new Map();
  for(const offer of offers) {
@@ -371,7 +384,7 @@ function catalogOfferList(offers) {
 }
 function renderSupabaseCards(rows,liveProducts=[]){
  $("resultsTitle").textContent="Ersatzteile für "+vehicleLabel(state.vehicle);
- const intro='<div class="catalog-grid-heading"><h3>'+rows.length+' belegte'+(rows.length===1?"r Artikel":" Artikel")+
+ const intro='<div class="catalog-grid-heading"><h3>'+rows.length+' Herstellerreferenz'+(rows.length===1?"":"en")+
   ' im CarParts-Katalog</h3><p>Der Herstellerbeleg gilt für die angegebene Motoranwendung. Baureihe, Ausstattung und Teilenummer im Beleg abgleichen.</p></div>';
  const cards=rows.map(p=>{
   const validUrl=x=>typeof x==="string"&&/^https:\/\//i.test(x);
@@ -394,10 +407,11 @@ function renderSupabaseCards(rows,liveProducts=[]){
    '" target="_blank" rel="noopener noreferrer">Bildquelle ↗</a>':"";
   return '<article class="catalog-item">'+
    '<div class="catalog-item-visual">'+image+'<span>'+imageBadge+'</span></div>'+
-   '<div class="catalog-item-body"><span class="catalog-item-status">Herstelleranwendung · Ausführung prüfen</span>'+
+   '<div class="catalog-item-body"><span class="catalog-item-status">'+esc(p.assessment?.label||"Herstelleranwendung · Ausführung prüfen")+'</span>'+
    '<h3>'+esc(p.part_name)+'</h3><p class="catalog-item-maker">'+esc(p.manufacturer)+
    ' · Art.-Nr. '+esc(p.manufacturer_part_number)+'</p>'+
    '<p class="catalog-item-engine">Ausführung: '+esc(p.engine)+'</p>'+
+   '<p class="catalog-item-description">'+esc(products[0]?.description||p.part_name)+'</p>'+
    (p.oe?.length?'<p class="catalog-item-engine">OE-Referenzen: '+esc(p.oe.join(", "))+'</p>':"")+
    '<p class="catalog-item-warning">'+esc(p.fitment?.notes||"Vor Kauf am Fahrzeug überprüfen.")+'</p>'+
    catalogOfferList(offers)+'<div class="catalog-item-actions">'+source+imageSource+'</div></div></article>';
@@ -478,7 +492,7 @@ function showWebReferences(panel,results,provider){
  const hits=results.filter(item=>/^https:\/\//i.test(item.url));
  if(!hits.length)return;
  panel.insertAdjacentHTML("beforeend",'<section class="web-merchant-section"><header><h3>Weitere Teilequellen</h3>'+
-  '<p>Quelle: '+(provider==="brave"?'Brave Search':'<a href="https://developer.mwmbl.org/terms/" target="_blank" rel="noopener noreferrer">Mwmbl · CC BY-NC-SA 4.0</a>')+' · Passgenauigkeit beim Anbieter prüfen.</p></header>'+
+  '<p>Quelle: '+(provider==="serper"?'Serper · Google-Suchergebnisse':provider==="brave"?'Brave Search':'<a href="https://developer.mwmbl.org/terms/" target="_blank" rel="noopener noreferrer">Mwmbl · CC BY-NC-SA 4.0</a>')+' · Passgenauigkeit beim Anbieter prüfen.</p></header>'+
   '<div class="web-merchant-grid">'+hits.map(item=>'<article class="web-merchant-card"><h4>'+
    esc(item.title)+'</h4><p>'+esc(item.snippet||"")+'</p><a href="'+esc(item.url)+
    '" target="_blank" rel="noopener noreferrer">Quelle ansehen</a></article>').join("")+'</div></section>');
@@ -526,7 +540,8 @@ function showProductOffers(panel,items){
   const productSource=/^https:\/\//i.test(item.source_url)
    ?'<a class="catalog-evidence" href="'+esc(item.source_url)+'" target="_blank" rel="noopener noreferrer">Herstelleranwendung</a>':"";
   card.innerHTML='<div class="catalog-item-visual">'+(item.image?'<img loading="lazy" referrerpolicy="no-referrer" src="'+esc(item.image)+'" alt="'+esc(item.name)+'">':placeholderPartImage(item.name))+'</div>'+
-   '<div class="catalog-item-body"><p class="catalog-item-maker">'+esc(item.merchant)+'</p><h3>'+esc(item.name)+'</h3>'+
+   '<div class="catalog-item-body"><span class="catalog-item-status">'+(item.fitment_status==="reference_match"?'Teilenummer und Herstelleranwendung abgeglichen':'Recherchetreffer · Passform nicht bestätigt')+'</span><p class="catalog-item-maker">'+esc(item.merchant)+'</p><h3>'+esc(item.name)+'</h3>'+
+   '<p class="catalog-item-description">'+esc(item.description||item.name)+'</p>'+
    (item.sku?'<p>Art.-Nr. '+esc(item.sku)+'</p>':'')+'<p>'+esc(item.condition)+'</p>'+
    '<div class="catalog-item-price"><strong>'+esc(price)+'</strong><span>Händlerpreis · Versand siehe Angebot · Stand '+
    esc(new Date(item.observed_at).toLocaleString("de-DE"))+'</span></div><div class="catalog-item-actions">'+productSource+
@@ -608,38 +623,14 @@ function showRapidReferences(panel,parts){
  panel.append(section);
 }
 
-function showExternalSearches(panel,searches){
- const links=searches.filter(item=>{
-  try{return new URL(item.url).origin==="https://www.ebay.de";}catch{return false;}
- });
- if(!links.length)return;
- const section=document.createElement("section");
- section.className="web-merchant-section";
- const heading=document.createElement("h3");
- heading.textContent="Weitere Angebote suchen";
- const note=document.createElement("p");
- note.textContent="Öffnet die Händlersuche mit deinem Fahrzeug und Suchbegriff. Dies ist ein Suchlink, kein gefundenes Produkt.";
- section.append(heading,note);
- for(const item of links){
-  const link=document.createElement("a");
-  link.href=item.url;link.target="_blank";link.rel="noopener noreferrer";
-  link.className="catalog-buy";link.textContent=item.title;section.append(link);
- }
- panel.append(section);
-}
-
 function merchantNotice(data){
- const hasOffers=!!(data.products?.length||data.marketplace_offers?.length);
- if(data.ebay_status==="access")return "eBay-Angebote sind gerade nicht abrufbar. Du kannst die Händlersuche unten direkt öffnen.";
- if(data.ebay_status==="quota")return "Das Limit für neue eBay-Abfragen ist erreicht. Die direkte Händlersuche bleibt verfügbar.";
+ const hasOffers=!!data.products?.length;
+ if(data.web_status==="not_configured"&&!hasOffers)return "Die ergänzende Recherche ist noch nicht verfügbar. Vorhandene Herstellerdaten bleiben durchsuchbar.";
  if(data.web_status==="access")return "Die ergänzende Websuche ist gerade nicht verfügbar.";
  if(data.status==="busy")return "Für dieses Fahrzeug und Teil läuft bereits eine Suche. Bitte versuche es in Kürze erneut.";
  if(data.merchant_status==="quota")return "Das Tageslimit für Händlerabfragen ist erreicht.";
  if(data.merchant_status==="cooldown")return "Neue Händlerabfragen für dieses Teil sind in wenigen Minuten verfügbar.";
  if(data.merchant_failures?.length)return "Einige Händlerdaten waren gerade nicht abrufbar.";
- if(!hasOffers&&data.rapid_status==="fitment_unconfirmed")return "Für den Teilehinweis fehlt eine Bestätigung für die gewählte Fahrzeugausführung.";
- if(!hasOffers&&["access","unavailable"].includes(data.rapid_status))return "Auto Parts Finder ist vorübergehend nicht verfügbar.";
- if(!hasOffers&&data.rapid_status==="quota")return "Das Abfragelimit von Auto Parts Finder ist erreicht.";
  if(data.web_status==="quota"&&!hasOffers)return "Das Tageslimit der Websuche ist erreicht.";
  if(data.web_status==="provider_error"&&!hasOffers)return "Die ergänzende Websuche ist gerade nicht erreichbar.";
  return "";
@@ -649,18 +640,16 @@ async function showSharedResearch(vehicle,term,requestId,catalogue){
  const panel=$("sharedResearch");
  panel.textContent="Händlerangebote und Teilequellen werden gesucht…";
  try{
-  const data=await window.CarPartsDB.searchLiveWeb(vehicle,term);
+  const data=await window.CarPartsDB.searchLiveWeb(vehicle,term,searchDetails);
   const catalogIds=new Set((await catalogue).map(row=>row.id));
   if(requestId!==catalogRequest)return {};
   const products=(data.products||[]).filter(item=>Number.isFinite(item.price)&&item.price>0&&item.currency==="EUR"&&
    /^https:\/\//i.test(item.image)&&/^https:\/\//i.test(item.url)&&seriesMatches(vehicle,item.name));
-  const marketplace=(data.marketplace_offers||[]).filter(item=>Number.isFinite(item.price)&&item.price>0&&
-   item.currency==="EUR"&&/^https:\/\//i.test(item.url)&&seriesMatches(vehicle,item.name));
   const catalogueProducts=products.filter(item=>catalogIds.has(item.part_id));
   const otherProducts=products.filter(item=>!catalogIds.has(item.part_id));
   const references=(data.references||[]).filter(row=>seriesMatches(vehicle,row.source_vehicle_variant));
   const links=(data.results||[]).filter(item=>/^https:\/\//i.test(item.url)&&seriesMatches(vehicle,[item.title,item.snippet].join(" ")));
-  const rapid=(data.rapid_parts||[]).filter(item=>seriesMatches(vehicle,[item.reference,item.type].join(" ")));
+  if(data.search_plan)showSearchGuide(data.search_plan,term);
   panel.replaceChildren();
   if(otherProducts.length){
    const header=document.createElement("div");
@@ -671,16 +660,7 @@ async function showSharedResearch(vehicle,term,requestId,catalogue){
   }
   const offered=new Set(products.map(item=>item.sku).filter(Boolean));
   showManufacturerReferences(panel,references.filter(row=>!offered.has(row.manufacturer_part_number)));
-  showRapidReferences(panel,rapid);
-  if(marketplace.length){
-   const header=document.createElement("div");
-   header.className="catalog-grid-heading";
-   header.innerHTML="<h3>eBay-Angebote ("+marketplace.length+")</h3><p>Suchtreffer für dein Fahrzeug und Bauteil. OE-Nummer und Passgenauigkeit beim Verkäufer abgleichen.</p>";
-   panel.append(header);
-   showProductOffers(panel,marketplace);
-  }
   showWebReferences(panel,links,data.provider);
-  showExternalSearches(panel,data.external_searches||[]);
   const notice=merchantNotice(data);
   if(notice || (products.length&&data.status==="cached")){
    const message=document.createElement("p");
@@ -688,7 +668,7 @@ async function showSharedResearch(vehicle,term,requestId,catalogue){
    message.textContent=notice || "Angebote aus der letzten Händlerabfrage.";
    panel.append(message);
   }
-  return {catalogueProducts,hasProducts:products.length>0||marketplace.length>0,hasReferences:references.length>0||links.length>0||rapid.length>0,busy:data.status==="busy"};
+  return {catalogueProducts,hasProducts:products.length>0,hasReferences:references.length>0||links.length>0,busy:data.status==="busy"};
  }catch{
   if(requestId===catalogRequest)panel.textContent="Händlerrecherche gerade nicht erreichbar.";
   return {};
@@ -701,7 +681,7 @@ async function renderSupabaseResults(term,requestId){
  const panel=$("sharedResearch");
  panel.replaceChildren();
  grid.innerHTML='<div class="empty-results">Prüfe Herstellerdaten…</div>';
- const current={...state.vehicle};
+ const current=effectiveVehicle(state.vehicle,searchDetails);
  const db=window.CarPartsDB;
  if(db.diagnosticCode(term)){
   try {
@@ -714,8 +694,16 @@ async function renderSupabaseResults(term,requestId){
   }
   return false;
  }
+ const engines=await db.getEngines(current.make,current.model,current.year,current.series).catch(()=>[]);
+ if(requestId!==catalogRequest)return false;
+ const preflight=searchPlan(current,term,db.researchCategory(term)||"",searchDetails,engines,[],{preflight:true});
+ if(preflight.questions.length&&!skipPreflight){
+  grid.innerHTML='<div class="empty-results">Ergänze die bekannten Angaben oben, damit wir die richtige Ausführung suchen können.</div>';
+  showSearchGuide(preflight,term,true);setCatalogStatus("research");return true;
+ }
+ showSearchGuide(searchPlan(current,term,db.researchCategory(term)||"",searchDetails,engines,[]),term);
  let unavailable=false;
- const catalogue=db.findVerifiedParts(current,term).catch(()=>{unavailable=true;return [];});
+ const catalogue=db.findVerifiedParts(current,term,searchDetails).catch(()=>{unavailable=true;return [];});
  const shared=showSharedResearch(current,term,requestId,catalogue);
  const rows=await catalogue;
  if(requestId!==catalogRequest)return false;
@@ -733,34 +721,14 @@ async function renderSupabaseResults(term,requestId){
   return true;
  }
  if(shown)return true;
- if(window.CarPartsOpenOil?.isOilFilterQuery(term)){
-  try{
-   const refs=await window.CarPartsOpenOil.find(current,term);
-   if(requestId!==catalogRequest)return false;
-   if(refs?.length){renderOpenOilReferences(refs,term);return true;}
-  }catch{/* A source may be out of service while the rest of the search works. */}
- }
  inlineCatalogEmpty(term,unavailable);
- if(db.researchCategory(term) && !sources.busy){
-  try{
-   const candidates=await db.researchParts(current,term);
-   if(requestId!==catalogRequest)return false;
-   const rows=(candidates?.rows||[]).filter(row=>seriesMatches(current,row.source_vehicle_variant));
-   if(rows.length){
-    grid.replaceChildren();
-    showManufacturerReferences(panel,rows);
-    setCatalogStatus("research");
-   }else if(candidates?.search_saved){
-    const notice=document.createElement("p");
-    notice.className="web-merchant-note";
-    notice.textContent="Teileanfrage für den Katalog vorgemerkt.";
-    panel.append(notice);
-   }
-  }catch{/* The current manual search still works for vehicles outside the parts catalog. */}
- }
+
  return true;
 }
 async function renderLiveResults(term){const requestId=++catalogRequest;if(!state.vehicle)return false;
+const identity=JSON.stringify([state.vehicle,term.toLowerCase()]);
+if(guideIdentity!==identity){searchDetails={};skipPreflight=false;guideIdentity=identity;}
+
 if(window.CarPartsDB && (!window.CarPartsCatalog||!window.CARPARTS_CATALOG_CONFIG?.baseUrl)){return renderSupabaseResults(term,requestId)}
 if(!window.CarPartsCatalog||!window.CARPARTS_CATALOG_CONFIG?.baseUrl){inlineCatalogEmpty(term,true);return false}
 setCatalogStatus("loading");
@@ -851,7 +819,7 @@ async function search(){
  const searchId=catalogRequest+1;
  await renderLiveResults(q);
  if(searchId!==catalogRequest||searchedVehicle!==state.vehicle)return;
- if(searchedVehicle?.series&&!window.CarPartsDB?.diagnosticCode(q)&&!$("sharedResearch")?.querySelector(".catalog-item-grid")){
+ if(searchedVehicle?.series&&($("searchGuide").hidden||skipPreflight)&&!window.CarPartsDB?.diagnosticCode(q)&&!$("sharedResearch")?.querySelector(".catalog-item-grid")){
   const v=searchedVehicle, phrase=[v.make,v.model,v.series,v.year,v.engine,v.variant,q].filter(Boolean).join(" ");
   const box=document.createElement("aside");box.className="web-merchant-note";
   const link=document.createElement("a");link.href="https://www.google.com/search?q="+encodeURIComponent(phrase);

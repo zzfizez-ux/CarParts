@@ -130,3 +130,19 @@ export function createEbaySearch(request = fetch) {
     return {status: "access", offers: []};
   };
 }
+
+// Serper uses prepaid credits and offers a card-free trial. One standard web request per reservation.
+export async function lookupSerper(phrase, key, request = fetch) {
+  if (!key) return {status:"not_configured",provider:"none",results:[]};
+  try {
+    const response=await request("https://google.serper.dev/search",{
+      method:"POST",headers:{"X-API-KEY":key,"Content-Type":"application/json",Accept:"application/json"},
+      body:JSON.stringify({q:phrase,gl:"de",hl:"de",num:10}),
+      redirect:"error",signal:AbortSignal.timeout(6500)
+    });
+    if(!response.ok){await response.body?.cancel();return {status:failureStatus(response.status===402?429:response.status),provider:"serper",results:[]};}
+    const data=await readJson(response,500000,{requireContentType:false});
+    if(!Array.isArray(data.organic))return {status:"provider_error",provider:"serper",results:[]};
+    return {status:"live",provider:"serper",results:data.organic.slice(0,10).map(row=>({url:row.link,title:row.title,content:row.snippet}))};
+  }catch{return {status:"provider_error",provider:"serper",results:[]};}
+}
