@@ -28,6 +28,36 @@ Die RapidAPI-Anwendung benötigt ein Abonnement für **Auto Parts Finder**. Der 
 
 [Auto Parts Finder – Endpunkt](https://rapidapi.com/Makh83/api/auto-parts-finder1/playground/Get%20Compatible%20Parts) · [Tarife](https://rapidapi.com/Makh83/api/auto-parts-finder1/pricing)
 
+## Breite Teilesuche: eBay und Brave (Startbudget 50 €)
+
+Die Suche verarbeitet freie Teilebezeichnungen und Teilenummern, auch außerhalb der bisherigen Kataloggruppen: Motor, Bremsen, Antrieb, Karosserie, Innenraum sowie Elektroantrieb, Ladeelektronik und Hochvoltteile. Die Verfügbarkeit hängt von den jeweiligen Angeboten bzw. indexierten Seiten ab. Suchtreffer sind keine vollständige Fahrzeugstückliste und keine bestätigte Passform.
+
+- **eBay Browse API:** liefert Angebote von eBay Deutschland mit EUR-Preis, Zustand, Produktlink und gegebenenfalls Foto. Die Angebote stehen separat unter „eBay-Angebote“. Sie werden nicht als Herstelleranwendung oder geprüfte Katalogartikel gespeichert. Der serverseitige OAuth-Token wird automatisch erneuert.
+- **Brave Search API:** durchsucht das Web nach dem Bauteil zusammen mit Fahrzeug, Baureihe, Jahr und Motor. Ohne Brave-Schlüssel bleibt die bisherige Mwmbl-Suche aktiv. Brave-Suchergebnisse werden ausschließlich für die Anzeige verwendet, kurzzeitig für fünf Minuten im Arbeitsspeicher gehalten und nicht in die dauerhafte Datenbank übernommen.
+- **Direkte eBay-Suche:** steht zusätzlich als ausdrücklich gekennzeichneter Suchlink zur Verfügung, auch wenn die API nicht eingerichtet ist oder ihr Limit erreicht wurde. Der Link ist kein Produktfund.
+
+### 1. Zuerst Brave aktivieren
+
+1. Unter [Brave Search API](https://api-dashboard.search.brave.com/app/plans) ein eigenes Konto anlegen und den Tarif **Search** auswählen. Aktuell: 5 USD pro 1.000 Anfragen, 5 USD monatliches Guthaben; Preise und etwaige Steuern im Anbieter-Dashboard prüfen (Stand 24.11.2026).
+2. Einen Search-API-Schlüssel erstellen.
+3. Im [CarParts-Projekt → Edge Function Secrets](https://supabase.com/dashboard/project/umhzxsryqhwzxrmkbmwp/functions/secrets) ein Secret mit dem Namen **`BRAVE_SEARCH_API_KEY`** und dem Schlüssel als Wert speichern. Nicht in GitHub, Frontend-Dateien oder einen öffentlichen Chat kopieren.
+4. Auf der Website z. B. „Inverter“ für Tesla Model 3 oder „Antriebswelle“ für dein ausgewähltes Fahrzeug suchen. Neue Webtreffer tragen die Quellenangabe „Brave Search“. Wenn der Anbieter keine relevanten Treffer liefert, wird nichts erfunden.
+
+### 2. eBay-Angebote aktivieren
+
+1. Bei [eBay Developers](https://developer.ebay.com/) registrieren und unter **Application Keys** einen **Production**-Schlüsselsatz erstellen.
+2. [Produktionszugriff für die Buy/Browse API](https://developer.ebay.com/api-docs/buy/buy-requirements.html) für die CarParts-Teilesuche beantragen. eBay prüft den Anwendungsfall; eine Freigabe ist nicht garantiert. Sandbox-Schlüssel liefern keine echten Liveangebote. Den Zugang zuerst klären, bevor du hierfür Geld ausgibst.
+3. Im selben Supabase-Secrets-Bereich **`EBAY_CLIENT_ID`** = Production App ID / Client ID und **`EBAY_CLIENT_SECRET`** = Production Cert ID / Client Secret speichern.
+4. Erneut suchen: Bei freigegebenem Zugang und passenden Angeboten erscheint „eBay-Angebote“. Motorcode, OE-Nummer, Baujahr, Einbauposition und Ausstattung beim Verkäufer abgleichen.
+
+Die bereits eingebauten Datenbanklimits bleiben aktiv: **höchstens 25 neue Webabfragen pro UTC-Tag**, **100 neue Händlerrecherchen pro UTC-Tag**. Wiederholungen haben zusätzlich eine Sperrzeit. Das sind höchstens 775 Brave-Abfragen in einem Monat mit 31 Tagen, rechnerisch 3,875 USD vor Guthaben und Steuern beim genannten Tarif. Für den Start ist deshalb kein 50-€-Abo nötig. eBay nennt standardmäßig 5.000 Browse-Abfragen pro Tag; die Produktionsfreigabe und Anbieterbedingungen gelten zusätzlich. Es wurde durch diese Codeänderung kein kostenpflichtiges Abo abgeschlossen.
+
+eBay-Angebote werden höchstens 15 Minuten im Recherchecache gehalten. Brave-Anfragen erzeugen keine automatische zusätzliche Abfrage bei Fehlern. Bestehende RapidAPI-Abfragen behalten ihr separates Limit von 50 pro 31 Tage. Mehr Besucher erfordern später eine bewusste Anpassung der Limits.
+
+[Brave Preise](https://api-dashboard.search.brave.com/app/plans) · [Brave API-Dokumentation](https://api-dashboard.search.brave.com/documentation/services/web-search) · [eBay Browse API](https://developer.ebay.com/develop/api/buy/browse_api) · [eBay Limits](https://developer.ebay.com/develop/api/buy/api_call_limits)
+
+Google Custom Search JSON API ist für neue Kunden geschlossen und wird für Bestandskunden zum 01.01.2027 eingestellt. Für einen neuen CarParts-Anschluss wird sie deshalb nicht verwendet. TecDoc Web Service ist eine mögliche spätere Quelle für strukturierte Fahrzeug-Teile-Zuordnungen; ein passender Preis und die Lizenz für diese Website müssen direkt vereinbart werden. Für 50 € wird hier keine vollständige TecDoc-Lizenz versprochen.
+
 ## Betrieb
 
 - Der Browser verwendet die öffentliche Supabase-Projektkennung. Herstellerdaten, geprüfte Artikel und OE-Referenzen sind lesbar. Die privaten Recherche- und Budgettabellen werden von den Edge Functions geschrieben.

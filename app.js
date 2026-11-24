@@ -1,4 +1,4 @@
-import "./supabase-catalog.js?v=38";
+import "./supabase-catalog.js?v=39";
 import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=38";
 import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=38";
 
@@ -474,14 +474,14 @@ function renderOpenOilReferences(rows,term){
   ).join("")||'<div class="open-oil-select-prompt">Keine auswertbare Filterreferenz für diese Variante.</div>';
  };
 }
-function showWebReferences(panel,results){
+function showWebReferences(panel,results,provider){
  const hits=results.filter(item=>/^https:\/\//i.test(item.url));
  if(!hits.length)return;
- panel.insertAdjacentHTML("beforeend",'<section class="web-merchant-section"><header><h3>Weitere Händlerquellen</h3>'+
-  '<p>Quelle: <a href="https://developer.mwmbl.org/terms/" target="_blank" rel="noopener noreferrer">Mwmbl · CC BY-NC-SA 4.0</a></p></header>'+
+ panel.insertAdjacentHTML("beforeend",'<section class="web-merchant-section"><header><h3>Weitere Teilequellen</h3>'+
+  '<p>Quelle: '+(provider==="brave"?'Brave Search':'<a href="https://developer.mwmbl.org/terms/" target="_blank" rel="noopener noreferrer">Mwmbl · CC BY-NC-SA 4.0</a>')+' · Passgenauigkeit beim Anbieter prüfen.</p></header>'+
   '<div class="web-merchant-grid">'+hits.map(item=>'<article class="web-merchant-card"><h4>'+
    esc(item.title)+'</h4><p>'+esc(item.snippet||"")+'</p><a href="'+esc(item.url)+
-   '" target="_blank" rel="noopener noreferrer">Händlerseite ansehen</a></article>').join("")+'</div></section>');
+   '" target="_blank" rel="noopener noreferrer">Quelle ansehen</a></article>').join("")+'</div></section>');
 }
 function renderOpenDiagnostic(rows,term){
  const title=rows[0]?.code_name||"Fehlercode aus der freien Datensammlung";
@@ -525,14 +525,14 @@ function showProductOffers(panel,items){
   card.className="catalog-item";
   const productSource=/^https:\/\//i.test(item.source_url)
    ?'<a class="catalog-evidence" href="'+esc(item.source_url)+'" target="_blank" rel="noopener noreferrer">Herstelleranwendung</a>':"";
-  card.innerHTML='<div class="catalog-item-visual"><img loading="lazy" referrerpolicy="no-referrer" src="'+esc(item.image)+'" alt="'+esc(item.name)+'"></div>'+
+  card.innerHTML='<div class="catalog-item-visual">'+(item.image?'<img loading="lazy" referrerpolicy="no-referrer" src="'+esc(item.image)+'" alt="'+esc(item.name)+'">':placeholderPartImage(item.name))+'</div>'+
    '<div class="catalog-item-body"><p class="catalog-item-maker">'+esc(item.merchant)+'</p><h3>'+esc(item.name)+'</h3>'+
    (item.sku?'<p>Art.-Nr. '+esc(item.sku)+'</p>':'')+'<p>'+esc(item.condition)+'</p>'+
    '<div class="catalog-item-price"><strong>'+esc(price)+'</strong><span>Händlerpreis · Versand siehe Angebot · Stand '+
    esc(new Date(item.observed_at).toLocaleString("de-DE"))+'</span></div><div class="catalog-item-actions">'+productSource+
    '<a class="catalog-buy" href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer">Zum Produkt bei '+esc(item.merchant)+'</a></div></div>';
   const image=card.querySelector("img");
-  image.addEventListener("error",()=>{
+  image?.addEventListener("error",()=>{
    const fallback=document.createElement("p");
    fallback.textContent="Produktbild derzeit nicht abrufbar";
    image.replaceWith(fallback);
@@ -608,16 +608,40 @@ function showRapidReferences(panel,parts){
  panel.append(section);
 }
 
+function showExternalSearches(panel,searches){
+ const links=searches.filter(item=>{
+  try{return new URL(item.url).origin==="https://www.ebay.de";}catch{return false;}
+ });
+ if(!links.length)return;
+ const section=document.createElement("section");
+ section.className="web-merchant-section";
+ const heading=document.createElement("h3");
+ heading.textContent="Weitere Angebote suchen";
+ const note=document.createElement("p");
+ note.textContent="Öffnet die Händlersuche mit deinem Fahrzeug und Suchbegriff. Dies ist ein Suchlink, kein gefundenes Produkt.";
+ section.append(heading,note);
+ for(const item of links){
+  const link=document.createElement("a");
+  link.href=item.url;link.target="_blank";link.rel="noopener noreferrer";
+  link.className="catalog-buy";link.textContent=item.title;section.append(link);
+ }
+ panel.append(section);
+}
+
 function merchantNotice(data){
+ const hasOffers=!!(data.products?.length||data.marketplace_offers?.length);
+ if(data.ebay_status==="access")return "eBay-Angebote sind gerade nicht abrufbar. Du kannst die Händlersuche unten direkt öffnen.";
+ if(data.ebay_status==="quota")return "Das Limit für neue eBay-Abfragen ist erreicht. Die direkte Händlersuche bleibt verfügbar.";
+ if(data.web_status==="access")return "Die ergänzende Websuche ist gerade nicht verfügbar.";
  if(data.status==="busy")return "Für dieses Fahrzeug und Teil läuft bereits eine Suche. Bitte versuche es in Kürze erneut.";
  if(data.merchant_status==="quota")return "Das Tageslimit für Händlerabfragen ist erreicht.";
  if(data.merchant_status==="cooldown")return "Neue Händlerabfragen für dieses Teil sind in wenigen Minuten verfügbar.";
  if(data.merchant_failures?.length)return "Einige Händlerdaten waren gerade nicht abrufbar.";
- if(!data.products?.length&&data.rapid_status==="fitment_unconfirmed")return "Für den Teilehinweis fehlt eine Bestätigung für die gewählte Fahrzeugausführung.";
- if(!data.products?.length&&["access","unavailable"].includes(data.rapid_status))return "Auto Parts Finder ist vorübergehend nicht verfügbar.";
- if(!data.products?.length&&data.rapid_status==="quota")return "Das Abfragelimit von Auto Parts Finder ist erreicht.";
- if(data.web_status==="quota"&&!data.products?.length)return "Das Tageslimit der Websuche ist erreicht.";
- if(data.web_status==="provider_error"&&!data.products?.length)return "Die ergänzende Websuche ist gerade nicht erreichbar.";
+ if(!hasOffers&&data.rapid_status==="fitment_unconfirmed")return "Für den Teilehinweis fehlt eine Bestätigung für die gewählte Fahrzeugausführung.";
+ if(!hasOffers&&["access","unavailable"].includes(data.rapid_status))return "Auto Parts Finder ist vorübergehend nicht verfügbar.";
+ if(!hasOffers&&data.rapid_status==="quota")return "Das Abfragelimit von Auto Parts Finder ist erreicht.";
+ if(data.web_status==="quota"&&!hasOffers)return "Das Tageslimit der Websuche ist erreicht.";
+ if(data.web_status==="provider_error"&&!hasOffers)return "Die ergänzende Websuche ist gerade nicht erreichbar.";
  return "";
 }
 
@@ -630,6 +654,8 @@ async function showSharedResearch(vehicle,term,requestId,catalogue){
   if(requestId!==catalogRequest)return {};
   const products=(data.products||[]).filter(item=>Number.isFinite(item.price)&&item.price>0&&item.currency==="EUR"&&
    /^https:\/\//i.test(item.image)&&/^https:\/\//i.test(item.url)&&seriesMatches(vehicle,item.name));
+  const marketplace=(data.marketplace_offers||[]).filter(item=>Number.isFinite(item.price)&&item.price>0&&
+   item.currency==="EUR"&&/^https:\/\//i.test(item.url)&&seriesMatches(vehicle,item.name));
   const catalogueProducts=products.filter(item=>catalogIds.has(item.part_id));
   const otherProducts=products.filter(item=>!catalogIds.has(item.part_id));
   const references=(data.references||[]).filter(row=>seriesMatches(vehicle,row.source_vehicle_variant));
@@ -646,7 +672,15 @@ async function showSharedResearch(vehicle,term,requestId,catalogue){
   const offered=new Set(products.map(item=>item.sku).filter(Boolean));
   showManufacturerReferences(panel,references.filter(row=>!offered.has(row.manufacturer_part_number)));
   showRapidReferences(panel,rapid);
-  showWebReferences(panel,links);
+  if(marketplace.length){
+   const header=document.createElement("div");
+   header.className="catalog-grid-heading";
+   header.innerHTML="<h3>eBay-Angebote ("+marketplace.length+")</h3><p>Suchtreffer für dein Fahrzeug und Bauteil. OE-Nummer und Passgenauigkeit beim Verkäufer abgleichen.</p>";
+   panel.append(header);
+   showProductOffers(panel,marketplace);
+  }
+  showWebReferences(panel,links,data.provider);
+  showExternalSearches(panel,data.external_searches||[]);
   const notice=merchantNotice(data);
   if(notice || (products.length&&data.status==="cached")){
    const message=document.createElement("p");
@@ -654,7 +688,7 @@ async function showSharedResearch(vehicle,term,requestId,catalogue){
    message.textContent=notice || "Angebote aus der letzten Händlerabfrage.";
    panel.append(message);
   }
-  return {catalogueProducts,hasProducts:products.length>0,hasReferences:references.length>0||links.length>0||rapid.length>0,busy:data.status==="busy"};
+  return {catalogueProducts,hasProducts:products.length>0||marketplace.length>0,hasReferences:references.length>0||links.length>0||rapid.length>0,busy:data.status==="busy"};
  }catch{
   if(requestId===catalogRequest)panel.textContent="Händlerrecherche gerade nicht erreichbar.";
   return {};

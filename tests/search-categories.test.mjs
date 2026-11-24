@@ -21,5 +21,11 @@ test("the website selects complete new brake categories before shorter synonyms"
     assert.equal(category("Bremstrommel hinten"),"Bremstrommeln");
     assert.equal(category("Radbremszylinder hinten"),"Radbremszylinder");
     assert.equal(category("Keilrippenriemensatz"),"Keilrippenriemen");
+    assert.equal(category("Inverter"),"Inverter");
+    assert.equal(category("Onboard Charger"),"Onboard-Ladegerät");
+    assert.equal(category("Hochvolt Batterie"),"Hochvoltbatterie");
+    assert.equal(category("Antriebswellen"),"Antriebswelle");
+    assert.equal(category("Ladekabel Typ 2"),"Ladekabel");
+    assert.equal(category("Getriebeöl"),"Getriebeöl");
   } finally { delete globalThis.window; }
 });

@@ -1,16 +1,20 @@
 // Source-backed search. Price and fitment evidence come from their respective sources.
 import {catalogueEngines, catalogueParts} from "./catalogue.mjs";
-import {merchantUrl, offersFromWeb, searchOffers} from "./offers.ts";
+import {offersFromWeb, searchOffers} from "./offers.ts";
 import type {Article, Vehicle} from "./offers.ts";
 import {matchesPartText, seriesEvidence, words} from "./vehicle-fitment.mjs";
 import {siteRequest} from "../_shared/site-config.mjs";
 import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
 import {lookupRapidParts, rapidPartsForVehicle, rapidQuery} from "./rapid-parts.mjs";
+import {createEbaySearch, externalSearches, lookupWeb, partsQuery, safeSourceUrl} from "./search-providers.mjs";
 import {offerObservations} from "./offer-observations.mjs";
 
+const searchEbay = createEbaySearch();
 const publishableKeys = () => Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}"));
 const serviceKey = () => JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default ||
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+// Brief operational cache only; Brave results never enter the catalogue or persistent cache.
+const transientResearch = new Map<string,{payload:any,expires:number}>();
 const fields = new Set(["make","model","year","engine","series","variant","part","category"]);
 
 async function database(table:string, filter:Record<string,string>, body?:unknown) {
@@ -47,13 +51,21 @@ async function hashKey(parts:unknown[]) {
 }
 
 async function savedResearch(key:string) {
+  const transient = transientResearch.get(key);
+  if (transient && transient.expires>Date.now()) return {...transient.payload,status:"cached"};
+  transientResearch.delete(key);
   const rows = await database("shared_parts_research",{
     select:"payload,checked_at",query_hash:"eq."+key,expires_at:"gt."+new Date().toISOString(),limit:"1"
   });
   return rows[0] ? {...rows[0].payload,status:"cached",fetched_at:rows[0].checked_at} : null;
 }
 
-async function saveResearch(key:string, payload:unknown, minutes:number, checked = new Date()) {
+async function saveResearch(key:string, payload:any, minutes:number, checked = new Date()) {
+  if (payload.provider==="brave" && payload.results?.length) {
+    if (transientResearch.size>=100) transientResearch.delete(transientResearch.keys().next().value!);
+    transientResearch.set(key,{payload:{...payload,fetched_at:checked.toISOString()},expires:+checked+300000});
+    return;
+  }
   try {
     await database("shared_parts_research",{on_conflict:"query_hash"},[{
       query_hash:key,payload,checked_at:checked.toISOString(),
@@ -109,18 +121,13 @@ async function manufacturerReferences(vehicle:Vehicle, category:string) {
 
 async function webResearch(key:string, vehicle:Vehicle, term:string, category:string) {
   const claim = await database("rpc/reserve_parts_web_lookup",{},{key_hash:key});
-  if (claim!=="reserved") return {status:claim,results:[]};
-  const phrase = [vehicle.make,vehicle.model,vehicle.series,vehicle.year,vehicle.engine,vehicle.variant,term]
-    .filter(Boolean).join(" ");
-  const provider = "https://api.mwmbl.org/api/v2/search/?q="+encodeURIComponent(phrase);
+  if (claim!=="reserved") return {status:claim,provider:Deno.env.get("BRAVE_SEARCH_API_KEY") ? "brave" : "mwmbl",results:[]};
+  const web = await lookupWeb(partsQuery(vehicle,term),Deno.env.get("BRAVE_SEARCH_API_KEY"));
+  if (web.status!=="live") return web;
   try {
-    const response = await fetch(provider,{headers:{Accept:"application/json"},signal:AbortSignal.timeout(6500)});
-    if (!response.ok) return {status:response.status===429?"quota":"provider_error",results:[]};
-    const data = await response.json();
-    if (!Array.isArray(data.results)) return {status:"provider_error",results:[]};
     const links = new Map();
-    for (const row of data.results) {
-      const link = typeof row?.url==="string" && merchantUrl(row.url);
+    for (const row of web.results) {
+      const link = typeof row?.url==="string" && safeSourceUrl(row.url);
       if (!link || typeof row.title!=="string" || links.has(link.href)) continue;
       const snippet = typeof row.content==="string" ? row.content.slice(0,140) : "";
       const description = [row.title,snippet,link.pathname].join(" ");
@@ -132,8 +139,8 @@ async function webResearch(key:string, vehicle:Vehicle, term:string, category:st
       links.set(link.href,{title:row.title.slice(0,140),snippet,url:link.href,merchant:link.hostname});
       if (links.size===8) break;
     }
-    return {status:"live",results:[...links.values()]};
-  } catch { return {status:"provider_error",results:[]}; }
+    return {status:"live",provider:web.provider,results:[...links.values()]};
+  } catch { return {status:"provider_error",provider:web.provider,results:[]}; }
 }
 
 async function research(vehicle:Vehicle, term:string, category:string, key:string) {
@@ -149,6 +156,10 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
     return {status:"busy",products:[],references:[],results:[]};
   }
 
+  // eBay shares the atomic merchant allowance (100 new searches/day). Cached searches are free.
+  const ebayTask = merchantClaim==="reserved"
+    ? searchEbay(vehicle,term,category,Deno.env.get("EBAY_CLIENT_ID"),Deno.env.get("EBAY_CLIENT_SECRET"))
+    : Promise.resolve({status:merchantClaim,offers:[]});
   const [reviewed, catalogue] = await Promise.allSettled([
     manufacturerReferences(vehicle,category),
     catalogueEngines(database,vehicle).then(engines=>catalogueParts(database,engines,vehicle,term,category,true))
@@ -177,7 +188,7 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
     : {products:[],failures:[]};
   const rapidTask = direct.products.length || foundParts.some(part=>part.match==="exact")
     ? Promise.resolve({status:"skipped",parts:[]}) : autoPartsFinder(vehicle,term,category);
-  const web = direct.products.length ? {status:"skipped",results:[]} : await webResearch(key,vehicle,term,category);
+  const web = direct.products.length ? {status:"skipped",provider:"",results:[]} : await webResearch(key,vehicle,term,category);
   const fallback = merchantClaim==="reserved" && !direct.products.length && web.results.length
     ? await offersFromWeb(web.results,vehicle,term,category) : {products:[],failures:[]};
   const products = direct.products.length ? direct.products : fallback.products;
@@ -186,21 +197,23 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
     await database("rpc/save_catalogue_offer_observations",{},{records:observations})
       .catch(()=>console.warn("CarParts merchant observations could not be stored"));
   }
-  const rapid = await rapidTask;
+  const [rapid, ebay] = await Promise.all([rapidTask,ebayTask]);
   const rapidParts = rapidPartsForVehicle(rapid.parts,vehicle,category,foundParts);
   const failures = [...direct.failures,...fallback.failures];
   for (const {merchant,reason} of failures) console.warn("CarParts merchant",merchant,reason);
   const payload = {
-    products, results:web.results, references, web_status:web.status,
+    products, marketplace_offers:ebay.offers, ebay_status:ebay.status,
+    results:web.results, references, web_status:web.status,
     merchant_status:merchantClaim==="reserved"?(failures.length?"partial":"searched"):merchantClaim,
     merchant_failures:failures,
     rapid_parts:rapidParts, rapid_status:rapid.parts.length&&!rapidParts.length?"fitment_unconfirmed":rapid.status,
-    provider:"mwmbl", license:"CC BY-NC-SA 4.0"
+    provider:web.provider || (Deno.env.get("BRAVE_SEARCH_API_KEY") ? "brave" : "mwmbl"),
+    license:Deno.env.get("BRAVE_SEARCH_API_KEY") ? "Brave Search API" : "CC BY-NC-SA 4.0"
   };
   const checked = new Date();
-  const hasResults = products.length || web.results.length || references.length || rapidParts.length;
+  const hasResults = products.length || ebay.offers.length || web.results.length || references.length || rapidParts.length;
   const rapidUnavailable = ["access","quota","cooldown","unavailable"].includes(rapid.status);
-  const minutes = products.length ? 240 : rapidUnavailable ? 2 : hasResults ? 60
+  const minutes = ebay.offers.length ? 15 : products.length ? 240 : rapidUnavailable ? 2 : hasResults ? 60
     : failures.length || web.status!=="live" ? 5 : 20;
   await saveResearch(key,payload,minutes,checked);
   return {...payload,status:hasResults?"live":"empty",fetched_at:checked.toISOString()};
@@ -228,8 +241,8 @@ Deno.serve(async (request:Request)=>{
       year:p.year,engine:normalize(p.engine||""),variant:normalize(p.variant||"")
     };
     const term = normalize(p.part), category = normalize(p.category||"");
-    const key = await hashKey(["products-v6",vehicle,term,category]);
-    return json(await research(vehicle,term,category,key));
+    const key = await hashKey(["products-v7",Boolean(Deno.env.get("BRAVE_SEARCH_API_KEY")),Boolean(Deno.env.get("EBAY_CLIENT_ID") && Deno.env.get("EBAY_CLIENT_SECRET")),vehicle,term,category]);
+    return json({...await research(vehicle,term,category,key),external_searches:externalSearches(vehicle,term)});
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);
     console.error("CarParts research",error instanceof Error ? error.message : "unknown");
