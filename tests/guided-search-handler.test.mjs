@@ -60,7 +60,8 @@ test("Serper finds a complete EV product, which remains unconfirmed without manu
  assert.equal(response.status,200);
  assert.equal(body.provider,"serper");assert.equal(body.products.length,1);
  assert.equal(body.products[0].fitment_status,"unconfirmed");
- assert.equal(body.search_plan.status,"needs_details");
+ assert.equal(body.search_plan.status,"needs_source");
+ assert.ok(body.search_plan.questions.every(q=>q.optional));
  assert.ok(body.search_plan.questions.some(q=>q.key==="oe_number"));
  assert.equal(calls.filter(url=>url.includes("google.serper.dev")).length,1);
  delete env.SERPER_API_KEY;
@@ -104,4 +105,14 @@ test("a known PR-code conflict excludes matching article references from Serper 
  const body=await (await handler(request({...vehicle,details:{oe_number:"HU7020Z",equipment_code:"ZZZ"}}))).json();
  assert.equal(body.web_status,"live");assert.deepEqual(body.products,[]);assert.deepEqual(body.results,[]);
  assert.equal(body.search_plan.status,"needs_source");delete env.SERPER_API_KEY;
+});
+
+
+test("a complete vehicle finds priced catalogue products without asking for a mandatory reference",async()=>{
+ stub();
+ const body=await (await handler(request({...vehicle,details:{}}))).json();
+ assert.ok(body.products.length>0);assert.equal(body.search_plan.status,"application_found");
+ assert.ok(body.search_plan.questions.every(question=>question.optional));
+ assert.ok(body.products.every(product=>product.fitment_status!=="reference_match"));
+ assert.ok(body.products.every(product=>product.price>0&&product.image&&product.description));
 });

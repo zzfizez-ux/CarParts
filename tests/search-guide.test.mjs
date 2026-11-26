@@ -77,3 +77,12 @@ test("known excluded applications cannot return through merchant or web referenc
  const product={name:"Brembo 09.9145.11 Bremsscheibe vorne",sku:"09.9145.11",evidence:"merchant"};
  assert.deepEqual(filterProducts([product],[],"Bremsscheiben vorne",{oe_number:"09.9145.11"},[row]),[]);
 });
+
+
+test("known applications do not require the customer to find a part number",()=>{
+ const plan=searchPlan(vehicle,"Bremsscheiben vorne","Bremsscheiben",{},[],[row]);
+ assert.equal(plan.status,"application_found");assert.deepEqual(plan.matched_parts,[]);
+ assert.ok(plan.questions.every(question=>question.optional));
+ assert.ok(plan.questions.some(question=>question.key==="oe_number"));
+ assert.ok(plan.message.includes("Teilenummer ist für die Suche nicht nötig"));
+});
