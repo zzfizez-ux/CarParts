@@ -44,9 +44,21 @@ test("engine choices, skip research and a resolved form behave correctly",()=>{
  renderSearchGuide(ui.container,{status:"needs_details",questions:[{key:"engine",label:"Motor",help:"Wähle exakt",options:[{value:"CRBC",label:"2.0 TDI CRBC"}]}]},{engine:"CRBC"},()=>{}, {onSkip:()=>skipped++});
  assert.equal(ui.container.querySelector("select").value,"CRBC");
  assert.equal(ui.container.querySelectorAll("option").length,2);
- ui.container.querySelector(".search-guide-skip").onclick();assert.equal(skipped,1);
+ ui.container.querySelector(".search-guide-skip:not(.search-guide-reset)").onclick();assert.equal(skipped,1);
  renderSearchGuide(ui.container,{status:"reference_match",message:"Referenz und Anwendung abgeglichen",questions:[]},{},()=>{});
  assert.equal(ui.container.querySelector("form"),null);
  assert.ok(ui.container.textContent.includes("Referenz und Anwendung abgeglichen"));
  renderSearchGuide(ui.container,null,{},()=>{});assert.equal(ui.container.hidden,true);
+});
+
+
+test("technical references stay in a closed optional section and existing answers can be reset",async()=>{
+ const ui=setup();let next;
+ renderSearchGuide(ui.container,{status:"application_found",message:"Keine Teilenummer nötig",questions:questions.map(q=>({...q,optional:true}))},{oe_number:"123456"},async value=>{next=value;});
+ const advanced=ui.container.querySelector("details");
+ assert.equal(advanced.hasAttribute("open"),false);
+ assert.ok(advanced.querySelector('input[name="oe_number"]'));
+ assert.ok(advanced.querySelector('button[type="submit"]'));
+ assert.ok(!ui.container.querySelector('input[name="oe_number"]').hasAttribute("required"));
+ await ui.container.querySelector(".search-guide-reset").onclick();assert.deepEqual(next,{});
 });

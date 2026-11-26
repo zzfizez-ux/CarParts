@@ -212,7 +212,7 @@ Deno.serve(async (request:Request)=>{
     let term;
     try {term=searchTerm(normalize(p.part),details);}catch(error){return json({error:(error as Error).message},422);}
     const category = normalize(p.category||"");
-    const key = await hashKey(["guided-v3",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details]);
+    const key = await hashKey(["guided-v4",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details]);
     return json(await research(vehicle,term,category,key,details));
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);

@@ -323,3 +323,5 @@ body.dark .diagnostic-hint{background:#1b2834;border-color:#435265}
 .search-guide-form [role="status"],.search-guide-form button{grid-column:1/-1}
 .search-guide-skip{margin-top:16px;border:0;background:transparent;color:#f4d28c;text-decoration:underline;cursor:pointer;padding:8px 0;font:inherit}
 .catalog-item-description{line-height:1.6;white-space:normal;overflow-wrap:anywhere}
+
+.search-guide-advanced{grid-column:1/-1;margin-top:8px}.search-guide-advanced summary{cursor:pointer;color:#f4d28c;padding:10px 0}.search-guide-advanced[open]{display:grid;gap:16px}.search-guide-advanced label{margin-top:12px}

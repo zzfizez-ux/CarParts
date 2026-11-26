@@ -116,7 +116,7 @@ export function filterApplications(rows,vehicle,term,details={}) {
 export function searchPlan(vehicle,term,category,details={},engines=[],applications=[],{preflight=false}={}) {
   if(requestConflicts(term,details).length)return {status:"conflict",questions:[],matched_parts:[],message:"Einbaupositionen widersprechen sich. Bitte Suchbegriff und Zusatzangaben korrigieren."};
   const selected=selectedDetails(term,details),type=words(category||term),questions=[];
-  const ask=(key,label,help,options=[])=>questions.push({key,label,help,options,max_length:limits[key]});
+  const ask=(key,label,help,options=[])=>questions.push({key,label,help,options,max_length:limits[key],optional:["oe_number","equipment_code"].includes(key)});
   const engine=String(details.engine||vehicle.engine||"");
   if (!engine || (engines.length && !engines.some(row=>words(row.designation)===words(engine)))) {
     ask("engine","Genaue Motorisierung / Elektro-Variante","Motorcode und Leistung stehen z. B. in Fahrzeugunterlagen. Wähle nur die tatsächlich vorhandene Variante.",
@@ -130,15 +130,18 @@ export function searchPlan(vehicle,term,category,details={},engines=[],applicati
   const eligible=filterApplications(applications,vehicle,term,details);
   const codes=[...new Set(eligible.flatMap(row=>row.assessment.equipment_codes))];
   if (codes.length && !selected.equipment_code)
-    ask("equipment_code","PR-Code der Ausstattung","Den tatsächlichen Code am Fahrzeugdatenträger oder in den Herstellerunterlagen ablesen. Nicht anhand eines gewünschten Treffers auswählen.");
+    ask("equipment_code","Ausstattungscode (PR-Code), falls bekannt","Nur ergänzen, wenn du den Code bereits kennst. Ohne Code kannst du Angebote ansehen; unklare Ausführungen bleiben gekennzeichnet.");
   if (!selected.oe_number && !eligible.some(row=>row.assessment.status==="reference_match"))
-    ask("oe_number","OE- oder Hersteller-Teilenummer des vorhandenen Teils","Falls verfügbar: Nummer am Altteil oder aus dem Herstellerkatalog. Bei unbekannter Nummer kannst du weiter recherchieren.");
+    ask("oe_number","Teilenummer, falls bereits vorhanden","Optional: Eine Original- oder Herstellerteilenummer kann den Abgleich ergänzen. Du musst dafür keine Nummer suchen oder ein Teil ausbauen.");
   const confirmed=eligible.filter(row=>row.assessment.status==="reference_match");
+  const needsAnswers=questions.some(question=>!question.optional);
+  const hasApplication=eligible.some(row=>row.match==="exact");
   return {
-    status:confirmed.length?"reference_match":questions.length?"needs_details":"needs_source",
+    status:confirmed.length?"reference_match":needsAnswers?"needs_details":hasApplication?"application_found":"needs_source",
     questions,matched_parts:confirmed.map(row=>row.id),
     message:confirmed.length?"Teilenummer und dokumentierte Motoranwendung stimmen überein. Weitere Ausstattungsbedingungen im Herstellerbeleg prüfen."
-      : questions.length?"Für die genaue Zuordnung fehlen noch Angaben. Die Treffer bleiben bis zum Beleg ungeprüft."
-      : "Angaben erfasst. Eine passende Herstellerzuordnung fehlt weiterhin; die Passform ist nicht bestätigt."
+      : needsAnswers?"Ergänze die bekannten Fahrzeugangaben für genauere Treffer. Eine Teilenummer musst du nicht kennen."
+      : hasApplication?"Herstelleranwendungen zu deinen Fahrzeugangaben gefunden. Offene Ausstattungsbedingungen stehen bei den Treffern. Eine Teilenummer ist für die Suche nicht nötig."
+      : "Wir suchen mit deinen Fahrzeugangaben weiter. Eine Teilenummer ist nicht nötig. Ohne passenden Herstellerbeleg bleibt die Passform ungeprüft."
   };
 }
