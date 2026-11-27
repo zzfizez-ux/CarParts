@@ -1,6 +1,7 @@
-import {effectiveVehicle, filterApplications, searchTerm, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=43";
-import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=40";
-import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=40";
+import {understandPartQuery} from "./supabase/functions/live-web-search/part-search.mjs?v=48";
+import {effectiveVehicle, filterApplications, searchTerm, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=48";
+import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=48";
+import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=48";
 
 // CarParts public vehicle catalogue — safe publishable key, read-only RLS-protected tables.
 // Do not put secret/service_role keys in browser code.
@@ -52,12 +53,15 @@ async function getEngines(make,model,year,series){
  return engineRequests.get(cacheKey);
 }
 
-async function findVerifiedParts(vehicle,term,details={}){
+async function findVerifiedParts(vehicle,term,details={},literal=false){
+ const understanding=understandPartQuery(term,{literal});
+ if(understanding.status==="ambiguous")return [];
+ term=understanding.query;
  details=validateSearchDetails(details);
  vehicle=effectiveVehicle(vehicle,details);
  term=searchTerm(term,details);
  const engines=await getEngines(vehicle.make,vehicle.model,vehicle.year,vehicle.series);
- const selected=filterApplications(await catalogueParts(readTable,engines,vehicle,term,researchCategory(term),true),vehicle,term,details);
+ const selected=filterApplications(await catalogueParts(readTable,engines,vehicle,term,literal?"":understanding.category,true),vehicle,term,details);
  if(!selected.length)return [];
  const ids=[...new Set(selected.map(p=>p.id))];
  const freshSince=new Date(Date.now()-7*24*60*60*1000).toISOString();
@@ -108,50 +112,7 @@ async function discoverOilRefs(vehicle){
  return {rows:result.rows,source:result.source,stored:result.stored||0};
 }
 // Research entries are never part of the verified fitment table.
-const researchCategories=[
- "Bremsbeläge","Bremsscheiben","Ölfilter","Kraftstofffilter","Luftfilter","Innenraumfilter",
- "Bremssättel","Bremsleitungen","Bremsflüssigkeit","Zündkerzen","Glühkerzen","Zahnriemen",
- "Keilrippenriemen","Wasserpumpe","Thermostat","Kühler","Kühlmittelschlauch","Lichtmaschine",
- "Anlasser","Batterie","Stoßdämpfer","Fahrwerksfedern","Querlenker","Spurstangenkopf",
- "Radlager","Kupplung","Schwungrad","Getriebeöl","Motoröl","Dichtungen",
- "Scheibenwischer","Scheinwerfer","Rückleuchten","Außenspiegel","Klimakompressor",
- "Lambdasonde","Luftmassenmesser","Turbolader","AGR-Ventil","Katalysator",
- "Partikelfilter","Auspuff","Einspritzdüsen","Zündspulen","Riemenspanner",
- "Bremsschlauch","Hauptbremszylinder","Kupplungsgeberzylinder","Kupplungsnehmerzylinder",
- "Zentralausrücker","Bremsbelagverschleißsensor","Traggelenk","Getriebefilter","Koppelstange",
- "Axialgelenk","Fahrzeugtür","Türaußenhaut","Scheinwerferhalter","Kompressor-Ansaugfilter",
- "Radbremszylinder","Bremstrommeln","Bremsbacken","Bremsbackensatz",
- "Antriebswelle","Kardanwelle","Differential","Getriebe","Steuerkette","Ölpumpe","Kraftstoffpumpe",
- "Inverter","Elektromotor","Hochvoltbatterie","Batteriemodul","Batteriemanagementsystem",
- "Onboard-Ladegerät","DC-DC-Wandler","Ladebuchse","Ladekabel","Batteriekühlung","Wärmepumpe"
-];
-function researchCategory(term){
- const t=words(term);
- const aliases={
-  "brake pads":"Bremsbeläge","brake pad":"Bremsbeläge","bremsklotze":"Bremsbeläge",
-  "bremsbelag":"Bremsbeläge","bremsscheibe":"Bremsscheiben","brake discs":"Bremsscheiben",
-  "brake rotors":"Bremsscheiben","oil filter":"Ölfilter","oilfilter":"Ölfilter",
-  "oelfilter":"Ölfilter","dieselfilter":"Kraftstofffilter","fuel filter":"Kraftstofffilter",
-  "air filter":"Luftfilter","cabin filter":"Innenraumfilter","spark plugs":"Zündkerzen",
-  "zundkerze":"Zündkerzen","gluhkerze":"Glühkerzen","headlight":"Scheinwerfer",
-  "windshield wipers":"Scheibenwischer","lenker":"Querlenker","achslenker":"Querlenker",
-  "control arm":"Querlenker","bremsschlauche":"Bremsschlauch","brake hose":"Bremsschlauch",
-  "traggelenke":"Traggelenk","fuhrungsgelenk":"Traggelenk","warnkontakt":"Bremsbelagverschleißsensor",
-  "geberzylinder":"Kupplungsgeberzylinder","nehmerzylinder":"Kupplungsnehmerzylinder",
-  "tuer":"Fahrzeugtür","tur":"Fahrzeugtür","tueraussenhaut":"Türaußenhaut",
-  "koppelstangen":"Koppelstange","spurstangenkopfe":"Spurstangenkopf",
-  "bremstrommel":"Bremstrommeln","brake drum":"Bremstrommeln","brake drums":"Bremstrommeln",
-  "bremsbacke":"Bremsbacken","brake shoes":"Bremsbacken","brake shoe":"Bremsbacken",
-  "brake shoe kit":"Bremsbackensatz","brake wheel cylinder":"Radbremszylinder",
-  "keilrippenriemensatz":"Keilrippenriemen",
-  "wechselrichter":"Inverter","onboard charger":"Onboard-Ladegerät","onboard ladegerat":"Onboard-Ladegerät",
-  "hochvolt batterie":"Hochvoltbatterie","hv batterie":"Hochvoltbatterie","traction battery":"Hochvoltbatterie",
-  "drive shaft":"Antriebswelle","antriebswellen":"Antriebswelle","e motor":"Elektromotor"
- };
- const synonym=Object.keys(aliases).sort((a,b)=>b.length-a.length).find(name=>t===name||t.startsWith(name+" "));
- if(synonym)return aliases[synonym];
- return [...researchCategories].sort((a,b)=>b.length-a.length).find(c=>t===words(c)||t.startsWith(words(c)+" "))||null;
-}
+function researchCategory(term){return understandPartQuery(term).category||null;}
 async function researchParts(vehicle,term){
  const category=researchCategory(term);
  if(!category)return null;
@@ -165,10 +126,10 @@ async function researchParts(vehicle,term){
  if(!result||!Array.isArray(result.rows))throw new Error("Research response invalid");
  return result;
 }
-async function searchLiveWeb(vehicle,term,details={}){
+async function searchLiveWeb(vehicle,term,details={},literal=false){
  const request={
   make:vehicle.make,model:vehicle.model,series:vehicle.series||"",year:Number(vehicle.year),
-  engine:vehicle.engine||"",variant:vehicle.variant||"",part:term.trim(),category:researchCategory(term)||"",details:validateSearchDetails(details)
+  engine:vehicle.engine||"",variant:vehicle.variant||"",part:term.trim(),category:literal?"":researchCategory(term)||"",details:validateSearchDetails(details),...(literal?{literal:true}:{})
  };
  const res=await fetch(base+"/functions/v1/live-web-search",{
   method:"POST",headers:{"apikey":key,"Content-Type":"application/json"},

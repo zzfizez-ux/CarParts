@@ -1,4 +1,4 @@
-import {engineInSeries, engineMatch, matchesPart, seriesKey} from "./vehicle-fitment.mjs?v=40";
+import {engineInSeries, engineMatch, matchesPart, seriesKey} from "./vehicle-fitment.mjs?v=48";
 
 export async function catalogueEngines(read, vehicle) {
   const rows = await read("car_engines", {

@@ -7,6 +7,7 @@ import {siteRequest} from "../_shared/site-config.mjs";
 import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
 import {conflictsWithApplications, effectiveVehicle, filterApplications, filterProducts, matchesRequestedReference, searchPlan, searchTerm, validateSearchDetails} from "./search-guide.mjs";
 import {lookupSerper, partsQuery, researchSourceUrl} from "./search-providers.mjs";
+import {understandPartQuery} from "./part-search.mjs";
 import {offerObservations} from "./offer-observations.mjs";
 
 const publishableKeys = () => Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}"));
@@ -14,7 +15,7 @@ const serviceKey = () => JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}"
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 // Brief operational cache only; Serper results never enter the catalogue or persistent cache.
 const transientResearch = new Map<string,{payload:any,expires:number}>();
-const fields = new Set(["make","model","year","engine","series","variant","part","category","details"]);
+const fields = new Set(["make","model","year","engine","series","variant","part","category","details","literal"]);
 
 async function database(table:string, filter:Record<string,string>, body?:unknown) {
   const key = serviceKey();
@@ -203,7 +204,8 @@ Deno.serve(async (request:Request)=>{
     if (!validText(p.make,90,true) || !validText(p.model,140,true) || !validText(p.part,80,true) ||
         !Number.isInteger(p.year) || p.year<1885 || p.year>new Date().getUTCFullYear()+1 ||
         !validText(p.engine??"",160) || !validText(p.series??"",160) ||
-        !validText(p.variant??"",100) || !validText(p.category??"",80)) {
+        !validText(p.variant??"",100) || !validText(p.category??"",80) ||
+        (p.literal!==undefined && typeof p.literal!=="boolean")) {
       return json({error:"Invalid vehicle/part"},422);
     }
     let details;
@@ -214,9 +216,12 @@ Deno.serve(async (request:Request)=>{
     },details);
     let term;
     try {term=searchTerm(normalize(p.part),details);}catch(error){return json({error:(error as Error).message},422);}
-    const category = normalize(p.category||"");
-    const key = await hashKey(["comparison-v1",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details]);
-    return json(await research(vehicle,term,category,key,details));
+    const understanding=understandPartQuery(term,{literal:p.literal===true});
+    if(understanding.status==="ambiguous")return json({status:"needs_clarification",understanding,products:[],results:[],references:[],provider:"none"});
+    term=understanding.query;
+    const category=p.literal ? "" : understanding.category || (understanding.status==="identifier"?normalize(p.category||""):"");
+    const key = await hashKey(["smart-v1",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details,p.literal===true]);
+    return json({...await research(vehicle,term,category,key,details),understanding});
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);
     console.error("CarParts research",error instanceof Error ? error.message : "unknown");

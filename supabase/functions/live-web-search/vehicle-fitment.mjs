@@ -1,3 +1,4 @@
+import {partAliases} from "./part-search.mjs?v=48";
 export function words(value) {
   return String(value ?? "").normalize("NFKD").toLowerCase().replace(/\p{M}/gu, "")
     .replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, " ").trim();
@@ -179,7 +180,7 @@ export function matchesPosition(term, ...labels) {
 
 export function matchesPartText(text, term, category = "") {
   const description = words(text);
-  const aliases = categories[words(category)] || categories[words(term)] || [];
+  const aliases = [...(categories[words(category)] || categories[words(term)] || []),...partAliases(category),...partAliases(term)];
   const tokens=words(term).split(" ").filter(token=>!(/^(vorne|vorn|vorderachse|front|hinten|hinterachse|rear|links|left|rechts|right|oben|unten)$/.test(token)));
   const unordered=tokens.length>0 && tokens.every(token=>phraseIn(description,token));
   return matchesPosition(term, text) && (

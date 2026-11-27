@@ -1,4 +1,4 @@
-import {hasPartNumber, partNumber, seriesEvidence, words} from "./vehicle-fitment.mjs?v=40";
+import {hasPartNumber, partNumber, seriesEvidence, words} from "./vehicle-fitment.mjs?v=48";
 
 const limits = {engine:160, oe_number:40, axle:10, side:10, equipment_code:3};
 const enums = {axle:["front","rear"], side:["left","right"]};
