@@ -63,7 +63,7 @@ export function recommendationEligible(row,now=Date.now()){
  const age=now-Date.parse(row.observedAt);
  return row.kind==="product"&&row.price!==null&&["application_found","reference_match"].includes(row.fitment)&&
   !row.conflicts.length&&!row.unresolved.length&&Number.isFinite(age)&&age>=-5*60*1000&&age<=DAY&&
-  !/outofstock|soldout|discontinued|preorder|backorder|nicht.*lieferbar|ausverkauft/i.test(row.availability)&&
+  !/outofstock|soldout|discontinued|preorder|backorder|nicht.*lieferbar|ausverkauft/i.test(row.availability.replace(/[\s_-]/g,""))&&
   ["new","unknown"].includes(row.itemCondition);
 }
 export function rated(row){return !!row.rating&&row.rating.best===5&&row.rating.worst===1&&row.rating.count>=5;}

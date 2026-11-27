@@ -21,7 +21,7 @@ test("price, rating and combined recommendations use distinct documented rules",
  const noRating=buildComparison({products:[{...product,facts:{}}]});assert.equal(comparisonRecommendations(noRating,now).quality,null);assert.equal(comparisonRecommendations(noRating,now).value,null);
 });
 test("unconfirmed fitment, open constraints, old prices and unavailable products never get tips",()=>{
- for(const value of [{fitment_status:"unconfirmed"},{fitment_unresolved:["equipment_code"]},{fitment_conflicts:["engine_unconfirmed"]},{observed_at:"2026-11-25T12:00:00Z"},{observed_at:""},{facts:{availability:"OutOfStock"}},{facts:{item_condition:"used"}},{price:0},{currency:"USD"}])assert.equal(recommendationEligible(row(value),now),false,JSON.stringify(value));
+ for(const value of [{fitment_status:"unconfirmed"},{fitment_unresolved:["equipment_code"]},{fitment_conflicts:["engine_unconfirmed"]},{observed_at:"2026-11-25T12:00:00Z"},{observed_at:""},{facts:{availability:"OutOfStock"}},{facts:{availability:"out_of_stock"}},{facts:{availability:"sold-out"}},{facts:{item_condition:"used"}},{price:0},{currency:"USD"}])assert.equal(recommendationEligible(row(value),now),false,JSON.stringify(value));
  assert.equal(recommendationEligible(row(),now),true);
  assert.equal(comparisonRecommendations([row({fitment_status:"unconfirmed"})],now).quality,null);
 });
