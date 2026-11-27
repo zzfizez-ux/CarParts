@@ -39,7 +39,7 @@ Serper-Ergebnisse werden ausschließlich kurzzeitig im Arbeitsspeicher gehalten,
 4. **Quellen durchsuchen:** zuerst den Herstellerkatalog und bekannte Händlerprodukte, danach bei Bedarf Serper und erreichbare Händlerseiten.
 5. **Optionale Zusatzangaben:** Teilenummer und Ausstattungscode sind standardmäßig eingeklappt. Niemand muss erst eine Nummer heraussuchen oder ein Teil ausbauen, um Angebote zu sehen. Bekannte Referenzen werden intern aus dem Herstellerkatalog verwendet. Nur wer eine Nummer bereits kennt, kann sie ergänzen. Ein PR-Code wird niemals aus einem gewünschten Treffer als Fahrzeugausstattung übernommen. Zusatzangaben lassen sich zurücksetzen.
 6. **Erneut abgleichen:** eingegebene Werte ändern die tatsächliche Suche und die Filter. Eine abweichende Achse, Seite, Referenz oder ein widersprechender bekannter PR-Code schließt den jeweiligen Katalogtreffer aus. Widersprechen Zusatzangaben bereits der im Suchbegriff genannten Position, wird eine Korrektur verlangt. Bei ausdrücklich angegebener Teilenummer müssen auch weitere Quellen und Händlerprodukte diese Nummer oder eine dokumentierte Querverknüpfung belegen; allgemeine Suchtreffer reichen dann nicht aus.
-7. **Ergebnis ausgeben:** Produktname, tatsächlicher Händlerpreis mit Währung und Abrufzeit, Produktfoto, Beschreibung, Produktlink und Abgleichstatus. Daten werden nur angezeigt, wenn die Quelle sie liefert. Bei blockierten Seiten oder fehlenden Metadaten bleiben gegebenenfalls nur Quellenlinks bzw. der Katalogartikel mit einer Kennzeichnung der fehlenden Produktdaten.
+7. **Ergebnis ausgeben:** Produktname, tatsächlicher Händlerpreis mit Währung und Abrufzeit, Produktfoto, Beschreibung, Produktlink und Abgleichstatus. Alle Produktangebote und weiteren Webquellen erscheinen im Angebotsvergleich. Fehlende Preise und Fotos bleiben ausdrücklich unbekannt. Eine Kategorie-, Ratgeber- oder blockierte Händlerseite wird nicht durch einen beliebigen Produktpreis ergänzt. Auch Produkte mit nur Preis oder nur Bild bleiben erhalten.
 
 Rückfragen werden während der aktuellen Fahrzeug-/Teilesuche gehalten und beim Wechsel zurückgesetzt. Sie werden nicht als neues Garagenprofil gespeichert. Die Suche fragt keine VIN ab und akzeptiert keine VIN in den Zusatzfeldern. Suchkriterien und Referenzen können Bestandteil des serverseitigen Recherchecaches und der Provideranfrage sein.
 
@@ -57,8 +57,21 @@ Es wird kein Prozentwert als Teile-Passgarantie vergeben. Weder eine Websuche no
 
 Es gibt keinen Vollständigkeitsanspruch für alle Fahrzeuge und Bauteile. Für einen umfassenderen, strukturierten Fahrzeug-Teile-Katalog ist später ein geeigneter lizenzierter Datenlieferant erforderlich. Für den Start wird keine solche Lizenz als Bestandteil der 50 € versprochen.
 
+## Preisvergleich und Empfehlungen
+
+- Jede auswertbare Händlerquelle hat eine eigene Karte mit EUR-Artikelpreis, Foto, Beschreibung, Abrufzeit und Fahrzeugabgleich. Ein neuer Händlerabruf ersetzt einen alten Preisstand auch dann, wenn der Preis inzwischen fehlt. Doppelte Produktlinks werden zusammengeführt.
+- Sortierung nach Artikelpreis, bekanntem Gesamtpreis, Produktbewertungen und Preis/Bewertung sowie der Preisfilter laufen im Browser. Sie lösen keine neue Serper-Abfrage aus. Bekannte komplette Angebote brauchen weiterhin keine Webabfrage. Zugelassene Händlerseiten aus bis zu acht Webtreffern werden auf Produktdaten geprüft; die bestehenden Tageslimits bleiben bestehen.
+- **Preis-Tipp:** niedrigster gelesener Artikelpreis mit Herstelleranwendung, ohne bekannte Konflikte oder offene Abgleichpunkte und höchstens 24 Stunden alt. Explizit ausverkaufte, gebrauchte oder überholte Angebote werden nicht empfohlen. Das ist kein Preis pro Stück und keine Garantie für den günstigsten gelieferten Einkauf.
+- **Qualität / Bewertungen:** höchste ausdrücklich diesem Produkt zugeordnete Händlerbewertung auf einer 1–5-Skala mit mindestens fünf Bewertungen und demselben Fahrzeugabgleich. Das ist eine Orientierung aus Produktbewertungen, kein unabhängiger Haltbarkeits- oder Materialtest. Marke und Preis allein führen zu keiner Qualitätsauszeichnung. Ohne Daten wird keine Qualitätsrangfolge erfunden.
+- **Preis & Bewertung:** niedrigster Artikelpreis unter den so abgeglichenen Angeboten mit mindestens 4/5 bei mindestens fünf Produktbewertungen.
+- Lieferumfang wird nur aus einer ausdrücklich angegebenen Packungsstückzahl übernommen. Ein günstigerer identischer Artikel wird nur bei gleichem Hersteller, gleicher Artikelnummer, gleichem Zustand und gleicher bekannter Packungsstückzahl hervorgehoben. Stück-/Satzpreise werden nicht geraten.
+- Versand und Gesamtpreis erscheinen nur bei einer eindeutigen, unbedingten EUR-Versandregel für Deutschland. Sonst stehen sie auf „nicht angegeben“ bzw. „noch offen“. Rabattgrenzen, variable Versandregeln und Variantenpreise werden nicht zu einem scheinbar sicheren Gesamtpreis verrechnet.
+- Herstellerbelegte Preis-/Bildbeobachtungen werden wie bisher gespeichert. Bewertungen, Stückzahl und Versandregeln stammen aus dem aktuellen Händlerabruf; dafür werden weder neue Tabellen noch ein weiteres Abo benötigt.
+
 ## Dateien und Prüfung
 
+- `offer-comparison.js` / `offer-comparison-ui.js`: Zusammenführen, Karten, lokale Sortierung und transparente Empfehlungen.
+- `supabase/functions/live-web-search/offer-facts.mjs`: explizite Produktbewertungen, Lieferumfang und Versanddaten.
 - `search-guide-ui.js`: Rückfrageformular und erneute Suche.
 - `supabase/functions/live-web-search/search-guide.mjs`: Eingabeprüfung, gemeinsame Regeln und Rückfrageplanung.
 - `supabase/functions/live-web-search/index.ts`: Ablauf, Datenbankbudgets und Serper-Anschluss.

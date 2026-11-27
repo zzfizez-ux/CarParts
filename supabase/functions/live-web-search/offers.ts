@@ -1,3 +1,4 @@
+import {money, offerFacts} from "./offer-facts.mjs";
 import {parseHTML} from "npm:linkedom@0.18.12";
 import {hasPartNumber, matchesPartText, matchesPosition, partNumber, seriesEvidence, words} from "./vehicle-fitment.mjs";
 
@@ -35,8 +36,8 @@ export type Article = {
 type Page = {url:string; article?:Article; reviewed222?:boolean};
 type SourceFailure = {merchant:string; reason:string};
 type Product = {
-  name:string; price:number; currency:string; image:string; url:string; merchant:string;
-  description:string; part_id?:number; sku:string; condition:string; source_url:string; evidence:string; observed_at:string
+  name:string; price:number|null; currency:string; image:string; url:string; merchant:string;
+  description:string; manufacturer:string; facts:ReturnType<typeof offerFacts>; metadata_status:string; part_id?:number; sku:string; condition:string; source_url:string; evidence:string; observed_at:string
 };
 
 function httpsUrl(raw:string, base?:string) {
@@ -109,13 +110,6 @@ function metadata(doc:ReturnType<typeof parseHTML>["document"], key:string) {
   return value?.getAttribute("content") || "";
 }
 
-function parsePrice(value:unknown) {
-  const raw = String(value ?? "").trim().replace(/[\s\u00a0]/g,"");
-  if (/^\d+(\.\d{1,2})?$/.test(raw)) return Number(raw);
-  if (/^\d+(\.\d{3})*(,\d{1,2})?$/.test(raw)) return Number(raw.replaceAll(".","").replace(",","."));
-  return NaN;
-}
-
 async function product(source:Page, vehicle:Vehicle, term:string, category:string):Promise<Product|null> {
   const {doc,url} = await shopPage(source.url);
   const nodes = [];
@@ -129,15 +123,22 @@ async function product(source:Page, vehicle:Vehicle, term:string, category:strin
       }
     } catch { /* Other metadata on the page may still contain the product. */ }
   }
-  const item = nodes.find(node => node && [node["@type"]].flat().some(t => t==="Product" || t==="https://schema.org/Product"));
-  const offer = [item?.offers].flat().find(value => value?.price != null);
-  const price = parsePrice(offer?.price ?? (metadata(doc,"product:price:amount") || metadata(doc,"price")));
+  const productNodes=nodes.filter(node=>node && [node["@type"]].flat().some(t=>t==="Product"||t==="https://schema.org/Product"));
+  const item=source.article
+    ? productNodes.find(node=>hasPartNumber([node.name,node.mpn,node.sku].join(" "),source.article!.manufacturer_part_number))
+    : productNodes.length===1 ? productNodes[0] : productNodes.find(node=>httpsUrl(node.url)?.href===url.href);
+  const pageOffers=[item?.offers].flat().filter(value=>value && typeof value==="object");
+  const matchingOffers=pageOffers.filter(value=>httpsUrl(value.url,url.href)?.href===url.href);
+  const offer=pageOffers.length===1 ? pageOffers[0] : matchingOffers.length===1 ? matchingOffers[0] : undefined;
+  const ambiguous=pageOffers.length>1&&!offer;
+  const parsedPrice = ambiguous ? null : money(offer?.price ?? (metadata(doc,"product:price:amount") || metadata(doc,"price")));
   const currency = String(offer?.priceCurrency || metadata(doc,"product:price:currency") || metadata(doc,"priceCurrency"));
   const image = [item?.image].flat()[0];
   const imageRaw = (typeof image==="string" ? image : image?.url || image?.contentUrl) || metadata(doc,"og:image");
   const photo = typeof imageRaw==="string" ? httpsUrl(imageRaw,url.href) : null;
   const name = String(item?.name || doc.querySelector("h1")?.textContent || "").trim();
-  if (!name || (!Number.isFinite(price) || price<=0) || currency!=="EUR" || !photo) throw new Error("product_metadata");
+  if (!name || (!item && !source.article)) throw new Error("product_metadata");
+  const price=currency==="EUR" && parsedPrice!==null && parsedPrice>0 ? parsedPrice : null;
 
   const sku = String(item?.mpn || item?.sku || metadata(doc,"mpn") || metadata(doc,"sku") || "");
   const identity = [name,sku,decodeURI(url.pathname)].join(" ");
@@ -162,7 +163,9 @@ async function product(source:Page, vehicle:Vehicle, term:string, category:strin
     : "Baureihe laut Händlerangebot. Motor, Ausstattung und OE-Nummer am Fahrzeug abgleichen.");
   return {
     description:String(item?.description || metadata(doc,"description") || name).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,1400),
-    name:name.slice(0,200), price, currency, image:photo.href, url:url.href, merchant:stores[url.hostname],
+    name:name.slice(0,200), price, currency:price===null?"":currency, image:photo?.href||"",
+    manufacturer:(article?.manufacturer || (typeof item?.brand==="string"?item.brand:item?.brand?.name) || "").slice(0,120),
+    facts:offerFacts(item,offer),metadata_status:price!==null&&photo?"complete":price!==null?"price_only":photo?"image_only":"identity_only", url:url.href, merchant:stores[url.hostname],
     part_id:article?.part_id,
     sku:(article?.manufacturer_part_number || sku).slice(0,90), condition,
     source_url:article?.source_url||"", evidence:article ? "manufacturer" : "merchant",
@@ -225,12 +228,12 @@ export async function searchOffers(vehicle:Vehicle, term:string, category:string
     const eligible = [...new Map(discovered.flat().map(page=>[page.url,page])).values()];
     products = await fetchProducts(eligible.filter(page=>!pages.some(previous=>previous.url===page.url)));
   }
-  return {products:[...new Map(products.map(item=>[item.url,item])).values()].sort((a,b)=>a.price-b.price),failures};
+  return {products:[...new Map(products.map(item=>[item.url,item])).values()].sort((a,b)=>(a.price??Infinity)-(b.price??Infinity)),failures};
 }
 
 export async function offersFromWeb(hits:{url:string}[], vehicle:Vehicle, term:string, category:string, articles:Article[] = []) {
   const failures:SourceFailure[] = [];
-  const sources = hits.filter(hit=>merchantUrl(hit.url)).slice(0,3);
+  const sources = [...new Map(hits.filter(hit=>merchantUrl(hit.url)).map(hit=>[hit.url,hit])).values()].slice(0,8);
   const rows = await Promise.all(sources.map(async hit=>{
     try {
       const text=[(hit as any).title,(hit as any).snippet].join(" ");
@@ -239,5 +242,5 @@ export async function offersFromWeb(hits:{url:string}[], vehicle:Vehicle, term:s
     }
     catch(error) { recordFailure(failures,hit.url,error); return null; }
   }));
-  return {products:rows.filter((row):row is Product=>row!==null).sort((a,b)=>a.price-b.price),failures};
+  return {products:rows.filter((row):row is Product=>row!==null).sort((a,b)=>(a.price??Infinity)-(b.price??Infinity)),failures};
 }

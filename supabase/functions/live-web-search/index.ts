@@ -157,11 +157,14 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
   const references = [...conditional,...(reviewed.status==="fulfilled" ? reviewed.value : [])];
   const direct = merchantClaim==="reserved" ? await searchOffers(vehicle,term,category,articles)
     : {products:[],failures:[]};
-  const web = direct.products.length ? {status:"skipped",provider:"",results:[]} : await webResearch(key,vehicle,term,category,details,foundParts,excluded);
-  const fallback = merchantClaim==="reserved" && !direct.products.length && web.results.length
+  const hasComplete=direct.products.some(product=>product.price!==null && product.image);
+  const web = hasComplete ? {status:"skipped",provider:"",results:[]} : await webResearch(key,vehicle,term,category,details,foundParts,excluded);
+  const fallback = merchantClaim==="reserved" && !hasComplete && web.results.length
     ? await offersFromWeb(web.results,vehicle,term,category,articles) : {products:[],failures:[]};
-  const products = filterProducts(direct.products.length ? direct.products : fallback.products,foundParts,term,details,excluded).map(product=>({
-    ...product,fitment_status:foundParts.find(part=>part.id===product.part_id)?.assessment.status || "unconfirmed"
+  const products = filterProducts([...new Map([...direct.products,...fallback.products].map(product=>[product.url,product])).values()],foundParts,term,details,excluded).map(product=>({
+    ...product,fitment_status:foundParts.find(part=>part.id===product.part_id)?.assessment.status || "unconfirmed",
+    fitment_conflicts:foundParts.find(part=>part.id===product.part_id)?.assessment.conflicts || [],
+    fitment_unresolved:foundParts.find(part=>part.id===product.part_id)?.assessment.unresolved || []
   }));
   const observations=offerObservations(products);
   if (observations.length) {
@@ -212,7 +215,7 @@ Deno.serve(async (request:Request)=>{
     let term;
     try {term=searchTerm(normalize(p.part),details);}catch(error){return json({error:(error as Error).message},422);}
     const category = normalize(p.category||"");
-    const key = await hashKey(["guided-v4",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details]);
+    const key = await hashKey(["comparison-v1",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details]);
     return json(await research(vehicle,term,category,key,details));
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);
