@@ -819,7 +819,12 @@ $("year").onchange=()=>{clearEngine();loadEngines();vehicleChanged();};
 if(hasSeries){
  $("series").addEventListener("seriesloaded",()=>{
   loadEngines();
-  vehicleChanged();
+  // Background enrichment must not cancel a search for an unchanged vehicle.
+  const current=state.vehicle;
+  const unchanged=current&&current.make===$("make").value&&current.model===$("model").value&&
+   current.series===selectedSeries()&&String(current.year)===$("year").value&&
+   current.engine===chosenEngine()&&current.variant===$("variant").value;
+  if(!unchanged)vehicleChanged();
  });
  $("series").onchange=()=>{
   const year=$("year").value;
