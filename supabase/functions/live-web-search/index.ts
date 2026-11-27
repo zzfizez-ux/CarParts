@@ -220,7 +220,7 @@ Deno.serve(async (request:Request)=>{
     if(understanding.status==="ambiguous")return json({status:"needs_clarification",understanding,products:[],results:[],references:[],provider:"none"});
     term=understanding.query;
     const category=p.literal ? "" : understanding.category || (understanding.status==="identifier"?normalize(p.category||""):"");
-    const key = await hashKey(["smart-v1",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details,p.literal===true]);
+    const key = await hashKey(["smart-v2",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details,p.literal===true]);
     return json({...await research(vehicle,term,category,key,details),understanding});
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);

@@ -47,8 +47,8 @@ Kupplung|Kupplungssatz;Kupplungsscheibe;clutch;clutch kit
 Kupplungsgeberzylinder|Kupplungsgeber;Geberzylinder;clutch master cylinder
 Kupplungsnehmerzylinder|Kupplungsnehmer;Nehmerzylinder;clutch slave cylinder
 Zentralausrücker|Ausrücklager;central clutch release device
-Kupplungsaktuator|Kupplungssteller;Kupplung Aktuator;Kupplung Stellmotor;clutch actuator
-Getriebesteuergerät|Getriebe Steuergerät;Getriebesteuerung;Automatik Steuergerät;transmission control unit;TCU
+Kupplungsaktuator|Kupplungssteller;Kupplung Aktuator;Kupplung Stellmotor;Aktuator Kupplung;clutch actuator
+Getriebesteuergerät|Getriebe Steuergerät;Getriebesteuerung;Automatik Steuergerät;Steuergerät Automatikgetriebe;Steuergerät Getriebe;Automatikgetriebesteuergerät;transmission control unit;TCU
 Getriebemechatronik|DSG Mechatronik;Mechatronik Getriebe;Mechatronik;Getriebe Mechatronik
 Motorsteuergerät|Motor Steuergerät;Motorsteuerung;engine control unit;ECU
 Schwungrad|Zweimassenschwungrad;ZMS;flywheel

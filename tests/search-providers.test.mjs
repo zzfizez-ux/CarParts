@@ -129,3 +129,10 @@ test("research sources exclude search-engine session redirects and eBay listings
  assert.equal(researchSourceUrl("https://www.ebay.de/itm/123456789"),null);
  assert.equal(researchSourceUrl("https://levoil.de/produkt/filter/").hostname,"levoil.de");
 });
+
+
+test("discovery omits unrelated engine-label annotations without changing fitment data",()=>{
+ const selected={make:"Volkswagen",model:"Golf",series:"Golf VII",year:2015,engine:"Golf VII 2.0 TDI 150 PS (CRBC) – mit Wassersensor",variant:"DSG"};
+ const phrase=partsQuery(selected,"Getriebesteuergerät");
+ assert.ok(phrase.startsWith("Getriebesteuergerät"));assert.ok(phrase.includes("CRBC"));assert.ok(phrase.includes("DSG"));assert.ok(!phrase.includes("Wassersensor"));assert.ok(selected.engine.includes("mit Wassersensor"));
+});

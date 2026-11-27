@@ -21,6 +21,8 @@ test("plain language, German/English aliases and new EV parts share the same cat
  assert.equal(understandPartQuery("Ladekabel Typ 2").category,"Ladekabel");
  assert.equal(matchesPartText("Clutch actuator Golf VII","Kupplungsaktuator","Kupplungsaktuator"),true);
  assert.equal(matchesPartText("Gearbox transmission control unit Golf VII","Getriebesteuergerät","Getriebesteuergerät"),true);
+ assert.equal(matchesPartText("Steuergerät, Automatikgetriebe Golf 7 2.0 TDI 150 PS","Getriebesteuergerät","Getriebesteuergerät"),true);
+ assert.equal(matchesPartText("Motorsteuergerät Golf VII","Getriebesteuergerät","Getriebesteuergerät"),false);
 });
 test("positions, dimensions, unknown requirements and complete product identifiers survive correction",()=>{
  assert.equal(understandPartQuery("bremsbelege hinten rechts").query,"Bremsbeläge hinten rechts");
