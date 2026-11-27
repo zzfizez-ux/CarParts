@@ -263,10 +263,17 @@ function vehicleLabel(vehicle){
  const generation=seriesKey===modelKey||seriesKey?.startsWith(modelKey+" ")?series:[model,series].filter(Boolean).join(" ");
  return make+" "+generation;
 }
+let lastVehicleProfile="";
 function vehicleChanged(){
+ refreshVinComparison();
+ const profile=JSON.stringify([$("make").value,$("model").value,hasSeries?selectedSeries():"",$("year").value,
+  chosenEngine(),$("variant").value,vinResult.vin||"",vinResult.status]);
+ // Repeated change events and background enrichment must preserve an active search.
+ if(profile===lastVehicleProfile)return;
+ lastVehicleProfile=profile;
  searchDetails={};guideIdentity="";skipPreflight=false;
  $("searchGuide").replaceChildren();$("searchGuide").hidden=true;
- updatePartsCoverage();updateRegistryEvidence();++catalogRequest;refreshVinComparison();
+ updatePartsCoverage();updateRegistryEvidence();++catalogRequest;
  const make=$("make").value,model=$("model").value,year=$("year").value,
   engine=chosenEngine(),variant=$("variant").value;
  const score=(make?25:0)+(model?25:0)+(year?15:0)+(engine?20:0)+(variant?5:0)+
