@@ -1,9 +1,9 @@
 import {understandPartQuery} from "./supabase/functions/live-web-search/part-search.mjs?v=48";
 import {bindPartSearchHints,renderQueryUnderstanding} from "./smart-search-ui.js?v=48";
-import {effectiveVehicle, searchPlan, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=48";
-import {renderOfferComparison} from "./offer-comparison-ui.js?v=47";
+import {effectiveVehicle, searchPlan, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=49";
+import {renderOfferComparison} from "./offer-comparison-ui.js?v=49";
 import {renderSearchGuide} from "./search-guide-ui.js?v=43";
-import "./supabase-catalog.js?v=48";
+import "./supabase-catalog.js?v=49";
 import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=38";
 import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=48";
 
@@ -640,7 +640,7 @@ async function showSharedResearch(vehicle,term,requestId,catalogue){
    message.textContent=notice || "Angebote aus der letzten Händlerabfrage.";
    panel.append(message);
   }
-  return {catalogueProducts,hasProducts:comparison.rows.some(row=>row.kind==="product"),hasReferences:references.length>0||links.length>0,busy:data.status==="busy",comparison:comparison.rows.length>0};
+  return {catalogueProducts,hasProducts:comparison.offers.length>0,hasReferences:references.length>0||comparison.rows.length>0,busy:data.status==="busy",comparison:comparison.rows.length>0};
  }catch{
   if(requestId!==catalogRequest)return {};
   panel.textContent="Händlerrecherche gerade nicht erreichbar. Vorhandene Preisstände bleiben im Vergleich sichtbar.";

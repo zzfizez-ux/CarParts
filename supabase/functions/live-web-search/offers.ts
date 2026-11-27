@@ -1,3 +1,4 @@
+import {requestedProduct} from "./product-kind.mjs";
 import {money, offerFacts} from "./offer-facts.mjs";
 import {parseHTML} from "npm:linkedom@0.18.12";
 import {hasPartNumber, matchesPartText, matchesPosition, partNumber, seriesEvidence, words} from "./vehicle-fitment.mjs";
@@ -6,6 +7,7 @@ const frankfurt = "shop.autoersatzteile-frankfurt.de";
 const kunzmann = "www.kunzmann.de";
 const stores: Record<string,string> = {
   [frankfurt]:"Autoersatzteile Frankfurt", [kunzmann]:"Autohaus Kunzmann",
+  "www.autodoc.lu":"AUTODOC Luxemburg", "www.autodoc.at":"AUTODOC Österreich",
   "levoil.de":"levoil", "www.autodoc.de":"AUTODOC", "www.atp-autoteile.de":"ATP Autoteile",
   "www.kfzteile24.de":"kfzteile24", "www.kfzparts24.de":"KfzParts24",
   "www.motointegrator.de":"Motointegrator", "www.autoteiledirekt.de":"Autoteile Direkt",
@@ -33,7 +35,7 @@ export type Article = {
   part_id:number; manufacturer:string; manufacturer_part_number:string; condition:string;
   source_url:string; urls:string[];
 };
-type Page = {url:string; article?:Article; reviewed222?:boolean};
+type Page = {url:string; article?:Article; reviewed222?:boolean; context?:string};
 type SourceFailure = {merchant:string; reason:string};
 type Product = {
   name:string; price:number|null; currency:string; image:string; url:string; merchant:string;
@@ -110,8 +112,8 @@ function metadata(doc:ReturnType<typeof parseHTML>["document"], key:string) {
   return value?.getAttribute("content") || "";
 }
 
-async function product(source:Page, vehicle:Vehicle, term:string, category:string):Promise<Product|null> {
-  const {doc,url} = await shopPage(source.url);
+async function product(source:Page, vehicle:Vehicle, term:string, category:string, loaded?:Awaited<ReturnType<typeof shopPage>>):Promise<Product|null> {
+  const {doc,url} = loaded||await shopPage(source.url);
   const nodes = [];
   for (const script of doc.querySelectorAll('script[type="application/ld+json"]')) {
     try {
@@ -127,6 +129,7 @@ async function product(source:Page, vehicle:Vehicle, term:string, category:strin
   const item=source.article
     ? productNodes.find(node=>hasPartNumber([node.name,node.mpn,node.sku].join(" "),source.article!.manufacturer_part_number))
     : productNodes.length===1 ? productNodes[0] : productNodes.find(node=>httpsUrl(node.url)?.href===url.href);
+  if(item?.url && httpsUrl(item.url,url.href)?.href!==url.href && !source.article)throw new Error("product_metadata");
   const pageOffers=[item?.offers].flat().filter(value=>value && typeof value==="object");
   const matchingOffers=pageOffers.filter(value=>httpsUrl(value.url,url.href)?.href===url.href);
   const offer=pageOffers.length===1 ? pageOffers[0] : matchingOffers.length===1 ? matchingOffers[0] : undefined;
@@ -140,6 +143,7 @@ async function product(source:Page, vehicle:Vehicle, term:string, category:strin
   if (!name || (!item && !source.article)) throw new Error("product_metadata");
   const price=currency==="EUR" && parsedPrice!==null && parsedPrice>0 ? parsedPrice : null;
 
+  if(!requestedProduct(name,term,category))return null;
   const sku = String(item?.mpn || item?.sku || metadata(doc,"mpn") || metadata(doc,"sku") || "");
   const identity = [name,sku,decodeURI(url.pathname)].join(" ");
   const evidence = seriesEvidence(vehicle,identity);
@@ -154,7 +158,7 @@ async function product(source:Page, vehicle:Vehicle, term:string, category:strin
   } else if (source.reviewed222) {
     if (!/\b(w222|v222)\b/.test(words(identity))) return null;
   } else {
-    if (evidence!=="match" || !matchesPartText(name,term,category)) return null;
+    if ((evidence!=="match" && !(evidence==="unknown"&&seriesEvidence(vehicle,source.context||"")==="match")) || !matchesPartText(name,term,category)) return null;
     // These remain unconfirmed merchant candidates, including safety-relevant parts.
   }
 
@@ -173,23 +177,50 @@ async function product(source:Page, vehicle:Vehicle, term:string, category:strin
   };
 }
 
-async function findPages(input:string, article:Article|undefined, vehicle:Vehicle, term:string, category:string) {
-  const {doc,url} = await shopPage(input);
+async function findPages(input:string, article:Article|undefined, vehicle:Vehicle, term:string, category:string, loaded?:Awaited<ReturnType<typeof shopPage>>) {
+  const {doc,url} = loaded||await shopPage(input);
   const pages:Page[] = [];
-  const links = doc.querySelectorAll('.productbox a[href], .product-wrapper a[href], a.woocommerce-LoopProduct-link[href], a.woocommerce-loop-product__link[href]');
-  for (const link of links) {
-    const target = merchantUrl(link.getAttribute("href")||"",url.href);
+  const links = doc.querySelectorAll('.productbox a[href], .product-wrapper a[href], .listing-item a[href], .listing-item__name a[href], .product-list__item a[href], a.woocommerce-LoopProduct-link[href], a.woocommerce-loop-product__link[href]');
+  const context=[doc.querySelector("h1")?.textContent,doc.title].filter(Boolean).join(" ");
+  const candidates=[...links].map(link=>({href:link.getAttribute("href")||"",text:link.textContent||""}));
+  for(const script of doc.querySelectorAll('script[type="application/ld+json"]')){
+   try{
+    const roots=[JSON.parse(script.textContent||"null")].flat();
+    const nodes=roots.flatMap(root=>[root,...(Array.isArray(root?.["@graph"])?root["@graph"]:[])]);
+    for(const node of nodes){
+     for(const list of [node?.itemListElement].flat().filter(Boolean)){
+      const item=list.item||list;candidates.push({href:typeof item==="string"?item:item.url||item["@id"]||"",text:item.name||list.name||""});
+     }
+     if([node?.["@type"]].flat().some(type=>type==="Product"||type==="https://schema.org/Product"))candidates.push({href:node.url||"",text:node.name||""});
+    }
+   }catch{ /* Only explicit links can be followed. */ }
+  }
+  for (const link of candidates) {
+    const target = merchantUrl(link.href,url.href);
     if (!target || target.hostname!==url.hostname || target.search || target.pathname==="/" ||
         pages.some(page=>page.url===target.href)) continue;
-    const text = decodeURI(target.pathname)+" "+link.textContent;
+    const text = decodeURI(target.pathname)+" "+link.text;
+    if(!requestedProduct(link.text||text,term,category))continue;
     const relevant = article ? hasPartNumber(text,article.manufacturer_part_number)
-      : seriesEvidence(vehicle,text)==="match" && matchesPartText(text,term,category);
-    if (relevant) pages.push({url:target.href,article});
+      : seriesEvidence(vehicle,text+" "+context)==="match" && matchesPartText(text,term,category);
+    if (relevant) pages.push({url:target.href,article,context});
     if (pages.length===2) break;
   }
   return pages;
 }
 
+
+async function productsAt(source:Page,vehicle:Vehicle,term:string,category:string){
+ let loaded:Awaited<ReturnType<typeof shopPage>>|undefined=await shopPage(source.url);
+ try{const found=await product(source,vehicle,term,category,loaded);if(found)return [found];}catch(error){if(!(error instanceof Error)||error.message!=="product_metadata")throw error;}
+ const pages=await findPages(source.url,source.article,vehicle,term,category,loaded);
+ const targets=pages.filter(page=>page.url!==loaded!.url.href).slice(0,2);
+ loaded=undefined;
+ const rows=await Promise.all(targets.map(async page=>{
+  try{return await product(page,vehicle,term,category);}catch{return null;}
+ }));
+ return rows.filter((row):row is Product=>row!==null);
+}
 function recordFailure(failures:SourceFailure[], url:string, error:unknown) {
   const merchant = merchantUrl(url)?.hostname;
   if (!merchant) return;
@@ -208,9 +239,9 @@ export async function searchOffers(vehicle:Vehicle, term:string, category:string
     }
   }
   const fetchProducts = (sources:Page[]) => Promise.all(sources.slice(0,5).map(async source => {
-    try { return await product(source,vehicle,term,category); }
-    catch(error) { recordFailure(failures,source.url,error); return null; }
-  })).then(rows => rows.filter((row):row is Product=>row!==null));
+    try { return await productsAt(source,vehicle,term,category); }
+    catch(error) { recordFailure(failures,source.url,error); return []; }
+  })).then(rows => rows.flat());
 
   let products = await fetchProducts(pages);
   if (!products.length) {
@@ -233,14 +264,19 @@ export async function searchOffers(vehicle:Vehicle, term:string, category:string
 
 export async function offersFromWeb(hits:{url:string}[], vehicle:Vehicle, term:string, category:string, articles:Article[] = []) {
   const failures:SourceFailure[] = [];
-  const sources = [...new Map(hits.filter(hit=>merchantUrl(hit.url)).map(hit=>[hit.url,hit])).values()].slice(0,8);
-  const rows = await Promise.all(sources.map(async hit=>{
+  const sources = [...new Map(hits.filter(hit=>merchantUrl(hit.url)).map(hit=>[hit.url,hit])).values()].slice(0,4);
+  let cursor=0;
+  const rows:Product[][]=[];
+  const worker=async()=>{while(cursor<sources.length){const hit=sources[cursor++];
+   const result=await (async()=>{
     try {
       const text=[(hit as any).title,(hit as any).snippet].join(" ");
       const article=articles.find(article=>hasPartNumber(text,article.manufacturer_part_number));
-      return await product({...hit,article},vehicle,term,category);
+      return await productsAt({...hit,article},vehicle,term,category);
     }
-    catch(error) { recordFailure(failures,hit.url,error); return null; }
-  }));
-  return {products:rows.filter((row):row is Product=>row!==null).sort((a,b)=>(a.price??Infinity)-(b.price??Infinity)),failures};
+    catch(error) { recordFailure(failures,hit.url,error); return []; }
+   })();rows.push(result);
+  }};
+  await Promise.all([worker(),worker()]);
+  return {products:rows.flat().sort((a,b)=>(a.price??Infinity)-(b.price??Infinity)),failures};
 }

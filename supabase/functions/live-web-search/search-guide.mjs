@@ -50,7 +50,7 @@ export function matchesRequestedReference(text,requested,applications=[]) {
   if (hasPartNumber(text,requested)) return true;
   const key=partNumber(requested);
   return applications.some(row=>[row.manufacturer_part_number,...(row.oe||[])].some(number=>partNumber(number)===key) &&
-    hasPartNumber(text,row.manufacturer_part_number));
+    (hasPartNumber(text,row.manufacturer_part_number)||(row.oe||[]).some(number=>hasPartNumber(text,number))));
 }
 
 export function conflictsWithApplications(text,excluded=[]) {
@@ -61,8 +61,9 @@ export function filterProducts(products,applications,term,details={},excluded=[]
   if(requestConflicts(term,details).length)return [];
   return products.filter(product=>{
     if(requestConflicts(searchTerm(term,details)+" "+product.name).length)return false;
-    const matched=applications.filter(row=>row.id===product.part_id && product.evidence==="manufacturer");
     const identity=[product.name,product.sku,product.description,product.url].filter(Boolean).join(" ");
+    const matched=applications.filter(row=>(row.id===product.part_id && (product.evidence==="manufacturer"||product.evidence==="shopping")) ||
+      (product.evidence==="shopping"&&row.id===product.reference_part_id&&(row.oe||[]).some(number=>hasPartNumber(identity,number))));
     return !conflictsWithApplications(identity,excluded) && matchesRequestedReference(identity,details.oe_number,matched);
   });
 }

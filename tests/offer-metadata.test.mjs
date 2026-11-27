@@ -43,3 +43,13 @@ test("different variant offer prices do not become an arbitrary headline price",
  const matched=await read({...base,offers:[{price:10,priceCurrency:"EUR",url:"https://levoil.de/variant-a"},{price:20,priceCurrency:"EUR",url:"https://levoil.de/filter"}]});
  assert.equal(matched[0].price,20);
 });
+
+test("a category resolves bounded product links and excludes connector accessories before following them",async()=>{
+ const calls=[];globalThis.fetch=async raw=>{
+  const url=String(raw);calls.push(url);
+  if(url.endsWith('/category'))return new Response('<html><title>Steuergerät BMW E92</title><h1>Getriebesteuergerät BMW E92</h1><script type="application/ld+json">'+JSON.stringify({'@type':'ItemList',itemListElement:[{item:{name:'Steckgehäuse Automatikgetriebe-Steuereinheit',url:'https://www.pkwteile.de/aic/123'}},{item:{name:'Getriebesteuergerät',url:'https://www.pkwteile.de/bosch/456'}}]})+'</script></html>',{headers:{'content-type':'text/html'}});
+  return new Response('<html><script type="application/ld+json">'+JSON.stringify({...base,name:'Getriebesteuergerät',url,brand:'BOSCH',mpn:'TCU123',image:'https://www.pkwteile.de/tcu.jpg',offers:{price:699,priceCurrency:'EUR'}})+'</script></html>',{headers:{'content-type':'text/html'}});
+ };
+ const result=await offersFromWeb([{url:'https://www.pkwteile.de/category'}],{make:'BMW',model:'3er',series:'E92',year:2011,engine:'335i',variant:''},'Getriebesteuergerät','Getriebesteuergerät');
+ assert.equal(result.products.length,1);assert.equal(result.products[0].price,699);assert.equal(result.products[0].url,'https://www.pkwteile.de/bosch/456');assert.ok(!calls.some(url=>url.includes('/aic/')));
+});
