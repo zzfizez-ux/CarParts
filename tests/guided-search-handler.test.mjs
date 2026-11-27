@@ -128,3 +128,22 @@ test("a price-only direct product survives alongside a complete web-discovered p
  assert.ok(body.products.every(p=>Array.isArray(p.fitment_conflicts)&&Array.isArray(p.fitment_unresolved)));
  }finally{delete env.SERPER_API_KEY;}
 });
+
+test("ambiguous clutch wording is clarified before any database, merchant or paid request",async()=>{
+ const calls=stub();
+ const body=await (await handler(request({...vehicle,part:"kupllung steuergeret",category:"Kupplung",details:{}}))).json();
+ assert.equal(body.status,"needs_clarification");assert.equal(body.understanding.suggestions.length,3);assert.equal(body.products.length,0);assert.equal(calls.length,0);
+});
+test("the complete handler searches a corrected part while keeping supplied reference constraints",async()=>{
+ stub();
+ const body=await (await handler(request({...vehicle,part:"oelfillter",category:"",details:{oe_number:"03N115562"}}))).json();
+ assert.equal(body.understanding.query,"Ölfilter");assert.equal(body.understanding.status,"corrected");assert.ok(body.products.length>0);assert.ok(body.products.every(p=>p.fitment_status==="reference_match"));
+ stub();const wrong=await (await handler(request({...vehicle,part:"oelfillter",category:"",details:{oe_number:"FALSCH1234"}}))).json();assert.deepEqual(wrong.products,[]);
+});
+test("explicit literal search keeps the original wording and normal safety checks still apply",async()=>{
+ stub();
+ const body=await (await handler(request({...vehicle,part:"Kupplung Steuergerät",literal:true,details:{}}))).json();
+ assert.equal(body.understanding.status,"literal");assert.equal(body.understanding.query,"Kupplung Steuergerät");assert.notEqual(body.status,"needs_clarification");
+ const calls=stub();assert.equal((await handler(request({...vehicle,literal:"true"}))).status,422);assert.equal(calls.length,0);
+ const conflict=await handler(request({...vehicle,part:"bremsbelege vorne hinten",details:{}}));assert.equal(conflict.status,422);
+});

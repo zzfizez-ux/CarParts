@@ -57,6 +57,27 @@ Es wird kein Prozentwert als Teile-Passgarantie vergeben. Weder eine Websuche no
 
 Es gibt keinen Vollständigkeitsanspruch für alle Fahrzeuge und Bauteile. Für einen umfassenderen, strukturierten Fahrzeug-Teile-Katalog ist später ein geeigneter lizenzierter Datenlieferant erforderlich. Für den Start wird keine solche Lizenz als Bestandteil der 50 € versprochen.
 
+## Verständliche Begriffe und Tippfehler
+
+Die gemeinsame, lokale Begriffserkennung sitzt in `supabase/functions/live-web-search/part-search.mjs`. Browser und Suchendpunkt verwenden dieselben Regeln. Das Verzeichnis enthält die bisherigen Kategorien sowie zusätzliche Steuergeräte, Sensoren und Aktuatoren. Es unterstützt Synonyme, deutsche und englische Alternativnamen, getrennt geschriebene Komposita und nahe Tippfehler einschließlich vertauschter Buchstaben. Es ist eine begrenzte Begriffserkennung, keine automatische Diagnose und keine Vollständigkeitsgarantie für jede freie Beschreibung.
+
+| Eingabe | Verhalten |
+| --- | --- |
+| `bremsbelege vorne` | Suche nach `Bremsbeläge vorne`, Korrektur sichtbar |
+| `brems beläge hinten links` | Suche nach `Bremsbeläge hinten links` |
+| `pollenfilter` | Suche nach `Innenraumfilter` |
+| `getriebe steuergerät` | Suche nach `Getriebesteuergerät` |
+| `kupplung steuergerät` | Auswahl zwischen Getriebesteuergerät, Getriebemechatronik und Kupplungsaktuator mit kurzen Erklärungen |
+| `HU 7020 z` / `P0420` | Originalnummer bzw. Fehlercode bleibt erhalten |
+
+Vorschläge während der Eingabe benötigen keine Datenbank-, Händler- oder Serper-Abfrage. Bei mehrdeutigen Begriffen wird zuerst nach dem Bauteil gefragt. Auch ein direkter API-Aufruf erhält in diesem Fall `status: needs_clarification` und löst keine Recherche aus. Ein Klick auf einen Vorschlag übernimmt den Begriff und startet bei vorhandenem Fahrzeug die normale Suche. Der Knopf „Mit meiner ursprünglichen Eingabe suchen“ umgeht ausdrücklich die Begriffskorrektur; die bestehenden Quellen- und Passformprüfungen gelten weiter.
+
+Bei einer Korrektur zeigt die Seite ursprüngliche und tatsächlich gesuchte Bezeichnung. Achse, Seite, Maße und unbekannte Zusatzanforderungen bleiben erhalten. Nummern werden nicht durch ähnlich geschriebene Artikel ersetzt. Nicht erkannte Begriffe bleiben als freie Suche zugelassen. Aus der Erkennung eines Bauteilnamens entsteht keine Herstellerzuordnung und keine Passformbestätigung. Händlerbezeichnungen wie „Steuergerät, Automatikgetriebe“ gelten ebenfalls als Getriebesteuergerät. Für die Webentdeckung werden angehängte Kataloganmerkungen im Motorlabel nicht als zwingende Suchwörter verwendet; das vollständige Originalfahrzeug bleibt für den Hersteller- und Konfliktabgleich erhalten. Die globalen Abruflimits und bestehenden Anbieter bleiben unverändert; eine weitere kostenpflichtige API wird nicht angebunden.
+
+Die Unterscheidung zwischen Getriebesteuerung und Kupplungsaktuator orientiert sich an den Herstellerbeschreibungen von Bosch Mobility und ZF Aftermarket:
+https://www.bosch-mobility.com/en/solutions/transmission-technology/transmission-control-unit/
+https://aftermarket.zf.com/en/aftermarket-portal/knowledge-hub/inbrief-sachs-actuators/
+
 ## Preisvergleich und Empfehlungen
 
 - Jede auswertbare Händlerquelle hat eine eigene Karte mit EUR-Artikelpreis, Foto, Beschreibung, Abrufzeit und Fahrzeugabgleich. Ein neuer Händlerabruf ersetzt einen alten Preisstand auch dann, wenn der Preis inzwischen fehlt. Doppelte Produktlinks werden zusammengeführt.

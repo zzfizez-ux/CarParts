@@ -1,9 +1,11 @@
-import {effectiveVehicle, searchPlan, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=43";
+import {understandPartQuery} from "./supabase/functions/live-web-search/part-search.mjs?v=48";
+import {bindPartSearchHints,renderQueryUnderstanding} from "./smart-search-ui.js?v=48";
+import {effectiveVehicle, searchPlan, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=48";
 import {renderOfferComparison} from "./offer-comparison-ui.js?v=47";
 import {renderSearchGuide} from "./search-guide-ui.js?v=43";
-import "./supabase-catalog.js?v=43";
+import "./supabase-catalog.js?v=48";
 import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=38";
-import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=40";
+import {seriesEvidence} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=48";
 
 const API="https://vpic.nhtsa.dot.gov/api/vehicles";
 const CATALOG_DEMO=false;
@@ -352,6 +354,7 @@ function inlineCatalogEmpty(term,unavailable=false){
 }
 function clearOfferComparison(){const node=$("offerComparison");if(node){node.replaceChildren();node.hidden=true;}}
 function renderResultsInternal(term){
+ $("searchUnderstanding")?.replaceChildren();if($("searchUnderstanding"))$("searchUnderstanding").hidden=true;
  clearOfferComparison();
  $("sharedResearch")?.replaceChildren();
  $("resultsTitle").textContent=state.vehicle?"Teile im CarParts-Katalog für "+vehicleLabel(state.vehicle):
@@ -362,7 +365,7 @@ function renderResultsInternal(term){
  setCatalogStatus("initial");
 }
 let catalogRequest=0;
-let searchDetails={},guideIdentity="",skipPreflight=false;
+let searchDetails={},guideIdentity="",skipPreflight=false,literalSearch=false;
 function showSearchGuide(plan,term,preflight=false){
  const container=$("searchGuide");
  renderSearchGuide(container,plan,searchDetails,async next=>{
@@ -613,8 +616,12 @@ async function showSharedResearch(vehicle,term,requestId,catalogue){
  const panel=$("sharedResearch");
  panel.textContent="Händlerangebote und Teilequellen werden gesucht…";
  try{
-  const data=await window.CarPartsDB.searchLiveWeb(vehicle,term,searchDetails);
+  const data=await window.CarPartsDB.searchLiveWeb(vehicle,term,searchDetails,literalSearch);
   const rows=await catalogue;
+  if(data.status==="needs_clarification"&&requestId===catalogRequest){
+   renderQueryUnderstanding($("searchUnderstanding"),data.understanding,choosePartSuggestion,{onLiteral:()=>searchOriginalQuery(data.understanding.original)});
+   panel.replaceChildren();return {hasReferences:true};
+  }
   const catalogIds=new Set(rows.map(row=>row.id));
   if(requestId!==catalogRequest)return {};
   const products=(data.products||[]).filter(item=>/^https:\/\//i.test(item.url)&&seriesMatches(vehicle,item.name));
@@ -664,7 +671,7 @@ async function renderSupabaseResults(term,requestId){
  }
  const engines=await db.getEngines(current.make,current.model,current.year,current.series).catch(()=>[]);
  if(requestId!==catalogRequest)return false;
- const preflight=searchPlan(current,term,db.researchCategory(term)||"",searchDetails,engines,[],{preflight:true});
+ const preflight=searchPlan(current,term,literalSearch?"":db.researchCategory(term)||"",searchDetails,engines,[],{preflight:true});
  if(preflight.status==="conflict"){
   showSearchGuide(preflight,term);grid.replaceChildren();setCatalogStatus("error");return false;
  }
@@ -672,9 +679,9 @@ async function renderSupabaseResults(term,requestId){
   grid.innerHTML='<div class="empty-results">Ergänze die bekannten Angaben oben, damit wir die richtige Ausführung suchen können.</div>';
   showSearchGuide(preflight,term,true);setCatalogStatus("research");return true;
  }
- showSearchGuide(searchPlan(current,term,db.researchCategory(term)||"",searchDetails,engines,[]),term);
+ showSearchGuide(searchPlan(current,term,literalSearch?"":db.researchCategory(term)||"",searchDetails,engines,[]),term);
  let unavailable=false;
- const catalogue=db.findVerifiedParts(current,term,searchDetails).catch(()=>{unavailable=true;return [];});
+ const catalogue=db.findVerifiedParts(current,term,searchDetails,literalSearch).catch(()=>{unavailable=true;return [];});
  const shared=showSharedResearch(current,term,requestId,catalogue);
  const rows=await catalogue;
  if(requestId!==catalogRequest)return false;
@@ -744,6 +751,7 @@ async function browseCatalogue(){
  const grid=$("resultsGrid");
  clearOfferComparison();
  $("sharedResearch").replaceChildren();
+ $("searchUnderstanding").replaceChildren();$("searchUnderstanding").hidden=true;
  $("resultsTitle").textContent="Teile im CarParts-Katalog für "+vehicleLabel(vehicle);
  grid.innerHTML='<div class="empty-results">Lade gespeicherte Teile…</div>';
  setCatalogStatus("loading");
@@ -781,8 +789,9 @@ async function browseCatalogue(){
   setCatalogStatus("error");
  }
 }
-async function search(){
- const q=$("partSearch").value.trim();
+function searchOriginalQuery(term){$("partSearch").value=term;return search({literal:true});}
+async function search(options={}){
+ let q=$("partSearch").value.trim();
  if(q.length>80){show("Bitte kürze den Suchbegriff auf höchstens 80 Zeichen.");return;}
  if(!state.vehicle){show("Bitte zuerst Marke, Modell, Baureihe und Baujahr wählen.");$("finder").scrollIntoView({behavior:"smooth"});return}
  if(!q){show("Bitte Teilebezeichnung oder Artikelnummer eingeben.");return}
@@ -791,6 +800,17 @@ async function search(){
   show("VIN-Prüfung enthält einen Fehler. Bitte die VIN/Fahrzeugauswahl korrigieren.");
   $("vinStatus").scrollIntoView({behavior:"smooth",block:"center"});return;
  }
+ literalSearch=options.literal===true;
+ const understanding=understandPartQuery(q,{literal:literalSearch});
+ partSearchHints.clear();
+ renderQueryUnderstanding($("searchUnderstanding"),understanding,choosePartSuggestion,{onLiteral:literalSearch?undefined:()=>searchOriginalQuery(understanding.original)});
+ if(understanding.status==="ambiguous"){
+  ++catalogRequest;clearOfferComparison();$("sharedResearch").replaceChildren();$("resultsGrid").replaceChildren();
+  $("searchGuide").replaceChildren();$("searchGuide").hidden=true;
+  $("resultsTitle").textContent="Suchbegriff für "+vehicleLabel(state.vehicle)+" präzisieren";
+  setCatalogStatus("research");$("parts").scrollIntoView({behavior:"smooth"});return;
+ }
+ q=understanding.query;
  $("parts").scrollIntoView({behavior:"smooth"});
  const searchedVehicle=state.vehicle;
  const searchId=catalogRequest+1;
@@ -841,6 +861,11 @@ function markVinUnchecked(){
  vehicleChanged();
 }
 $("vin").addEventListener("input",markVinUnchecked);
+function choosePartSuggestion(suggestion){
+ $("partSearch").value=suggestion.query;partSearchHints.clear();
+ if(state.vehicle)search();else $("partSearch").focus();
+}
+const partSearchHints=bindPartSearchHints($("partSearch"),$("partSearchHints"),choosePartSuggestion);
 $("searchBtn").onclick=search;$("partSearch").addEventListener("keydown",e=>{if(e.key==="Enter")search()});document.querySelectorAll(".quick-tags button").forEach(b=>b.onclick=()=>{$("partSearch").value=b.dataset.part;search()});
 $("browseCatalogueBtn").onclick=browseCatalogue;
 document.querySelectorAll(".quality-toggle button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".quality-toggle button").forEach(x=>x.classList.remove("active"));b.classList.add("active");state.mode=b.dataset.mode;const q=$("partSearch").value.trim();if(q&&state.vehicle)renderLiveResults(q);else renderResults()});

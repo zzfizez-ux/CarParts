@@ -3,7 +3,12 @@ import {matchesPartText, seriesEvidence} from "./vehicle-fitment.mjs";
 
 // Free text deliberately supports parts outside the small reference catalogue.
 export function partsQuery(vehicle, term, max = 400) {
-  return [term, vehicle.make, vehicle.model, vehicle.series, vehicle.year, vehicle.engine, vehicle.variant]
+  // Catalogue engine labels can contain annotations for another component, e.g. a fuel-filter water sensor.
+  // Keep the original vehicle for all evidence checks; only make the discovery query less repetitive.
+  const engine=String(vehicle.engine||"").split(/\s+[–—]\s+|\s+-\s+/)[0];
+  const series=String(vehicle.series||"");
+  const model=series.toLocaleLowerCase().startsWith(String(vehicle.model||"").toLocaleLowerCase()+" ")?"":vehicle.model;
+  return [term, vehicle.make, model, series, vehicle.year, engine, vehicle.variant]
     .filter(Boolean).join(" ").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
