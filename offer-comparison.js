@@ -15,7 +15,7 @@ function productRow(item,order){
  const shipping=typeof facts.shipping_price==="number"&&Number.isFinite(facts.shipping_price)&&facts.shipping_price>=0&&facts.shipping_currency==="EUR"?facts.shipping_price:null;
  return {url,kind:"product",order,name:text(item.name,200)||"Händlerangebot",description:text(item.description),
   merchant:text(item.merchant,120)||new URL(url).hostname,manufacturer:text(item.manufacturer,120),sku:text(item.sku,90),
-  price,image:comparisonUrl(item.image),observedAt:text(item.observed_at,40),sourceUrl:comparisonUrl(item.source_url),
+  price,image:comparisonUrl(item.image),observedAt:text(item.observed_at,40),factsAt:"",sourceUrl:comparisonUrl(item.source_url),
   fitment:item.fitment_status||"unconfirmed",unresolved:Array.isArray(item.fitment_unresolved)?item.fitment_unresolved:[],
   conflicts:Array.isArray(item.fitment_conflicts)?item.fitment_conflicts:[],condition:text(item.condition),
   availability:text(facts.availability,60),itemCondition:text(facts.item_condition,30)||"unknown",
@@ -41,8 +41,14 @@ export function buildComparison({catalogue=[],products=[],sources=[]}={}){
  for(const item of products){
   const row=productRow(item,order++);if(!row)continue;
   const prior=rows.get(row.url);
-  if(!prior||!Number.isFinite(Date.parse(prior.observedAt))||!Number.isFinite(Date.parse(row.observedAt))||Date.parse(row.observedAt)>=Date.parse(prior.observedAt)){
-   rows.set(row.url,{...row,order:prior?.order??row.order});
+  const older=prior&&Number.isFinite(Date.parse(prior.observedAt))&&Number.isFinite(Date.parse(row.observedAt))&&Date.parse(row.observedAt)<Date.parse(prior.observedAt);
+  if(!older)rows.set(row.url,{...row,order:prior?.order??row.order});
+  else if(Date.parse(prior.observedAt)-Date.parse(row.observedAt)<=60*60*1000){
+   // Preserve recent product facts while keeping the newest observed article price.
+   // The two observation times stay separate and visible.
+   rows.set(row.url,{...row,price:prior.price,image:prior.image||row.image,observedAt:prior.observedAt,factsAt:row.observedAt,
+    fitment:prior.fitment,unresolved:prior.unresolved,conflicts:prior.conflicts,order:prior.order,
+    total:prior.price!==null&&row.shipping!==null?Math.round((prior.price+row.shipping)*100)/100:null});
   }
  }
  for(const source of sources){

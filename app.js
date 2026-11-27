@@ -1,5 +1,5 @@
 import {effectiveVehicle, searchPlan, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=43";
-import {renderOfferComparison} from "./offer-comparison-ui.js?v=44";
+import {renderOfferComparison} from "./offer-comparison-ui.js?v=45";
 import {renderSearchGuide} from "./search-guide-ui.js?v=43";
 import "./supabase-catalog.js?v=43";
 import {availableSeries, displayModel, loadSeries, selectedSeries, seriesEngines, updateSeriesYears, years} from "./vehicle-series.js?v=38";
