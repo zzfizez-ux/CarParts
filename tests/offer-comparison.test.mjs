@@ -33,3 +33,11 @@ test("cheaper alternatives require identical manufacturer, article, explicit qua
  const expensive=row({price:20}),cheap=row({url:"https://levoil.de/cheap",price:10});assert.equal(cheaperIdentical(expensive,[cheap])?.price,10);
  for(const candidate of [row({price:1,facts:{pack_quantity:2,item_condition:"new"}}),row({price:1,facts:{item_condition:"new"}}),row({price:1,manufacturer:"Other"}),row({price:1,sku:"OTHER"}),row({price:1,facts:{pack_quantity:1,item_condition:"used"}})])assert.equal(cheaperIdentical(expensive,[candidate]),null);
 });
+
+
+test("a newer saved price preserves recent rich product facts with a separate timestamp",()=>{
+ const catalogue=[{manufacturer:"MANN-FILTER",part_name:"Ölfilter",manufacturer_part_number:"HU 7020 z",assessment:{status:"application_found",unresolved:[]},offers:[{product_url:product.url,price_amount:"11.00",currency:"EUR",observed_at:"2026-11-27T11:02:00Z"}]}];
+ const result=buildComparison({catalogue,products:[{...product,description:"Echte ausführliche Produktbeschreibung"}]})[0];
+ assert.equal(result.price,11);assert.equal(result.total,15.9);assert.equal(result.shipping,4.9);assert.equal(result.rating.count,20);assert.equal(result.description,"Echte ausführliche Produktbeschreibung");assert.equal(result.observedAt,"2026-11-27T11:02:00Z");assert.equal(result.factsAt,product.observed_at);
+ const stale=buildComparison({catalogue,products:[{...product,observed_at:"2026-11-27T09:00:00Z"}]})[0];assert.equal(stale.shipping,null);assert.equal(stale.rating,null);
+});

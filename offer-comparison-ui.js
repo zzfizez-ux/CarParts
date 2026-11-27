@@ -1,4 +1,4 @@
-import {buildComparison,comparisonRecommendations,sortComparison,cheaperIdentical} from "./offer-comparison.js?v=44";
+import {buildComparison,comparisonRecommendations,sortComparison,cheaperIdentical} from "./offer-comparison.js?v=45";
 const euros=value=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(value);
 function el(tag,className,content){const node=document.createElement(tag);if(className)node.className=className;if(content!==undefined)node.textContent=content;return node;}
 function link(label,url,className=""){const node=el("a",className,label);node.href=url;node.target="_blank";node.rel="noopener noreferrer";return node;}
@@ -31,6 +31,7 @@ function card(row,rows,recommendations){
   if(row.rating)body.append(el("p","comparison-detail","Händlerangaben zu diesem Produkt; kein unabhängiger Qualitätstest."));
   if(row.condition){const details=el("details","comparison-conditions");details.append(el("summary","","Angaben zur Fahrzeuganwendung"),el("p","",row.condition));body.append(details);}
   const when=Date.parse(row.observedAt);if(Number.isFinite(when))body.append(el("p","comparison-detail","Preisstand: "+new Date(when).toLocaleString("de-DE")));
+  if(row.factsAt)body.append(el("p","comparison-detail","Weitere Produktangaben: Stand "+new Date(row.factsAt).toLocaleString("de-DE")));
   const cheaper=cheaperIdentical(row,rows);if(cheaper)body.append(link("Gleiches Teil, gleicher Lieferumfang bei "+cheaper.merchant+": "+euros(cheaper.price),cheaper.url,"comparison-alternative"));
  }
  const actions=el("div","comparison-actions");actions.append(link(row.kind==="source"?"Quelle öffnen ↗":"Zum Händler ↗",row.url,"comparison-buy"));
