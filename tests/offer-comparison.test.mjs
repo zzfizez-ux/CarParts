@@ -41,3 +41,8 @@ test("a newer saved price preserves recent rich product facts with a separate ti
  assert.equal(result.price,11);assert.equal(result.total,15.9);assert.equal(result.shipping,4.9);assert.equal(result.rating.count,20);assert.equal(result.description,"Echte ausführliche Produktbeschreibung");assert.equal(result.observedAt,"2026-11-27T11:02:00Z");assert.equal(result.factsAt,product.observed_at);
  const stale=buildComparison({catalogue,products:[{...product,observed_at:"2026-11-27T09:00:00Z"}]})[0];assert.equal(stale.shipping,null);assert.equal(stale.rating,null);
 });
+
+test("documented OE cross-references can support a recommendation, while unknown fitment still cannot",()=>{
+ const documented=row({fitment_status:"cross_reference_found"});assert.equal(recommendationEligible(documented,now),true);assert.equal(comparisonRecommendations([documented],now).featured.url,documented.url);
+ const open=row({fitment_status:"cross_reference_found",fitment_unresolved:["equipment_code"]});assert.equal(comparisonRecommendations([open],now).featured,null);
+});

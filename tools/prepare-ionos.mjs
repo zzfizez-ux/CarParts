@@ -24,6 +24,7 @@ const assets = [
   "open-oilfilters.js", "open-oilfilters-data.js", "popular-models.js", "series-index.js",
   "smart-search-ui.js", "offer-comparison.js", "offer-comparison-ui.js", "supabase-catalog.js", "vehicle-series.js", "vin-check.js", "search-guide-ui.js",
   "supabase/functions/live-web-search/part-search.mjs",
+  "supabase/functions/live-web-search/product-link.mjs",
   "supabase/functions/live-web-search/search-guide.mjs",
   "supabase/functions/live-web-search/catalogue.mjs",
   "supabase/functions/live-web-search/vehicle-fitment.mjs",

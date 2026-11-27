@@ -8,13 +8,14 @@ import {JsonBodyError, readJson} from "../_shared/read-json.mjs";
 import {conflictsWithApplications, effectiveVehicle, filterApplications, filterProducts, matchesRequestedReference, searchPlan, searchTerm, validateSearchDetails} from "./search-guide.mjs";
 import {lookupSerper, partsQuery, researchSourceUrl} from "./search-providers.mjs";
 import {understandPartQuery} from "./part-search.mjs";
+import {lookupShopping} from "./search-providers.mjs";
+import {shoppingProducts,shoppingQuery,combineProducts} from "./shopping-products.mjs";
 import {offerObservations} from "./offer-observations.mjs";
 
 const publishableKeys = () => Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}"));
 const serviceKey = () => JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default ||
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-// Brief operational cache only; Serper results never enter the catalogue or persistent cache.
-const transientResearch = new Map<string,{payload:any,expires:number}>();
+// Bounded comparison snapshots retain source attribution; they are separate from the verified parts catalogue.
 const fields = new Set(["make","model","year","engine","series","variant","part","category","details","literal"]);
 
 async function database(table:string, filter:Record<string,string>, body?:unknown) {
@@ -51,9 +52,6 @@ async function hashKey(parts:unknown[]) {
 }
 
 async function savedResearch(key:string) {
-  const transient = transientResearch.get(key);
-  if (transient && transient.expires>Date.now()) return {...transient.payload,status:"cached"};
-  transientResearch.delete(key);
   const rows = await database("shared_parts_research",{
     select:"payload,checked_at",query_hash:"eq."+key,expires_at:"gt."+new Date().toISOString(),limit:"1"
   });
@@ -61,11 +59,7 @@ async function savedResearch(key:string) {
 }
 
 async function saveResearch(key:string, payload:any, minutes:number, checked = new Date()) {
-  if (payload.provider==="serper" && payload.results?.length) {
-    if (transientResearch.size>=100) transientResearch.delete(transientResearch.keys().next().value!);
-    transientResearch.set(key,{payload:{...payload,fetched_at:checked.toISOString()},expires:+checked+300000});
-    return;
-  }
+
   try {
     await database("shared_parts_research",{on_conflict:"query_hash"},[{
       query_hash:key,payload,checked_at:checked.toISOString(),
@@ -158,14 +152,22 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
   const references = [...conditional,...(reviewed.status==="fulfilled" ? reviewed.value : [])];
   const direct = merchantClaim==="reserved" ? await searchOffers(vehicle,term,category,articles)
     : {products:[],failures:[]};
-  const hasComplete=direct.products.some(product=>product.price!==null && product.image);
+  let shopping:any={status:"not_configured",provider:"none",results:[]};
+  if(Deno.env.get("SERPER_API_KEY")){
+   const shoppingKey=await hashKey([key,"shopping"]);
+   const claim=await database("rpc/reserve_parts_web_lookup",{},{key_hash:shoppingKey});
+   shopping=claim==="reserved"?await lookupShopping(shoppingQuery(vehicle,term,foundParts,details),Deno.env.get("SERPER_API_KEY")):{status:claim,provider:"serper",results:[]};
+  }
+  const market=filterProducts(shoppingProducts(shopping.results,vehicle,term,category,foundParts,details),foundParts,term,details,excluded);
+  const hasComplete=[...direct.products,...market].some(product=>product.price!==null && product.image);
   const web = hasComplete ? {status:"skipped",provider:"",results:[]} : await webResearch(key,vehicle,term,category,details,foundParts,excluded);
   const fallback = merchantClaim==="reserved" && !hasComplete && web.results.length
     ? await offersFromWeb(web.results,vehicle,term,category,articles) : {products:[],failures:[]};
-  const products = filterProducts([...new Map([...direct.products,...fallback.products].map(product=>[product.url,product])).values()],foundParts,term,details,excluded).map(product=>({
-    ...product,fitment_status:foundParts.find(part=>part.id===product.part_id)?.assessment.status || "unconfirmed",
-    fitment_conflicts:foundParts.find(part=>part.id===product.part_id)?.assessment.conflicts || [],
-    fitment_unresolved:foundParts.find(part=>part.id===product.part_id)?.assessment.unresolved || []
+  const products = filterProducts(combineProducts([...market,...direct.products,...fallback.products]),foundParts,term,details,excluded).map(product=>({
+    ...product,fitment_status:product.reference_part_id&&["application_found","reference_match"].includes(foundParts.find(part=>part.id===product.reference_part_id)?.assessment.status)
+      ?"cross_reference_found":foundParts.find(part=>part.id===(product.part_id||product.reference_part_id))?.assessment.status || "unconfirmed",
+    fitment_conflicts:foundParts.find(part=>part.id===(product.part_id||product.reference_part_id))?.assessment.conflicts || [],
+    fitment_unresolved:foundParts.find(part=>part.id===(product.part_id||product.reference_part_id))?.assessment.unresolved || []
   }));
   const observations=offerObservations(products);
   if (observations.length) {
@@ -175,7 +177,7 @@ async function research(vehicle:Vehicle, term:string, category:string, key:strin
   const failures = [...direct.failures,...fallback.failures];
   for (const {merchant,reason} of failures) console.warn("CarParts merchant",merchant,reason);
   const payload = {
-    products, search_plan:plan,
+    products, search_plan:plan, shopping_status:shopping.status,
     results:web.results, references, web_status:web.status,
     merchant_status:merchantClaim==="reserved"?(failures.length?"partial":"searched"):merchantClaim,
     merchant_failures:failures,
@@ -220,7 +222,7 @@ Deno.serve(async (request:Request)=>{
     if(understanding.status==="ambiguous")return json({status:"needs_clarification",understanding,products:[],results:[],references:[],provider:"none"});
     term=understanding.query;
     const category=p.literal ? "" : understanding.category || (understanding.status==="identifier"?normalize(p.category||""):"");
-    const key = await hashKey(["smart-v2",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details,p.literal===true]);
+    const key = await hashKey(["complete-offers-v4",Boolean(Deno.env.get("SERPER_API_KEY")),vehicle,term,category,details,p.literal===true]);
     return json({...await research(vehicle,term,category,key,details),understanding});
   } catch (error) {
     if (error instanceof JsonBodyError) return json({error:error.message},error.status);

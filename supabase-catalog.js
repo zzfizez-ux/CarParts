@@ -1,5 +1,5 @@
 import {understandPartQuery} from "./supabase/functions/live-web-search/part-search.mjs?v=48";
-import {effectiveVehicle, filterApplications, searchTerm, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=48";
+import {effectiveVehicle, filterApplications, searchTerm, validateSearchDetails} from "./supabase/functions/live-web-search/search-guide.mjs?v=49";
 import {catalogueEngines, catalogueParts} from "./supabase/functions/live-web-search/catalogue.mjs?v=48";
 import {seriesKey, words} from "./supabase/functions/live-web-search/vehicle-fitment.mjs?v=48";
 

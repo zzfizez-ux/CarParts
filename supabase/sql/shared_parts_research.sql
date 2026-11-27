@@ -16,13 +16,15 @@ returns text language plpgsql security invoker set search_path = '' as $$
 declare
   day_utc date := (now() at time zone 'UTC')::date;
   previous timestamptz;
+  previous_attempts smallint;
 begin
   perform pg_advisory_xact_lock(514692703);
-  select checked_at into previous from public.live_web_search_budget
+  select checked_at,attempts into previous,previous_attempts from public.live_web_search_budget
    where query_hash=key_hash and lookup_day=day_utc;
   if previous > now()-interval '30 seconds' then return 'busy'; end if;
   if previous > now()-interval '5 minutes' then return 'quota'; end if;
-  if (select coalesce(sum(attempts),0) from public.live_web_search_budget where lookup_day=day_utc)>=25 then return 'quota'; end if;
+  if coalesce(previous_attempts,0)>=25 then return 'quota'; end if;
+  if (select coalesce(sum(attempts),0) from public.live_web_search_budget where lookup_day=day_utc)>=50 then return 'quota'; end if;
   insert into public.live_web_search_budget(query_hash,lookup_day) values(key_hash,day_utc)
    on conflict(query_hash,lookup_day) do update set attempts=public.live_web_search_budget.attempts+1,checked_at=now();
   return 'reserved';
