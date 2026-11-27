@@ -1,4 +1,4 @@
-import {buildComparison,comparisonRecommendations,sortComparison,cheaperIdentical} from "./offer-comparison.js?v=45";
+import {buildComparison,comparisonRecommendations,sortComparison,cheaperIdentical} from "./offer-comparison.js?v=47";
 const euros=value=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(value);
 function el(tag,className,content){const node=document.createElement(tag);if(className)node.className=className;if(content!==undefined)node.textContent=content;return node;}
 function link(label,url,className=""){const node=el("a",className,label);node.href=url;node.target="_blank";node.rel="noopener noreferrer";return node;}
